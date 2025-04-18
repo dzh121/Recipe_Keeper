@@ -1,7 +1,7 @@
 import type { AppProps } from "next/app";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Provider } from "@/components/ui/provider";
-import AuthGate from "@/components/AuthGate";
+import { AuthProvider } from "@/context/AuthContext";
 import "@/styles/globals.css";
 
 const geistSans = Geist({
@@ -18,9 +18,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <Provider>
-        <AuthGate>
+        <AuthProvider>
           <Component {...pageProps} />
-        </AuthGate>
+        </AuthProvider>
       </Provider>
     </div>
   );

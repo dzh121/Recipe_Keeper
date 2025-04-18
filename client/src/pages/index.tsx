@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { auth } from "@/lib/firebase";
+import { useAuth } from "@/context/AuthContext";
 import {
   Box,
   HStack,
@@ -16,63 +17,56 @@ import {
   LuPlus,
   LuSearch,
   LuSettings,
-  LuEye,
-  LuShare2,
   LuListChecks,
   LuTag,
 } from "react-icons/lu";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
-
 const features = [
   {
     title: "Add New Recipe",
     description:
-      "Create and save your own recipes with links, ingredients, and steps.",
+      "Create and save your own recipes with ingredients, instructions, and more.",
     icon: LuPlus,
     href: "/recipes/add",
+    requiresAuth: true,
   },
   {
-    title: "Search Your Recipes",
-    description: "Find recipes you've saved by title, ingredients, or tags.",
-    icon: LuSearch,
-    href: "/recipes/search",
-  },
-  {
-    title: "Search Public Recipes",
+    title: "My Recipes",
     description:
-      "Explore recipes shared by other users in the RecipeKeeper community.",
-    icon: LuEye,
-    href: "/explore/public",
+      "Access all the recipes you’ve created or saved from the community.",
+    icon: LuListChecks,
+    href: "/recipes/manage",
+    requiresAuth: true,
   },
   {
-    title: "Shared With Me",
-    description: "View recipes others have shared directly with you.",
-    icon: LuShare2,
-    href: "/shared",
+    title: "Explore Public Recipes",
+    description: "Discover new ideas and save recipes shared by other users.",
+    icon: LuSearch,
+    href: "/explore/public",
+    requiresAuth: false,
   },
   {
     title: "Manage Tags",
-    description: "Organize your recipes with custom tags for easy filtering.",
+    description:
+      "Customize and organize your tags to easily filter and find recipes.",
     icon: LuTag,
     href: "/tags",
-  },
-  {
-    title: "Edit Your Recipes",
-    description: "Update or delete any of your saved recipes.",
-    icon: LuListChecks,
-    href: "/recipes/manage",
+    requiresAuth: true,
   },
   {
     title: "Settings",
-    description: "Change your preferences or log out of your account.",
+    description:
+      "Update your profile, preferences, and manage your account settings.",
     icon: LuSettings,
     href: "/settings",
+    requiresAuth: true,
   },
 ];
 
 export default function Home() {
+  const { user, authChecked } = useAuth();
   return (
     <Box
       minH="100vh"
@@ -89,6 +83,7 @@ export default function Home() {
           <Heading
             as="h1"
             fontSize={{ base: "4xl", md: "5xl" }}
+            marginBottom={2}
             fontWeight="bold"
             color="teal.500"
           >
@@ -105,17 +100,20 @@ export default function Home() {
         </VStack>
 
         <SimpleGrid mt={8} columns={{ base: 1, sm: 2, md: 3 }} gap={6}>
-          {features.map(({ title, description, icon, href }) => (
-            <Link href={href} passHref>
+          {features.map(({ title, description, icon, href, requiresAuth }) => {
+            const isProtected = requiresAuth && authChecked && !user;
+
+            return isProtected ? (
               <Card.Root
                 key={title}
-                _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
-                transition="all 0.2s"
-                cursor="pointer"
                 p={5}
                 borderRadius="xl"
                 bg="white"
                 _dark={{ bg: "gray.800" }}
+                opacity={0.85}
+                cursor="pointer"
+                _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
+                onClick={() => (window.location.href = "/auth")}
               >
                 <CardBody display="flex" alignItems="center" gap={4}>
                   <HStack align="center" gap={4}>
@@ -127,10 +125,37 @@ export default function Home() {
                   <Text fontSize="sm" opacity={0.75}>
                     {description}
                   </Text>
+                  <Text fontSize="xs" mt={2} color="red.500">
+                    Login required to use this feature
+                  </Text>
                 </CardBody>
               </Card.Root>
-            </Link>
-          ))}
+            ) : (
+              <Link href={href} passHref key={title}>
+                <Card.Root
+                  p={5}
+                  borderRadius="xl"
+                  bg="white"
+                  _dark={{ bg: "gray.800" }}
+                  _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
+                  transition="all 0.2s"
+                  cursor="pointer"
+                >
+                  <CardBody display="flex" alignItems="center" gap={4}>
+                    <HStack align="center" gap={4}>
+                      <Icon as={icon} boxSize={6} />
+                      <Text fontWeight="medium" fontSize="lg">
+                        {title}
+                      </Text>
+                    </HStack>
+                    <Text fontSize="sm" opacity={0.75}>
+                      {description}
+                    </Text>
+                  </CardBody>
+                </Card.Root>
+              </Link>
+            );
+          })}
         </SimpleGrid>
       </Box>
 
