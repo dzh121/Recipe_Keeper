@@ -9,8 +9,11 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-
-export default eslintConfig;
+export default {
+  ...compat.config({
+    extends: ["next/core-web-vitals", "next/typescript"],
+  }),
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
+  },
+};
