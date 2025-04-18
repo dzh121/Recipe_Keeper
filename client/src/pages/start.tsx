@@ -21,6 +21,12 @@ import Logo from "@/components/ui/Logo";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LuEye, LuEyeOff } from "react-icons/lu";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useRouter } from "next/router";
 
 type FormErrors = {
   email: string;
@@ -45,6 +51,7 @@ export default function StartPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,7 +59,7 @@ export default function StartPage() {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const errors = {
       email: !form.email ? "Email is required" : "",
       password: !form.password ? "Password is required" : "",
@@ -60,11 +67,23 @@ export default function StartPage() {
 
     setFormErrors(errors);
     if (!errors.email && !errors.password) {
-      console.log("Login with", form.email, form.password);
+      try {
+        const userCred = await signInWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password
+        );
+        const idToken = await userCred.user.getIdToken();
+        console.log("Token:", idToken);
+        router.push("/");
+      } catch (err: any) {
+        console.error("Login failed:", err);
+        setFormErrors({ ...errors, email: "Invalid email or password" });
+      }
     }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     const errors = {
       email: !form.email ? "Email is required" : "",
       password: !form.password ? "Password is required" : "",
@@ -77,12 +96,19 @@ export default function StartPage() {
 
     setFormErrors(errors);
     if (!errors.email && !errors.password && !errors.confirmPassword) {
-      console.log(
-        "Register with",
-        form.email,
-        form.password,
-        form.confirmPassword
-      );
+      try {
+        const userCred = await createUserWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password
+        );
+        const idToken = await userCred.user.getIdToken();
+        console.log("Token:", idToken);
+        router.push("/");
+      } catch (err: any) {
+        console.error("Registration failed:", err);
+        setFormErrors({ ...errors, email: "Could not register user" });
+      }
     }
   };
 

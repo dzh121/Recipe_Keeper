@@ -13,6 +13,6 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     next()
   } catch (err) {
     console.error("Token verification failed:", err)
-    return res.status(401).json({ message: "Invalid or expired token" })
+    res.status(401).json({ message: "Invalid token" })
   }
 }
