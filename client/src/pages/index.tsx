@@ -113,7 +113,7 @@ export default function Home() {
                 opacity={0.85}
                 cursor="pointer"
                 _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
-                onClick={() => (window.location.href = "/auth")}
+                onClick={() => (window.location.href = "/signin")}
               >
                 <CardBody display="flex" alignItems="center" gap={4}>
                   <HStack align="center" gap={4}>

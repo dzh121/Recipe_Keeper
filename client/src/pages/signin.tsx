@@ -16,7 +16,7 @@ import {
   IconButton,
   Icon,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "@/components/ui/Logo";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -27,6 +27,8 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/router";
+import { toaster, Toaster } from "@/components/ui/toaster";
+import { useAuth } from "@/context/AuthContext";
 
 type FormErrors = {
   email: string;
@@ -51,7 +53,15 @@ export default function StartPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { user, authChecked } = useAuth();
   const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (authChecked && user) {
+      router.replace("/");
+    }
+  }, [authChecked, user, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,17 +78,51 @@ export default function StartPage() {
     setFormErrors(errors);
     if (!errors.email && !errors.password) {
       try {
-        const userCred = await signInWithEmailAndPassword(
-          auth,
-          form.email,
-          form.password
-        );
-        const idToken = await userCred.user.getIdToken();
-        console.log("Token:", idToken);
+        await signInWithEmailAndPassword(auth, form.email, form.password);
         router.push("/");
       } catch (err: any) {
-        console.error("Login failed:", err);
-        setFormErrors({ ...errors, email: "Invalid email or password" });
+        let message = "Login failed";
+
+        if (err?.code?.startsWith("auth/")) {
+          switch (err.code) {
+            case "auth/user-not-found":
+            case "auth/wrong-password":
+            case "auth/invalid-credential":
+              message = "Invalid email or password.";
+              break;
+            case "auth/invalid-email":
+              message = "The email address format is invalid.";
+              break;
+            case "auth/too-many-requests":
+              message =
+                "Too many failed attempts. Please wait a few minutes and try again.";
+              break;
+            case "auth/user-disabled":
+              message =
+                "This account has been disabled by an administrator. Please contact support.";
+              break;
+            case "auth/network-request-failed":
+              message =
+                "Network error. Please check your internet connection and try again.";
+              break;
+            case "auth/internal-error":
+              message = "Internal error. Please try again shortly.";
+              break;
+            case "auth/missing-password":
+              message = "Password is required.";
+              break;
+            default:
+              message = err.message || "Unable to sign in. Please try again.";
+          }
+        }
+
+        toaster.create({
+          title: "Authentication Error",
+          description: message,
+          type: "error",
+          meta: { closable: true },
+        });
+        return;
       }
     }
   };
@@ -97,21 +141,54 @@ export default function StartPage() {
     setFormErrors(errors);
     if (!errors.email && !errors.password && !errors.confirmPassword) {
       try {
-        const userCred = await createUserWithEmailAndPassword(
-          auth,
-          form.email,
-          form.password
-        );
-        const idToken = await userCred.user.getIdToken();
-        console.log("Token:", idToken);
+        await createUserWithEmailAndPassword(auth, form.email, form.password);
         router.push("/");
       } catch (err: any) {
         console.error("Registration failed:", err);
-        setFormErrors({ ...errors, email: "Could not register user" });
+
+        let message = "Registration failed";
+        if (err?.code?.startsWith("auth/")) {
+          switch (err.code) {
+            case "auth/email-already-in-use":
+              message = "Email is already in use. Try logging in instead.";
+              break;
+            case "auth/invalid-email":
+              message = "The email address is not valid.";
+              break;
+            case "auth/weak-password":
+              message =
+                "Password is too weak. It must be at least 6 characters.";
+              break;
+            case "auth/too-many-requests":
+              message =
+                "Too many requests. Please wait a few minutes before trying again.";
+              break;
+            case "auth/network-request-failed":
+              message =
+                "Network error. Check your internet connection and try again.";
+              break;
+            case "auth/internal-error":
+              message = "Internal error. Please try again later.";
+              break;
+            default:
+              message = err.message || "Registration failed. Please try again.";
+          }
+        }
+
+        toaster.create({
+          title: "Registration Error",
+          description: message,
+          type: "error",
+          meta: { closable: true },
+        });
+
+        return;
       }
     }
   };
-
+  if (!authChecked || user) {
+    return null;
+  }
   return (
     <Box
       minH="100vh"
@@ -130,6 +207,7 @@ export default function StartPage() {
         justifyContent="center"
         px={6}
       >
+        <Toaster />
         <Card.Root w="full" maxW="md" borderRadius="xl" shadow="lg" p={6}>
           <CardHeader>
             <VStack gap={4} textAlign="center">
@@ -262,7 +340,9 @@ export default function StartPage() {
               <Button
                 w="full"
                 colorScheme="teal"
-                onClick={isLogin ? handleLogin : handleRegister}
+                onClick={() =>
+                  void (isLogin ? handleLogin() : handleRegister())
+                }
                 mt={2}
               >
                 {isLogin ? "Log In" : "Register"}
