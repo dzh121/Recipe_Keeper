@@ -1,12 +1,10 @@
 "use client";
 
 import { Box, Flex, Heading, Spacer, IconButton } from "@chakra-ui/react";
-import { useColorMode } from "@/components/ui/color-mode";
-import { LuSun, LuMoon } from "react-icons/lu";
+import { ColorModeButton } from "@/components/ui/color-mode";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import Logo from "@/components/ui/Logo";
 export default function Header() {
-  const { colorMode, toggleColorMode } = useColorMode();
   const hasMounted = useHasMounted();
 
   return (
@@ -24,15 +22,7 @@ export default function Header() {
           RecipeKeeper
         </Heading>
         <Spacer />
-        {hasMounted && (
-          <IconButton
-            onClick={toggleColorMode}
-            variant="ghost"
-            aria-label="Toggle theme"
-          >
-            {colorMode === "dark" ? <LuSun /> : <LuMoon />}
-          </IconButton>
-        )}
+        {hasMounted && <ColorModeButton />}
       </Flex>
     </Box>
   );

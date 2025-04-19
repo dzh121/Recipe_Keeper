@@ -12,6 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "@chakra-ui/icons": "^2.2.4",
+    "concurrently": "^9.1.2",
+    "firebase": "^11.6.0",
+    "firestore": "^1.1.6"
   }
 }

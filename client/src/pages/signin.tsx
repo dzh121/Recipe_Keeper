@@ -25,15 +25,17 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/router";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/context/AuthContext";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 type FormErrors = {
   email: string;
   password: string;
   confirmPassword?: string;
+  displayName?: string;
 };
 
 export default function StartPage() {
@@ -41,29 +43,29 @@ export default function StartPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    displayName: "",
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({
     email: "",
     password: "",
     confirmPassword: "",
+    displayName: "",
   });
 
   const [isLogin, setIsLogin] = useState(true);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { user, authChecked } = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (authChecked && user) {
       router.replace("/");
     }
   }, [authChecked, user, router]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
@@ -79,7 +81,7 @@ export default function StartPage() {
     if (!errors.email && !errors.password) {
       try {
         await signInWithEmailAndPassword(auth, form.email, form.password);
-        router.push("/");
+        router.replace("/");
       } catch (err: any) {
         let message = "Login failed";
 
@@ -136,13 +138,33 @@ export default function StartPage() {
         : form.confirmPassword !== form.password
         ? "Passwords do not match"
         : "",
+      displayName: !form.displayName ? "Display name is required" : "",
     };
 
     setFormErrors(errors);
-    if (!errors.email && !errors.password && !errors.confirmPassword) {
+    if (
+      !errors.email &&
+      !errors.password &&
+      !errors.confirmPassword &&
+      !errors.displayName
+    ) {
       try {
-        await createUserWithEmailAndPassword(auth, form.email, form.password);
-        router.push("/");
+        const userCred = await createUserWithEmailAndPassword(
+          auth,
+          form.email,
+          form.password
+        );
+
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          uid: userCred.user.uid,
+          email: form.email,
+          displayName: form.displayName,
+          photoURL: null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        router.replace("/");
       } catch (err: any) {
         console.error("Registration failed:", err);
 
@@ -186,9 +208,9 @@ export default function StartPage() {
       }
     }
   };
-  if (!authChecked || user) {
-    return null;
-  }
+
+  if (!authChecked || user) return null;
+
   return (
     <Box
       minH="100vh"
@@ -199,7 +221,6 @@ export default function StartPage() {
       flexDirection="column"
     >
       <Header />
-
       <Box
         flex={1}
         display="flex"
@@ -221,16 +242,7 @@ export default function StartPage() {
                   variant={isLogin ? "solid" : "outline"}
                   colorScheme="teal"
                   flex={1}
-                  onClick={() => {
-                    setIsLogin(true);
-                    setFormErrors({
-                      email: "",
-                      password: "",
-                      confirmPassword: "",
-                    });
-                    setShowConfirmPassword(false);
-                    setShowPassword(false);
-                  }}
+                  onClick={() => setIsLogin(true)}
                 >
                   Log In
                 </Button>
@@ -238,16 +250,7 @@ export default function StartPage() {
                   variant={!isLogin ? "solid" : "outline"}
                   colorScheme="teal"
                   flex={1}
-                  onClick={() => {
-                    setIsLogin(false);
-                    setFormErrors({
-                      email: "",
-                      password: "",
-                      confirmPassword: "",
-                    });
-                    setShowConfirmPassword(false);
-                    setShowPassword(false);
-                  }}
+                  onClick={() => setIsLogin(false)}
                 >
                   Register
                 </Button>
@@ -257,6 +260,22 @@ export default function StartPage() {
 
           <CardBody>
             <Stack gap={4}>
+              {!isLogin && (
+                <Field.Root required invalid={!!formErrors.displayName}>
+                  <Field.Label>
+                    Username
+                    <Field.RequiredIndicator />
+                  </Field.Label>
+                  <Input
+                    name="displayName"
+                    autoComplete="off"
+                    placeholder="Enter your username"
+                    onChange={handleInputChange}
+                  />
+                  <Field.ErrorText>{formErrors.displayName}</Field.ErrorText>
+                </Field.Root>
+              )}
+
               <Field.Root required invalid={!!formErrors.email}>
                 <Field.Label>
                   Email
@@ -299,7 +318,6 @@ export default function StartPage() {
                     onChange={handleInputChange}
                   />
                 </InputGroup>
-
                 <Field.ErrorText>{formErrors.password}</Field.ErrorText>
               </Field.Root>
 
@@ -313,7 +331,9 @@ export default function StartPage() {
                     endElement={
                       <IconButton
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
                         }
                         variant="ghost"
                         onClick={() => setShowConfirmPassword((prev) => !prev)}
@@ -351,7 +371,6 @@ export default function StartPage() {
           </CardBody>
         </Card.Root>
       </Box>
-
       <Footer />
     </Box>
   );
