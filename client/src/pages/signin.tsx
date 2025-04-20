@@ -30,7 +30,7 @@ import { useRouter } from "next/router";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-
+import Head from "next/head";
 type FormErrors = {
   email: string;
   password: string;
@@ -154,15 +154,38 @@ export default function StartPage() {
           form.email,
           form.password
         );
-
-        await setDoc(doc(db, "users", userCred.user.uid), {
-          uid: userCred.user.uid,
-          email: form.email,
+        //split to public and private user data
+        // public user data
+        const publicUserData = {
           displayName: form.displayName,
           photoURL: null,
+          recipesPublished: 0,
+          bio: null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-        });
+        };
+        // private user data
+        const privateUserData = {
+          email: form.email,
+          updatedAt: serverTimestamp(),
+        };
+        // set user data in firestore one in public and one in private
+        const publicRef = doc(
+          db,
+          "users",
+          userCred.user.uid,
+          "public",
+          "profile"
+        );
+        const privateRef = doc(
+          db,
+          "users",
+          userCred.user.uid,
+          "private",
+          "settings"
+        );
+        await setDoc(publicRef, publicUserData);
+        await setDoc(privateRef, privateUserData);
 
         router.replace("/");
       } catch (err: any) {
@@ -220,6 +243,14 @@ export default function StartPage() {
       display="flex"
       flexDirection="column"
     >
+      <Head>
+        <title>Sign In - RecipeKeeper</title>
+        <meta
+          name="description"
+          content="Log in to your RecipeKeeper account."
+        />
+        <meta name="robots" content="noindex" />
+      </Head>
       <Header />
       <Box
         flex={1}

@@ -1,6 +1,4 @@
 "use client";
-import { useEffect } from "react";
-import { auth } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import {
   Box,
@@ -23,6 +21,7 @@ import {
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
+import Head from "next/head";
 const features = [
   {
     title: "Add New Recipe",
@@ -76,6 +75,11 @@ export default function Home() {
       display="flex"
       flexDirection="column"
     >
+      <Head>
+        <title>RecipeKeeper</title>
+        <meta name="description" content="Your personal recipe dashboard" />
+        <meta name="robots" content="index, follow" />
+      </Head>
       <Header />
 
       <Box flex={1} px={6} py={10} maxW="6xl" mx="auto">
