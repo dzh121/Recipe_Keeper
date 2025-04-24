@@ -1,16 +1,15 @@
-"use client";
-
-import Image from "next/image";
 import { Box } from "@chakra-ui/react";
+import Image from "next/image";
 
 export default function Logo() {
   return (
-    <Box>
+    <Box position="relative" width="48px" height="48px">
       <Image
         src="/logo.png"
         alt="RecipeKeeper logo"
-        width={48}
-        height={48}
+        fill
+        sizes="(max-width: 768px) 32px, 48px"
+        style={{ objectFit: "contain" }}
         priority
       />
     </Box>

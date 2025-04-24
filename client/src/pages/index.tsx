@@ -43,7 +43,7 @@ const features = [
     title: "Explore Public Recipes",
     description: "Discover new ideas and save recipes shared by other users.",
     icon: LuSearch,
-    href: "/explore/public",
+    href: "/recipes",
     requiresAuth: false,
   },
   {

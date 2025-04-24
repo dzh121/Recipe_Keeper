@@ -15,6 +15,7 @@ import {
   InputGroup,
   StackSeparator,
   Flex,
+  Avatar,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useEffect, useState } from "react";
@@ -375,23 +376,17 @@ export default function SettingsPage() {
             p={6}
             borderRadius="md"
           >
-            <Box
-              bg="teal.500"
-              color="white"
-              borderRadius="full"
-              w="80px"
-              h="80px"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              fontSize="2xl"
-              fontWeight="bold"
-              boxShadow="md"
-            >
-              {(profile?.displayName || user.email || "U")
-                .charAt(0)
-                .toUpperCase()}
-            </Box>
+            <Avatar.Root size="2xl" colorPalette="teal" variant={"solid"}>
+              <Avatar.Fallback
+                name={profile?.displayName || user.email || "U"}
+              />
+              <Avatar.Image
+                src={profile?.photoURL || user.photoURL || ""}
+                alt="User Avatar"
+                borderRadius="full"
+              />
+            </Avatar.Root>
+
             <Box flex={1}>
               <Text fontWeight="bold" fontSize="lg">
                 {profile?.displayName || "No display name set"}
