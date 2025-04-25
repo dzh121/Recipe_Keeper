@@ -340,48 +340,27 @@ export default function RecipePage() {
                   {recipe.title}
                 </Heading>
                 <Flex gap={2}>
-                  {recipe.recipeType === "homemade" ? (
-                    <Badge
-                      colorScheme="purple"
-                      fontSize="md"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                    >
-                      Homemade
-                    </Badge>
-                  ) : (
-                    <Badge
-                      colorScheme="blue"
-                      fontSize="md"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                    >
-                      Recipe Link
-                    </Badge>
-                  )}
-                  {recipe.isPublic ? (
-                    <Badge
-                      colorScheme="green"
-                      fontSize="md"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                    >
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge
-                      colorScheme="red"
-                      fontSize="md"
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                    >
-                      Private
-                    </Badge>
-                  )}
+                  <Badge
+                    colorPalette={
+                      recipe.recipeType === "homemade" ? "orange" : "blue"
+                    }
+                    px={2}
+                    py={1}
+                    fontSize="md"
+                    borderRadius="md"
+                  >
+                    {recipe.recipeType === "homemade" ? "Homemade" : "Link"}
+                  </Badge>
+
+                  <Badge
+                    colorPalette={recipe.isPublic ? "green" : "gray"}
+                    fontSize="md"
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                  >
+                    {recipe.isPublic ? "Public" : "Private"}
+                  </Badge>
                 </Flex>
               </Flex>
 

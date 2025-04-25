@@ -1,19 +1,14 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { Box, Container, VStack, Text, Spinner } from "@chakra-ui/react";
-
+import React from "react";
+import { useEffect } from "react";
+import Head from "next/head";
+import { useAuth } from "@/context/AuthContext";
+import RecipeList from "@/components/recipes/RecipeList";
+import { Box, Container, VStack, Spinner, Text } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { useAuth } from "@/context/AuthContext";
 import { Recipe } from "@/lib/types/recipe";
-
-import Head from "next/head";
-import RecipeList from "@/components/recipes/RecipeList";
 
 const TAG_OPTIONS = [
   "Quick",
@@ -33,33 +28,51 @@ const TAG_OPTIONS = [
   "High-Protein",
   "Homemade",
 ];
-export default function RecipesIndexPage() {
+
+export default function RecipesManage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-
-  const { user } = useAuth();
+  const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
+  const [recipes, setRecipes] = React.useState<Recipe[]>([]);
+
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const q = query(
-          collection(db, "recipes"),
-          where("isPublic", "==", true)
+        const token = await user?.getIdToken();
+        const response = await fetch(
+          "http://localhost:5000/api/recipes?type=private",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
         );
-        const snapshot = await getDocs(q);
-        const result: Recipe[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Recipe, "id">),
-        }));
-        setRecipes(result);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch recipes");
+        }
+
+        const data = await response.json();
+        setRecipes(data.recipes);
+        console.log("Fetched recipes:", data.recipes);
       } catch (err) {
         console.error("Error fetching recipes:", err);
       }
     };
 
-    fetchRecipes();
-  }, []);
+    if (user) {
+      fetchRecipes();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (hasMounted && !isAuthenticated && authChecked) {
+      router.push("/recipes");
+    }
+  }, [hasMounted, isAuthenticated, authChecked]);
 
   if (!hasMounted) {
     return (
@@ -83,19 +96,20 @@ export default function RecipesIndexPage() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
       <Head>
-        <title>Public Recipes</title>
-        <meta name="description" content="Explore public recipes" />
+        <title>Manage Recipes</title>
+        <meta name="description" content="Manage Your Recipes" />
         <meta name="robots" content="index, follow" />
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
         <RecipeList
-          title="Explore Public Recipes"
+          title="Manage Your Recipes"
           recipes={recipes}
           allTags={TAG_OPTIONS}
-          allowEdit={false}
+          allowEdit={true}
           showAddButton={isAuthenticated}
-          showPublisher={true}
+          showPublicTag={true}
+          onEditClick={(id) => router.push(`/recipes/${id}/edit`)}
           onAddClick={() => router.push("/recipes/add")}
         />
       </Container>

@@ -34,7 +34,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LuChevronLeft, LuCheck } from "react-icons/lu";
 import { FiMail, FiLock, FiUser, FiLogOut } from "react-icons/fi";
-import type { UserSettings } from "@/types/user";
+import type { UserSettings } from "@/lib/types/user";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import Head from "next/head";
 
