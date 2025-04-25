@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import RecipeModify from "@/components/recipes/RecipeModify";
 import {
   Box,
@@ -60,15 +60,15 @@ export default function EditRecipePage() {
           return;
         }
         const data = await response.json();
-        console.log("Fetched recipe data:", data);
         if (!data.recipe) {
           setErrorMessage("Recipe not found.");
           return;
         }
-        setInitialData({
+        const recipe: RecipeFull = {
           ...data.recipe,
           id: id as string,
-        });
+        };
+        setInitialData(recipe);
       } catch (error) {
         console.error("Error fetching recipe:", error);
         setErrorMessage("Network error. Please try again.");
@@ -77,9 +77,7 @@ export default function EditRecipePage() {
 
     fetchRecipe();
   }, [id, authChecked, user]);
-  useEffect(() => {
-    console.log("Initial data:", initialData);
-  }, [initialData]);
+
   const handleGoBack = () => {
     router.back();
   };

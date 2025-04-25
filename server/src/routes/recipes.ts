@@ -25,7 +25,6 @@ router.post("/", authenticateToken, async (req, res) => {
   } = req.body;
 
   const tokenUid = req.user?.uid;
-  console.log("Got request to save recipe", req.body);
   if (!tokenUid) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -104,8 +103,6 @@ router.get("/:id", async (req, res) => {
     }
 
     // Block access to private recipes for guests or unrelated users
-    console.log("Recipe owner ID:", recipe.ownerId);
-    console.log("User ID from token:", uid);
     if (!recipe.isPublic && recipe.ownerId !== uid) {
       return res.status(403).json({ error: "Forbidden" });
     }
@@ -260,5 +257,35 @@ router.patch("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-  
+router.delete("/:id", authenticateToken, async (req, res) => {
+  const recipeId = req.params.id;
+  const tokenUid = req.user?.uid;
+
+  if (!tokenUid) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const docRef = db.collection("recipes").doc(recipeId);
+    const snapshot = await docRef.get();
+
+    if (!snapshot.exists) {
+      return res.status(404).json({ error: "Recipe not found." });
+    }
+
+    const existingData = snapshot.data();
+    if (!existingData) {
+      return res.status(404).json({ error: "Recipe not found." });
+    }
+    if (existingData.ownerId !== tokenUid) {
+      return res.status(403).json({ error: "Permission denied." });
+    }
+
+    await docRef.delete();
+    return res.status(200).json({ message: "Recipe deleted" });
+  } catch (error) {
+    console.error("Failed to delete recipe:", error);
+    return res.status(500).json({ error: "Failed to delete recipe" });
+  }
+});
 export default router;

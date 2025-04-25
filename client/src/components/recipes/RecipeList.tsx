@@ -210,28 +210,30 @@ export default function RecipeList({
           gap={4}
         >
           <Flex align="center" mb={4}>
-            <Box position="relative">
+            <Box position="relative" display="inline-block">
               <Text
                 fontSize={{ base: "2xl", md: "3xl" }}
                 fontWeight="bold"
                 color={textColor}
                 letterSpacing="tight"
-                lineHeight="1.2"
+                lineHeight="1.5"
                 pb={2}
+                display="inline"
               >
                 {title}
-                <Box
-                  position="absolute"
-                  bottom="0"
-                  left="0"
-                  width="100%"
-                  height="3px"
-                  bg="teal.500"
-                  borderRadius="full"
-                />
               </Text>
+              <Box
+                position="absolute"
+                bottom="0"
+                left="0"
+                width="100%"
+                height="3px"
+                bg="teal.500"
+                borderRadius="full"
+              />
             </Box>
           </Flex>
+
           {showAddButton && (
             <Button
               colorPalette="teal"

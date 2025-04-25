@@ -11,10 +11,8 @@ import {
   FiHome,
   FiGlobe,
 } from "react-icons/fi";
-import { LuChevronLeft } from "react-icons/lu";
 import {
   Box,
-  Container,
   Heading,
   Text,
   VStack,
@@ -26,17 +24,15 @@ import {
   HStack,
   InputGroup,
   Portal,
+  Dialog,
+  CloseButton,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { Switch, Tag, Menu, Tabs } from "@chakra-ui/react";
 import { auth } from "@/lib/firebase";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
-import Head from "next/head";
-import { Timestamp } from "firebase/firestore";
 import { RecipeFull } from "@/lib/types/recipe";
 import { useEffect } from "react";
 const TAG_OPTIONS = [
@@ -90,23 +86,29 @@ export default function RecipeModify({
 
   const hasMounted = useHasMounted();
   useEffect(() => {
-    if (mode === "edit" && initialData) {
+    if (mode === "edit" && initialData && Object.keys(initialData).length > 0) {
       setTitle(initialData.title || "");
       setLink(initialData.link || "");
       setNotes(initialData.notes || "");
       setIsPublic(initialData.isPublic || false);
       setSelectedTags(initialData.tags || []);
       setReview(initialData.review || "");
-      setTimeToFinish(initialData.timeToFinish?.toString() || ""); // careful if time is a number
+      setTimeToFinish(initialData.timeToFinish?.toString() || "");
       setRating(initialData.rating || 1);
       setIngredients(initialData.ingredients || "");
       setInstructions(initialData.instructions || "");
       setServings(initialData.servings?.toString() || "");
       setPrepTime(initialData.prepTime?.toString() || "");
       setCookTime(initialData.cookTime?.toString() || "");
-      setRecipeType(initialData.recipeType || "link");
+
+      if (
+        initialData.recipeType === "homemade" ||
+        initialData.recipeType === "link"
+      ) {
+        setRecipeType(initialData.recipeType);
+      }
     }
-  }, [initialData, mode]);
+  }, [initialData?.id, mode]);
 
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("white", "gray.800");
@@ -230,6 +232,41 @@ export default function RecipeModify({
       setIsSubmitting(false);
     }
   };
+  const handleRemove = async () => {
+    if (mode !== "edit") return;
+    const authToken = await auth.currentUser?.getIdToken();
+    const url = `http://localhost:5000/api/recipes/${initialData.id}`;
+    const method = "DELETE";
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Delete failed");
+
+      toaster.create({
+        title: "Recipe Deleted",
+        description: "Your recipe was successfully deleted.",
+        type: "success",
+        duration: 3000,
+        meta: { closable: true },
+      });
+      router.push("/recipes/manage");
+    } catch (err) {
+      toaster.create({
+        title: "Delete Failed",
+        description: "An error occurred.",
+        type: "error",
+        duration: 4000,
+        meta: { closable: true },
+      });
+    }
+  };
   if (!hasMounted) return null;
 
   return (
@@ -244,9 +281,49 @@ export default function RecipeModify({
       <Toaster />
       <VStack gap={8} align="stretch">
         <Box>
-          <Heading fontSize="2xl" mb={2}>
-            Add a Recipe
-          </Heading>
+          <Flex justify="space-between" align="center" mb={4}>
+            <Heading fontSize="2xl">
+              {mode === "edit" ? "Edit" : "Add"} Recipe
+            </Heading>
+
+            {/* <Button colorPalette="red" variant="subtle" onClick={handleRemove}>
+              Delete Recipe
+            </Button> */}
+            <Dialog.Root role="alertdialog">
+              <Dialog.Trigger asChild>
+                <Button colorPalette={"red"} variant="subtle" size="sm">
+                  <Icon as={FiX} mr={2} color="red.500" /> Delete Recipe
+                </Button>
+              </Dialog.Trigger>
+              <Portal>
+                <Dialog.Backdrop />
+                <Dialog.Positioner>
+                  <Dialog.Content>
+                    <Dialog.Header>
+                      <Dialog.Title>Delete Recipe</Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body>
+                      <Text fontSize="md" mb={2}>
+                        Are you sure you want to delete this recipe?
+                      </Text>
+                    </Dialog.Body>
+                    <Dialog.Footer>
+                      <Dialog.ActionTrigger asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </Dialog.ActionTrigger>
+                      <Button colorPalette="red" onClick={handleRemove}>
+                        Delete
+                      </Button>
+                    </Dialog.Footer>
+                    <Dialog.CloseTrigger asChild>
+                      <CloseButton size="md" />
+                    </Dialog.CloseTrigger>
+                  </Dialog.Content>
+                </Dialog.Positioner>
+              </Portal>
+            </Dialog.Root>
+          </Flex>
+
           <Text color="gray.500">
             Save your favorite recipes and customize them with notes and tags.
           </Text>
@@ -255,7 +332,7 @@ export default function RecipeModify({
         {/* Recipe Type Selector */}
         <Tabs.Root
           colorScheme="teal"
-          defaultValue={recipeType}
+          value={recipeType}
           onValueChange={(e) => setRecipeType(e.value as "link" | "homemade")}
           variant="subtle"
         >

@@ -14,6 +14,7 @@ import {
   LuTimer,
   LuChefHat,
   LuNotebook,
+  LuHeart,
 } from "react-icons/lu";
 import { MdOutlineRateReview } from "react-icons/md";
 import {
@@ -340,6 +341,15 @@ export default function RecipePage() {
                   {recipe.title}
                 </Heading>
                 <Flex gap={2}>
+                  <Button
+                    aria-label="Save as favorite"
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="red"
+                  >
+                    <Icon as={LuHeart} boxSize={5} fill={"none"} />
+                  </Button>
+
                   <Badge
                     colorPalette={
                       recipe.recipeType === "homemade" ? "orange" : "blue"
