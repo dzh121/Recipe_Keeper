@@ -83,7 +83,14 @@ export default function EditRecipePage() {
   };
   if (errorMessage) {
     return (
-      <Box minH="100vh" display="flex" flexDirection="column">
+      <Box
+        minH="100vh"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        display="flex"
+        flexDirection="column"
+      >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
           <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
@@ -106,7 +113,7 @@ export default function EditRecipePage() {
             <Text fontSize="lg">{errorMessage}</Text>
             <Button
               mt={6}
-              colorScheme="teal"
+              colorPalette="teal"
               onClick={() => router.push("/recipes")}
             >
               Return to Recipes
@@ -119,7 +126,14 @@ export default function EditRecipePage() {
   }
   if (!initialData && !hasMounted) {
     return (
-      <Box minH="100vh" display="flex" flexDirection="column">
+      <Box
+        minH="100vh"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        display="flex"
+        flexDirection="column"
+      >
         <Head>
           <title>Public Recipes</title>
           <meta name="description" content="Explore public recipes" />
@@ -128,7 +142,7 @@ export default function EditRecipePage() {
         <Header />
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
-            <Spinner size="xl" colorScheme="teal" />
+            <Spinner size="xl" colorPalette="teal" />
             <Text fontSize="lg">Loading...</Text>
           </VStack>
         </Container>
@@ -137,7 +151,15 @@ export default function EditRecipePage() {
     );
   }
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
+      display="flex"
+      flexDirection="column"
+    >
+      {" "}
       <Head>
         <title>Edit Recipe | RecipeKeeper</title>
         <meta
@@ -153,9 +175,7 @@ export default function EditRecipePage() {
           content="Easily save recipes with your own notes, time to cook, and more."
         />
       </Head>
-
       <Header />
-
       <Container maxW="container.md" py={10} flex="1">
         <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
           <LuChevronLeft />
@@ -163,7 +183,6 @@ export default function EditRecipePage() {
         </Button>
         <RecipeModify mode="edit" initialData={initialData ?? undefined} />
       </Container>
-
       <Footer />
     </Box>
   );

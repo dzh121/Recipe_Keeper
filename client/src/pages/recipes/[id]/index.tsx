@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { toaster, Toaster } from "@/components/ui/toaster";
 import {
   LuChevronLeft,
   LuClock,
@@ -75,6 +76,7 @@ export default function RecipePage() {
   const { id } = router.query;
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [author, setAuthor] = useState<Author | null>(null);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ErrorState>(null);
 
@@ -174,6 +176,23 @@ export default function RecipePage() {
             setAuthor(authorSnapshot.data() as Author);
           }
         }
+        if (user) {
+          const response = await fetch(
+            `http://localhost:5000/api/favorites/${id}`,
+            {
+              method: "GET",
+              headers: {
+                ...(authToken && { Authorization: `Bearer ${authToken}` }),
+              },
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setIsFavorite(data.isFavorite);
+          } else {
+            console.error("Failed to fetch favorite status:", response.status);
+          }
+        }
       } catch (err) {
         console.error(err);
         setError("Something went wrong. Please try again.");
@@ -199,10 +218,48 @@ export default function RecipePage() {
     return instructions.split("\n").filter((line) => line.trim() !== "");
   };
 
+  const toggleFavorite = async () => {
+    if (!user) {
+      setError("You must be logged in to save favorites.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/favorites/${id}`,
+        {
+          method: isFavorite ? "DELETE" : "POST",
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update favorite status.");
+      }
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error(err);
+      toaster.create({
+        title: "Error",
+        description: "Failed to update favorite status.",
+        type: "error",
+        duration: 3000,
+        meta: { closable: true },
+      });
+    }
+  };
+
   // Loading state
   if (!hasMounted || (loading && !recipe && !error)) {
     return (
-      <Box minH="100vh" display="flex" flexDirection="column">
+      <Box
+        minH="100vh"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        display="flex"
+        flexDirection="column"
+      >
         <Header />
         <Container maxW="container.md" px={{ base: 4, md: 8 }} py={10} flex="1">
           <Button
@@ -259,7 +316,14 @@ export default function RecipePage() {
   // Error state
   if (error) {
     return (
-      <Box minH="100vh" display="flex" flexDirection="column">
+      <Box
+        minH="100vh"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        display="flex"
+        flexDirection="column"
+      >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
           <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
@@ -282,7 +346,7 @@ export default function RecipePage() {
             <Text fontSize="lg">{error}</Text>
             <Button
               mt={6}
-              colorScheme="teal"
+              colorPalette="teal"
               onClick={() => router.push("/recipes")}
             >
               Return to Recipes
@@ -298,7 +362,16 @@ export default function RecipePage() {
   }
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
+      display="flex"
+      flexDirection="column"
+    >
+      {" "}
+      <Toaster />
       <Head>
         <title>{recipe.title} | RecipeKeeper</title>
         <meta
@@ -316,9 +389,7 @@ export default function RecipePage() {
           }
         />
       </Head>
-
       <Header />
-
       <Container maxW="container.md" py={10} flex="1">
         <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
           <LuChevronLeft />
@@ -345,9 +416,14 @@ export default function RecipePage() {
                     aria-label="Save as favorite"
                     size="sm"
                     variant="ghost"
-                    colorScheme="red"
+                    colorPalette="red"
+                    onClick={toggleFavorite}
                   >
-                    <Icon as={LuHeart} boxSize={5} fill={"none"} />
+                    <Icon
+                      as={LuHeart}
+                      boxSize={5}
+                      fill={isFavorite ? "currentcolor" : "none"}
+                    />
                   </Button>
 
                   <Badge
@@ -572,7 +648,7 @@ export default function RecipePage() {
                     <Tag.Root
                       key={tag}
                       size="md"
-                      colorScheme="teal"
+                      colorPalette="teal"
                       borderRadius="full"
                       py={1}
                       px={3}
@@ -586,7 +662,6 @@ export default function RecipePage() {
           </VStack>
         </Box>
       </Container>
-
       <Footer />
     </Box>
   );

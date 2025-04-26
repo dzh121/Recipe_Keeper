@@ -1,12 +1,28 @@
 "use client";
 
-import { Box, Flex, Heading, Spacer, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Spacer,
+  IconButton,
+  Button,
+} from "@chakra-ui/react";
 import { ColorModeButton } from "@/components/ui/color-mode";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import Logo from "@/components/ui/Logo";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
 export default function Header() {
   const hasMounted = useHasMounted();
-
+  const Router = useRouter();
+  const handleHomeClick = () => {
+    Router.push("/");
+  };
+  //check if the user is authenticated
+  const { user, authChecked } = useAuth();
+  const isAuthenticated = !!user;
   return (
     <Box
       as="header"
@@ -17,12 +33,25 @@ export default function Header() {
       _dark={{ borderColor: "gray.700" }}
     >
       <Flex align="center">
-        <Logo />
-        <Heading fontSize="lg" fontWeight="semibold">
-          RecipeKeeper
-        </Heading>
+        <Button variant="ghost" onClick={handleHomeClick}>
+          <Logo />
+          <Heading fontSize="lg" fontWeight="semibold">
+            RecipeKeeper
+          </Heading>
+        </Button>
+
         <Spacer />
-        {hasMounted && <ColorModeButton />}
+
+        {hasMounted && <ColorModeButton mr={3} />}
+        {authChecked && !isAuthenticated && (
+          <Button
+            colorPalette="teal"
+            variant="solid"
+            onClick={() => Router.push("/signin")}
+          >
+            Sign Up
+          </Button>
+        )}
       </Flex>
     </Box>
   );

@@ -117,10 +117,11 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   let uid: string | null = null;
   const { type } = req.query;
+  const ids = req.query.ids as string | undefined;
 
   // Try to extract user from token if provided
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
+  if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.split(" ")[1];
     try {
       const decodedToken = await admin.auth().verifyIdToken(token);
@@ -130,13 +131,40 @@ router.get("/", async (req, res) => {
     }
   }
 
-  // Validate query
+  if (ids) {
+    if (!uid) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const recipeIds = ids.split(",");
+    try {
+      const recipes = await Promise.all(
+        recipeIds.map(async (id) => {
+          const docRef = db.collection("recipes").doc(id);
+          const snapshot = await docRef.get();
+          if (!snapshot.exists) return null;
+          const recipe = snapshot.data();
+          if (!recipe) return null;
+
+          if (!recipe.isPublic && recipe.ownerId !== uid) return null;
+
+          return { id, ...recipe };
+        })
+      );
+
+      return res.status(200).json({ recipes: recipes.filter(Boolean) });
+    } catch (err) {
+      console.error("Error fetching recipes by IDs:", err);
+      return res.status(500).json({ error: "Failed to fetch recipes" });
+    }
+  }
+
   if (!type) {
-    return res.status(400).json({ error: "Missing required query parameter." });
+    return res.status(400).json({ error: "Missing required query parameter: type" });
   }
 
   if (type !== "public" && type !== "private") {
-    return res.status(400).json({ error: "Invalid query parameter." });
+    return res.status(400).json({ error: "Invalid query parameter: type must be 'public' or 'private'" });
   }
 
   if (type === "private" && !uid) {
@@ -144,9 +172,7 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    const collectionRef = db.collection("recipes");
-    let query: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = collectionRef;
-
+    let query: FirebaseFirestore.Query = db.collection("recipes");
 
     if (type === "public") {
       query = query.where("isPublic", "==", true);

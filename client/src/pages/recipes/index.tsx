@@ -3,8 +3,15 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Box, Container, VStack, Text, Spinner } from "@chakra-ui/react";
-
+import {
+  Box,
+  Container,
+  VStack,
+  Text,
+  Spinner,
+  Button,
+} from "@chakra-ui/react";
+import { LuChevronLeft } from "react-icons/lu";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
@@ -15,24 +22,6 @@ import { Recipe } from "@/lib/types/recipe";
 import Head from "next/head";
 import RecipeList from "@/components/recipes/RecipeList";
 
-const TAG_OPTIONS = [
-  "Quick",
-  "Vegan",
-  "Vegetarian",
-  "Dessert",
-  "Family",
-  "Spicy",
-  "Healthy",
-  "Comfort Food",
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snack",
-  "Gluten-Free",
-  "Low-Carb",
-  "High-Protein",
-  "Homemade",
-];
 export default function RecipesIndexPage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
@@ -61,9 +50,20 @@ export default function RecipesIndexPage() {
     fetchRecipes();
   }, []);
 
+  const handleGoBack = () => {
+    router.back();
+  };
+
   if (!hasMounted) {
     return (
-      <Box minH="100vh" display="flex" flexDirection="column">
+      <Box
+        minH="100vh"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        display="flex"
+        flexDirection="column"
+      >
         <Head>
           <title>Public Recipes</title>
           <meta name="description" content="Explore public recipes" />
@@ -72,7 +72,7 @@ export default function RecipesIndexPage() {
         <Header />
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
-            <Spinner size="xl" colorScheme="teal" />
+            <Spinner size="xl" colorPalette="teal" />
             <Text fontSize="lg">Loading...</Text>
           </VStack>
         </Container>
@@ -81,7 +81,14 @@ export default function RecipesIndexPage() {
     );
   }
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
+      display="flex"
+      flexDirection="column"
+    >
       <Head>
         <title>Public Recipes</title>
         <meta name="description" content="Explore public recipes" />
@@ -89,10 +96,13 @@ export default function RecipesIndexPage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
+        <Button variant="ghost" mb={4} onClick={handleGoBack} size="md">
+          <LuChevronLeft />
+          Go Back
+        </Button>
         <RecipeList
           title="Explore Public Recipes"
           recipes={recipes}
-          allTags={TAG_OPTIONS}
           allowEdit={false}
           showAddButton={isAuthenticated}
           showPublisher={true}

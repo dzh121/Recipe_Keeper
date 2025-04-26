@@ -1,62 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import {
-  FiLink,
-  FiSave,
-  FiClock,
-  FiX,
-  FiChevronDown,
-  FiTag,
-  FiHome,
-  FiGlobe,
-} from "react-icons/fi";
 import { LuChevronLeft } from "react-icons/lu";
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  VStack,
-  Input,
-  Textarea,
-  Button,
-  Flex,
-  Icon,
-  HStack,
-  InputGroup,
-  Portal,
-  Tabs,
-} from "@chakra-ui/react";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { Box, Container, Button } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { toaster, Toaster } from "@/components/ui/toaster";
-import { Switch, Tag, Menu } from "@chakra-ui/react";
-import { auth } from "@/lib/firebase";
+import { Toaster } from "@/components/ui/toaster";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import RecipeModify from "@/components/recipes/RecipeModify";
-
-const TAG_OPTIONS = [
-  "Quick",
-  "Vegan",
-  "Vegetarian",
-  "Dessert",
-  "Family",
-  "Spicy",
-  "Healthy",
-  "Comfort Food",
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snack",
-  "Gluten-Free",
-  "Low-Carb",
-  "High-Protein",
-  "Homemade",
-];
 
 export default function AddRecipePage() {
   const router = useRouter();
@@ -69,7 +21,14 @@ export default function AddRecipePage() {
   };
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
+      display="flex"
+      flexDirection="column"
+    >
       <Head>
         <title>Add Recipe | RecipeKeeper</title>
         <meta

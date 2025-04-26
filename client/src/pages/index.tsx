@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   Box,
@@ -10,6 +11,7 @@ import {
   Card,
   CardBody,
   Icon,
+  Spinner,
 } from "@chakra-ui/react";
 import {
   LuPlus,
@@ -18,19 +20,12 @@ import {
   LuListChecks,
   LuTag,
 } from "react-icons/lu";
+import { MdOutlineFavoriteBorder } from "react-icons/md";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import Head from "next/head";
 const features = [
-  {
-    title: "Add New Recipe",
-    description:
-      "Create and save your own recipes with ingredients, instructions, and more.",
-    icon: LuPlus,
-    href: "/recipes/add",
-    requiresAuth: true,
-  },
   {
     title: "My Recipes",
     description:
@@ -40,12 +35,29 @@ const features = [
     requiresAuth: true,
   },
   {
+    title: "Favorite Recipes",
+    description: "Access your favorite recipes in one convenient place.",
+    icon: MdOutlineFavoriteBorder,
+    href: "/recipes/favorites",
+    requiresAuth: false,
+  },
+  {
     title: "Explore Public Recipes",
     description: "Discover new ideas and save recipes shared by other users.",
     icon: LuSearch,
     href: "/recipes",
     requiresAuth: false,
   },
+  {
+    title: "Add New Recipe",
+    description:
+      "Create and save your own recipes with ingredients, instructions, and more.",
+    icon: LuPlus,
+    href: "/recipes/add",
+    requiresAuth: true,
+    adminOnly: true,
+  },
+
   {
     title: "Manage Tags",
     description:
@@ -66,6 +78,48 @@ const features = [
 
 export default function Home() {
   const { user, authChecked } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) {
+        setAdminChecked(true);
+        return;
+      }
+
+      const idTokenResult = await user.getIdTokenResult(true);
+      const claims = idTokenResult.claims;
+
+      if (claims.role === "admin") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+      setAdminChecked(true);
+    };
+
+    if (authChecked) {
+      checkAdminRole();
+    }
+  }, [user, authChecked]);
+
+  if (!authChecked || !adminChecked) {
+    return (
+      <Box
+        minH="100vh"
+        display="flex"
+        bg="gray.50"
+        color="gray.800"
+        _dark={{ bg: "gray.900", color: "white" }}
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="xl" colorPalette="teal" />
+      </Box>
+    );
+  }
+
   return (
     <Box
       minH="100vh"
@@ -104,38 +158,14 @@ export default function Home() {
         </VStack>
 
         <SimpleGrid mt={8} columns={{ base: 1, sm: 2, md: 3 }} gap={6}>
-          {features.map(({ title, description, icon, href, requiresAuth }) => {
-            const isProtected = requiresAuth && authChecked && !user;
+          {features.map(
+            ({ title, description, icon, href, requiresAuth, adminOnly }) => {
+              const shouldHide = adminOnly && authChecked && !isAdmin;
+              const needsLogin = requiresAuth && authChecked && !user;
 
-            return isProtected ? (
-              <Card.Root
-                key={title}
-                p={5}
-                borderRadius="xl"
-                bg="white"
-                _dark={{ bg: "gray.800" }}
-                opacity={0.85}
-                cursor="pointer"
-                _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
-                onClick={() => (window.location.href = "/signin")}
-              >
-                <CardBody display="flex" alignItems="center" gap={4}>
-                  <HStack align="center" gap={4}>
-                    <Icon as={icon} boxSize={6} />
-                    <Text fontWeight="medium" fontSize="lg">
-                      {title}
-                    </Text>
-                  </HStack>
-                  <Text fontSize="sm" opacity={0.75}>
-                    {description}
-                  </Text>
-                  <Text fontSize="xs" mt={2} color="red.500">
-                    Login required to use this feature
-                  </Text>
-                </CardBody>
-              </Card.Root>
-            ) : (
-              <Link href={href} passHref key={title}>
+              if (shouldHide) return null;
+
+              const CardContent = (
                 <Card.Root
                   p={5}
                   borderRadius="xl"
@@ -144,22 +174,53 @@ export default function Home() {
                   _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
                   transition="all 0.2s"
                   cursor="pointer"
+                  opacity={needsLogin ? 0.85 : 1}
                 >
-                  <CardBody display="flex" alignItems="center" gap={4}>
+                  <CardBody
+                    display="flex"
+                    alignItems="center"
+                    flexDirection="column"
+                    height="100%"
+                    gap={4}
+                  >
                     <HStack align="center" gap={4}>
                       <Icon as={icon} boxSize={6} />
                       <Text fontWeight="medium" fontSize="lg">
                         {title}
                       </Text>
                     </HStack>
-                    <Text fontSize="sm" opacity={0.75}>
+                    <Text fontSize="sm" opacity={0.75} mt={2}>
                       {description}
                     </Text>
+
+                    {/* Always render something here so height is same */}
+                    {needsLogin ? (
+                      <Text fontSize="xs" mt={2} color="red.500">
+                        Login required to use this feature
+                      </Text>
+                    ) : (
+                      <Text fontSize="xs" mt={2} visibility="hidden">
+                        Login required
+                      </Text>
+                    )}
                   </CardBody>
                 </Card.Root>
-              </Link>
-            );
-          })}
+              );
+
+              return needsLogin ? (
+                <Box
+                  key={title}
+                  onClick={() => (window.location.href = "/signin")}
+                >
+                  {CardContent}
+                </Box>
+              ) : (
+                <Link href={href} passHref key={title}>
+                  {CardContent}
+                </Link>
+              );
+            }
+          )}
         </SimpleGrid>
       </Box>
 

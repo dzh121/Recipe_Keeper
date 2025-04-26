@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { Recipe } from "@/lib/types/recipe";
 import { LuChevronLeft } from "react-icons/lu";
-
+import { toaster, Toaster } from "@/components/ui/toaster";
 
 export default function RecipesManage() {
   const hasMounted = useHasMounted();
@@ -27,11 +27,13 @@ export default function RecipesManage() {
   const [recipes, setRecipes] = React.useState<Recipe[]>([]);
 
   useEffect(() => {
-    const fetchRecipes = async () => {
+    const fetchFavoriteRecipes = async () => {
       try {
         const token = await user?.getIdToken();
-        const response = await fetch(
-          "http://localhost:5000/api/recipes?type=private",
+
+        // Get favorite IDs
+        const favoritesRes = await fetch(
+          "http://localhost:5000/api/favorites",
           {
             method: "GET",
             headers: {
@@ -41,19 +43,45 @@ export default function RecipesManage() {
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes");
+        if (!favoritesRes.ok) {
+          throw new Error("Failed to fetch favorites");
         }
 
-        const data = await response.json();
-        setRecipes(data.recipes);
+        const favoritesData = await favoritesRes.json();
+
+        const favoriteIds = favoritesData.favorites.map((fav: any) => fav);
+        if (favoriteIds.length === 0) {
+          setRecipes([]);
+          return;
+        }
+
+        // Fetch only favorite recipes
+        const recipesRes = await fetch(
+          `http://localhost:5000/api/recipes?ids=${favoriteIds.join(",")}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+
+        if (!recipesRes.ok) {
+          throw new Error("Failed to fetch favorite recipes");
+        }
+
+        const recipesData = await recipesRes.json();
+        setRecipes(recipesData.recipes);
+
+        console.log("Fetched favorite recipes:", recipesData.recipes);
       } catch (err) {
-        console.error("Error fetching recipes:", err);
+        console.error("Error fetching favorite recipes:", err);
       }
     };
 
     if (user) {
-      fetchRecipes();
+      fetchFavoriteRecipes();
     }
   }, [user]);
 
@@ -62,6 +90,40 @@ export default function RecipesManage() {
       router.push("/recipes");
     }
   }, [hasMounted, isAuthenticated, authChecked]);
+  const removeFavorite = async (recipeId: string) => {
+    try {
+      const token = await user?.getIdToken();
+      const response = await fetch(
+        `http://localhost:5000/api/favorites/${recipeId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to remove favorite");
+      }
+
+      const data = await response.json();
+      console.log("Removed favorite:", data);
+      setRecipes((prevRecipes) =>
+        prevRecipes.filter((recipe) => recipe.id !== recipeId)
+      );
+    } catch (err) {
+      console.error("Error removing favorite:", err);
+      toaster.create({
+        title: "Error",
+        description: "Failed to update favorite status.",
+        type: "error",
+        duration: 3000,
+        meta: { closable: true },
+      });
+    }
+  };
 
   const handleGoBack = () => {
     router.back();
@@ -105,9 +167,10 @@ export default function RecipesManage() {
       display="flex"
       flexDirection="column"
     >
+      <Toaster />
       <Head>
-        <title>Manage Recipes</title>
-        <meta name="description" content="Manage Your Recipes" />
+        <title>Favorite Recipes</title>
+        <meta name="description" content="Your Favorite Recipes" />
         <meta name="robots" content="index, follow" />
       </Head>
       <Header />
@@ -117,15 +180,19 @@ export default function RecipesManage() {
           Go Back
         </Button>
         <RecipeList
-          title="Manage Your Recipes"
+          title="Favorite Recipes"
           recipes={recipes}
-          allowEdit={true}
-          showAddButton={isAuthenticated}
+          allowEdit={false}
+          showAddButton={false}
           showPublicTag={true}
-          onEditClick={(id) => router.push(`/recipes/${id}/edit`)}
-          onAddClick={() => router.push("/recipes/add")}
+          showPublisher={true}
+          showFavorite={true}
+          onFavoriteClick={(recipeId: string) => {
+            removeFavorite(recipeId);
+          }}
         />
       </Container>
+
       <Footer />
     </Box>
   );

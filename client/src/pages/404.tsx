@@ -33,7 +33,14 @@ export default function NotFoundPage() {
     return null; // Prevent rendering on the server side
   }
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
+      display="flex"
+      flexDirection="column"
+    >
       <Head>
         <title>404 - Page Not Found</title>
         <meta name="description" content="Page not found" />
@@ -144,7 +151,7 @@ export default function NotFoundPage() {
               <Button
                 onClick={goBack}
                 variant="outline"
-                colorScheme="gray"
+                colorPalette="gray"
                 size="lg"
                 borderRadius="lg"
               >
@@ -152,7 +159,7 @@ export default function NotFoundPage() {
                 Go Back
               </Button>
               <Link href="/" passHref>
-                <Button colorScheme="teal" size="lg" borderRadius="lg">
+                <Button colorPalette="teal" size="lg" borderRadius="lg">
                   <FiHome />
                   Go Home
                 </Button>

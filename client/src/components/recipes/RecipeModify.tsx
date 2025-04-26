@@ -35,24 +35,6 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import { RecipeFull } from "@/lib/types/recipe";
 import { useEffect } from "react";
-const TAG_OPTIONS = [
-  "Quick",
-  "Vegan",
-  "Vegetarian",
-  "Dessert",
-  "Family",
-  "Spicy",
-  "Healthy",
-  "Comfort Food",
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snack",
-  "Gluten-Free",
-  "Low-Carb",
-  "High-Protein",
-  "Homemade",
-];
 
 export default function RecipeModify({
   mode = "add",
@@ -83,8 +65,28 @@ export default function RecipeModify({
   const [servings, setServings] = useState(initialData.servings || "");
   const [prepTime, setPrepTime] = useState(initialData.prepTime || "");
   const [cookTime, setCookTime] = useState(initialData.cookTime || "");
-
+  const [tagOptions, setTagOptions] = useState<string[]>([]);
   const hasMounted = useHasMounted();
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/tags", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch tags");
+        const data = await response.json();
+        setTagOptions(data.tags);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+    fetchTags();
+  }, []);
+
   useEffect(() => {
     if (mode === "edit" && initialData && Object.keys(initialData).length > 0) {
       setTitle(initialData.title || "");
@@ -121,7 +123,7 @@ export default function RecipeModify({
   const handleRemoveTag = (tag: string) =>
     setSelectedTags(selectedTags.filter((t) => t !== tag));
 
-  const filteredTags = TAG_OPTIONS.filter(
+  const filteredTags = tagOptions.filter(
     (tag) =>
       !selectedTags.includes(tag) &&
       tag.toLowerCase().includes(tagSearch.toLowerCase())
@@ -348,7 +350,7 @@ export default function RecipeModify({
 
         {/* Recipe Type Selector */}
         <Tabs.Root
-          colorScheme="teal"
+          colorPalette="teal"
           value={recipeType}
           onValueChange={(e) => setRecipeType(e.value as "link" | "homemade")}
           variant="subtle"
@@ -683,7 +685,7 @@ export default function RecipeModify({
                 key={tag}
                 size="md"
                 variant="solid"
-                colorScheme="teal"
+                colorPalette="teal"
                 borderRadius="full"
                 py={1}
                 px={3}
@@ -765,7 +767,7 @@ export default function RecipeModify({
 
         <Flex justify="flex-end" mt={4}>
           <Button
-            colorScheme="teal"
+            colorPalette="teal"
             onClick={handleSave}
             loading={isSubmitting}
             loadingText={mode === "edit" ? "Saving" : "Adding"}

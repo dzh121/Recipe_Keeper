@@ -4,6 +4,8 @@ import cors from "cors"
 import dotenv from "dotenv"
 import { authenticateToken } from "./middleware/authMiddleware"
 import recipeRoutes from "./routes/recipes";
+import favoritesRoutes from "./routes/favorites";
+import tagsRoute from "./routes/tags";
 
 dotenv.config()
 
@@ -18,6 +20,10 @@ app.get("/api/protected", authenticateToken, (req, res) => {
 })
 
 app.use("/api/recipes", recipeRoutes);
+
+app.use("/api/favorites", favoritesRoutes);
+
+app.use("/api/tags", tagsRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)

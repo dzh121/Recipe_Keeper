@@ -31,6 +31,7 @@ import { toaster, Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import Head from "next/head";
+import { FiHome } from "react-icons/fi";
 type FormErrors = {
   email: string;
   password: string;
@@ -231,6 +232,9 @@ export default function StartPage() {
       }
     }
   };
+  const handleGuestLogin = () => {
+    router.replace("/");
+  };
 
   if (!authChecked || user) return null;
 
@@ -252,6 +256,7 @@ export default function StartPage() {
         <meta name="robots" content="noindex" />
       </Head>
       <Header />
+
       <Box
         flex={1}
         display="flex"
@@ -271,7 +276,7 @@ export default function StartPage() {
               <Stack direction="row" gap={4} w="full">
                 <Button
                   variant={isLogin ? "solid" : "outline"}
-                  colorScheme="teal"
+                  colorPalette="teal"
                   flex={1}
                   onClick={() => setIsLogin(true)}
                 >
@@ -279,7 +284,7 @@ export default function StartPage() {
                 </Button>
                 <Button
                   variant={!isLogin ? "solid" : "outline"}
-                  colorScheme="teal"
+                  colorPalette="teal"
                   flex={1}
                   onClick={() => setIsLogin(false)}
                 >
@@ -390,13 +395,21 @@ export default function StartPage() {
 
               <Button
                 w="full"
-                colorScheme="teal"
+                colorPalette="teal"
                 onClick={() =>
                   void (isLogin ? handleLogin() : handleRegister())
                 }
                 mt={2}
               >
                 {isLogin ? "Log In" : "Register"}
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="teal"
+                onClick={handleGuestLogin}
+              >
+                <FiHome />
+                Go Home
               </Button>
             </Stack>
           </CardBody>

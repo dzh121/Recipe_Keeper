@@ -332,8 +332,9 @@ export default function SettingsPage() {
   return (
     <Box
       minH="100vh"
-      bg={colorMode === "light" ? "gray.50" : "gray.900"}
-      color={colorMode === "light" ? "gray.800" : "white"}
+      bg="gray.50"
+      color="gray.800"
+      _dark={{ bg: "gray.900", color: "white" }}
       display="flex"
       flexDirection="column"
     >
@@ -426,7 +427,7 @@ export default function SettingsPage() {
                 </InputGroup>
                 <Button
                   minW={"150px"}
-                  colorScheme="teal"
+                  colorPalette="teal"
                   onClick={handleUpdateName}
                   loading={updatingUsername}
                   loadingText="Saving..."
@@ -456,7 +457,7 @@ export default function SettingsPage() {
                 />
                 <Button
                   minW={"150px"}
-                  colorScheme="teal"
+                  colorPalette="teal"
                   loadingText="Updating..."
                   size="md"
                   loading={updatingEmail}
@@ -506,7 +507,7 @@ export default function SettingsPage() {
                   />
                   <Button
                     minW={"150px"}
-                    colorScheme="teal"
+                    colorPalette="teal"
                     onClick={handleUpdatePassword}
                     loading={updatingPassword}
                     loadingText="Changing..."
@@ -522,7 +523,7 @@ export default function SettingsPage() {
 
             <Button
               w="full"
-              colorScheme="red"
+              colorPalette="red"
               variant="outline"
               size="lg"
               onClick={async () => {

@@ -33,7 +33,7 @@ import {
   LuChevronDown,
   LuGlobe,
 } from "react-icons/lu";
-import { MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit, MdOutlineFavorite } from "react-icons/md";
 import { FiX } from "react-icons/fi";
 import { LuX } from "react-icons/lu";
 import NextLink from "next/link";
@@ -62,9 +62,10 @@ interface RecipeListProps {
   showAddButton?: boolean;
   showPublicTag?: boolean;
   showPublisher?: boolean;
-  allTags?: string[];
+  showFavorite?: boolean;
   onAddClick?: () => void;
   onEditClick?: (id: string) => void;
+  onFavoriteClick?: (id: string) => void;
 }
 
 const recipeTypes = createListCollection({
@@ -89,9 +90,10 @@ export default function RecipeList({
   showAddButton = false,
   showPublicTag = false,
   showPublisher = false,
-  allTags = [],
+  showFavorite = false,
   onAddClick,
   onEditClick,
+  onFavoriteClick,
 }: RecipeListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string[]>(["all"]);
@@ -101,10 +103,30 @@ export default function RecipeList({
     {}
   );
   const [visibilityFilter, setVisibilityFilter] = useState<string[]>(["all"]);
+  const [tagOptions, setTagOptions] = useState<string[]>([]);
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/tags", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) throw new Error("Failed to fetch tags");
+        const data = await response.json();
+        setTagOptions(data.tags);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   // Fetch user profiles for recipes if showPublisher is true
   useEffect(() => {
@@ -189,7 +211,7 @@ export default function RecipeList({
     return true;
   });
 
-  const filteredTags = allTags.filter(
+  const filteredTags = tagOptions.filter(
     (tag) =>
       !selectedTags.includes(tag) &&
       tag.toLowerCase().includes(tagSearch.toLowerCase())
@@ -648,6 +670,25 @@ export default function RecipeList({
                         </IconButton>
                       </Tooltip>
                     )}
+                    {showFavorite && (
+                      <Tooltip
+                        content="Remove from Favorites"
+                        positioning={{ placement: "top" }}
+                      >
+                        <IconButton
+                          aria-label="Remove from favorites"
+                          variant="ghost"
+                          size="sm"
+                          colorPalette="red"
+                          onClick={(e) => {
+                            e.preventDefault(); // prevent navigation
+                            onFavoriteClick?.(recipe.id);
+                          }}
+                        >
+                          <MdOutlineFavorite />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </HStack>
                 </HStack>
 
@@ -687,7 +728,7 @@ export default function RecipeList({
                     {recipe.tags.map((tag) => (
                       <Tag.Root
                         key={tag}
-                        size="sm"
+                        size="md"
                         borderRadius="full"
                         variant="subtle"
                         onClick={(e) => {
@@ -696,7 +737,7 @@ export default function RecipeList({
                         }}
                         cursor="pointer"
                       >
-                        <TagLabel>{tag}</TagLabel>
+                        <Tag.Label>{tag}</Tag.Label>
                       </Tag.Root>
                     ))}
                   </Flex>
