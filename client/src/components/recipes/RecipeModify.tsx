@@ -153,6 +153,8 @@ export default function RecipeModify({
   };
 
   const handleSave = async () => {
+    let didFail = false;
+    let recipeId = null;
     if (!validateForm()) return;
     setIsSubmitting(true);
     try {
@@ -192,8 +194,12 @@ export default function RecipeModify({
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Save failed");
-
+      if (!response.ok) {
+        didFail = true;
+        throw new Error("Save failed");
+      }
+      const data = await response.json();
+      recipeId = data.id || initialData.id;
       toaster.create({
         title: `Recipe ${mode === "edit" ? "Saved" : "Added"}`,
         description: `Your recipe was successfully ${
@@ -228,7 +234,17 @@ export default function RecipeModify({
         duration: 4000,
         meta: { closable: true },
       });
+      didFail = true;
     } finally {
+      if (!didFail) {
+        if (mode === "add") {
+          // Redirect to the new recipe page
+          router.push(`/recipes/${recipeId}`);
+        } else {
+          // Redirect to the edited recipe page
+          router.replace(`/recipes/${recipeId}`);
+        }
+      }
       setIsSubmitting(false);
     }
   };
@@ -285,43 +301,44 @@ export default function RecipeModify({
             <Heading fontSize="2xl">
               {mode === "edit" ? "Edit" : "Add"} Recipe
             </Heading>
-
             {/* <Button colorPalette="red" variant="subtle" onClick={handleRemove}>
               Delete Recipe
             </Button> */}
-            <Dialog.Root role="alertdialog">
-              <Dialog.Trigger asChild>
-                <Button colorPalette={"red"} variant="subtle" size="sm">
-                  <Icon as={FiX} mr={2} color="red.500" /> Delete Recipe
-                </Button>
-              </Dialog.Trigger>
-              <Portal>
-                <Dialog.Backdrop />
-                <Dialog.Positioner>
-                  <Dialog.Content>
-                    <Dialog.Header>
-                      <Dialog.Title>Delete Recipe</Dialog.Title>
-                    </Dialog.Header>
-                    <Dialog.Body>
-                      <Text fontSize="md" mb={2}>
-                        Are you sure you want to delete this recipe?
-                      </Text>
-                    </Dialog.Body>
-                    <Dialog.Footer>
-                      <Dialog.ActionTrigger asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </Dialog.ActionTrigger>
-                      <Button colorPalette="red" onClick={handleRemove}>
-                        Delete
-                      </Button>
-                    </Dialog.Footer>
-                    <Dialog.CloseTrigger asChild>
-                      <CloseButton size="md" />
-                    </Dialog.CloseTrigger>
-                  </Dialog.Content>
-                </Dialog.Positioner>
-              </Portal>
-            </Dialog.Root>
+            {mode === "edit" && (
+              <Dialog.Root role="alertdialog">
+                <Dialog.Trigger asChild>
+                  <Button colorPalette={"red"} variant="subtle" size="sm">
+                    <Icon as={FiX} mr={2} color="red.500" /> Delete Recipe
+                  </Button>
+                </Dialog.Trigger>
+                <Portal>
+                  <Dialog.Backdrop />
+                  <Dialog.Positioner>
+                    <Dialog.Content>
+                      <Dialog.Header>
+                        <Dialog.Title>Delete Recipe</Dialog.Title>
+                      </Dialog.Header>
+                      <Dialog.Body>
+                        <Text fontSize="md" mb={2}>
+                          Are you sure you want to delete this recipe?
+                        </Text>
+                      </Dialog.Body>
+                      <Dialog.Footer>
+                        <Dialog.ActionTrigger asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </Dialog.ActionTrigger>
+                        <Button colorPalette="red" onClick={handleRemove}>
+                          Delete
+                        </Button>
+                      </Dialog.Footer>
+                      <Dialog.CloseTrigger asChild>
+                        <CloseButton size="md" />
+                      </Dialog.CloseTrigger>
+                    </Dialog.Content>
+                  </Dialog.Positioner>
+                </Portal>
+              </Dialog.Root>
+            )}
           </Flex>
 
           <Text color="gray.500">
@@ -751,14 +768,14 @@ export default function RecipeModify({
             colorScheme="teal"
             onClick={handleSave}
             loading={isSubmitting}
-            loadingText="Saving"
+            loadingText={mode === "edit" ? "Saving" : "Adding"}
             size="lg"
             px={8}
             borderRadius="md"
             _hover={{ transform: "translateY(-1px)", boxShadow: "sm" }}
           >
             <FiSave />
-            Save Recipe
+            {mode === "edit" ? "Save" : "Add"}
           </Button>
         </Flex>
       </VStack>
