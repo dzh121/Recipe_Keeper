@@ -52,7 +52,7 @@ export type Recipe = {
 
 type UserProfile = {
   displayName: string;
-  profileUrl?: string;
+  photoURL?: string;
 };
 
 interface RecipeListProps {
@@ -148,7 +148,7 @@ export default function RecipeList({
               const userData = authorSnapshot.data();
               profiles[uid] = {
                 displayName: userData.displayName || "Unknown User",
-                profileUrl: userData.profileUrl || "",
+                photoURL: userData.photoURL || "",
               };
             } else {
               console.warn(`User profile not found for UID: ${uid}`);
@@ -164,7 +164,9 @@ export default function RecipeList({
       fetchUserProfiles();
     }
   }, [recipes, showPublisher]);
-
+  useEffect(() => {
+    console.log("userProfiles", userProfiles);
+  }, [userProfiles]);
   const handleTagSelect = (tag: string) => {
     if (!selectedTags.includes(tag)) {
       setSelectedTags([...selectedTags, tag]);
@@ -711,7 +713,7 @@ export default function RecipeList({
                           name={userProfiles[recipe.ownerId]?.displayName}
                         />
                         <Avatar.Image
-                          src={userProfiles[recipe.ownerId]?.profileUrl || ""}
+                          src={userProfiles[recipe.ownerId]?.photoURL || ""}
                           alt="User Avatar"
                           borderRadius="full"
                         />

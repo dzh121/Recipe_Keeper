@@ -16,9 +16,12 @@ import {
   StackSeparator,
   Flex,
   Avatar,
+  Progress,
+  IconButton,
+  Slider,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -33,10 +36,20 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LuChevronLeft, LuCheck } from "react-icons/lu";
-import { FiMail, FiLock, FiUser, FiLogOut } from "react-icons/fi";
+import {
+  FiMail,
+  FiLock,
+  FiUser,
+  FiLogOut,
+  FiCamera,
+  FiTrash2,
+} from "react-icons/fi";
 import type { UserSettings } from "@/lib/types/user";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import Head from "next/head";
+import { getCroppedImg } from "@/utils/cropImage";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -53,11 +66,22 @@ export default function SettingsPage() {
   const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
   const [showEmailSuccess, setShowEmailSuccess] = useState(false);
   const [showNameSuccess, setShowNameSuccess] = useState(false);
+  const [localPhotoURL, setLocalPhotoURL] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
   const { colorMode } = useColorMode();
 
   const bgColor = colorMode === "light" ? "white" : "gray.800";
   const borderColor = colorMode === "light" ? "gray.200" : "gray.700";
 
+  useEffect(() => {
+    console.log("Local photo URL:", localPhotoURL);
+  }, [localPhotoURL]);
   // Redirect or fetch user profile from Firestore
   useEffect(() => {
     if (authChecked && !user) {
@@ -325,10 +349,129 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRemovePhoto = async () => {
+    if (!user) return;
+
+    setIsUploading(true);
+
+    const token = await user.getIdToken(true);
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/profile/remove-photo?uid=${user.uid}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        setLocalPhotoURL(null);
+        setProfile((prev) => (prev ? { ...prev, photoURL: null } : null));
+      } else {
+        const data = await res.json();
+        console.error(data.error);
+        toaster.create({
+          title: "Remove failed",
+          description: "There was an error removing your photo.",
+          type: "error",
+          duration: 3000,
+          meta: { closable: true },
+          position: "top",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropModalOpen(true);
+  };
+
+  const handleCropDone = async () => {
+    if (!selectedImage || !croppedAreaPixels || !user) return;
+
+    const croppedBlob = await getCroppedImg(
+      URL.createObjectURL(selectedImage),
+      croppedAreaPixels
+    );
+
+    const formData = new FormData();
+    const croppedFile = new File([croppedBlob], "cropped.jpg", {
+      type: "image/jpeg",
+    });
+
+    formData.append("file", croppedFile);
+    formData.append("uid", user.uid);
+
+    setCropModalOpen(false);
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const token = await user.getIdToken(true);
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:5000/api/profile/upload-photo", true);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = (event.loaded / event.total) * 100;
+          setUploadProgress(percent);
+        }
+      };
+
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          const newPhotoURL = `${data.photoURL}?v=${Date.now()}`;
+          setLocalPhotoURL(newPhotoURL);
+          setProfile((prev) =>
+            prev ? { ...prev, photoURL: newPhotoURL } : null
+          );
+        } else {
+          const errorData = JSON.parse(xhr.responseText);
+          console.error("Error:", errorData.error);
+        }
+        setIsUploading(false);
+        setSelectedImage(null);
+      };
+
+      xhr.onerror = () => {
+        console.error("Upload error");
+        setIsUploading(false);
+        setSelectedImage(null);
+      };
+
+      xhr.send(formData);
+    } catch (err) {
+      console.error(err);
+      setIsUploading(false);
+      setSelectedImage(null);
+    }
+  };
+
   const handleGoBack = () => {
     router.back();
   };
-
+  const marks = [
+    { value: 1, label: "1X" },
+    { value: 2, label: "2X" },
+    { value: 3, label: "3X" },
+  ];
   return (
     <Box
       minH="100vh"
@@ -377,16 +520,98 @@ export default function SettingsPage() {
             p={6}
             borderRadius="md"
           >
-            <Avatar.Root size="2xl" colorPalette="teal" variant={"solid"}>
-              <Avatar.Fallback
-                name={profile?.displayName || user.email || "U"}
+            <Box position="relative" pt={2} pb={6}>
+              <Avatar.Root
+                colorPalette="teal"
+                variant="solid"
+                style={{ width: "150px", height: "150px" }}
+              >
+                <Avatar.Fallback
+                  name={profile?.displayName || user.email || "U"}
+                />
+                <Avatar.Image
+                  src={
+                    localPhotoURL || profile?.photoURL || user.photoURL || ""
+                  }
+                  alt="User Avatar"
+                  borderRadius="full"
+                />
+              </Avatar.Root>
+
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                display="none"
+                id="profilePicUpload"
               />
-              <Avatar.Image
-                src={profile?.photoURL || user.photoURL || ""}
-                alt="User Avatar"
-                borderRadius="full"
-              />
-            </Avatar.Root>
+
+              {/* Controls positioned completely below the avatar */}
+              <Flex
+                position="absolute"
+                bottom="-8px"
+                left="0"
+                right="0"
+                width="100%"
+                justifyContent="center"
+                gap={3}
+              >
+                <label htmlFor="profilePicUpload">
+                  <IconButton
+                    as="span"
+                    aria-label="Upload photo"
+                    colorPalette="teal"
+                    variant="solid"
+                    size="sm"
+                    rounded="full"
+                    boxShadow="md"
+                    _hover={{ transform: "scale(1.05)" }}
+                    transition="all 0.2s"
+                  >
+                    <FiCamera />
+                  </IconButton>
+                </label>
+
+                {(localPhotoURL || profile?.photoURL || user.photoURL) && (
+                  <IconButton
+                    aria-label="Remove photo"
+                    colorPalette="red"
+                    variant="solid"
+                    size="sm"
+                    rounded="full"
+                    boxShadow="md"
+                    onClick={handleRemovePhoto}
+                    _hover={{ transform: "scale(1.05)" }}
+                    transition="all 0.2s"
+                  >
+                    <FiTrash2 />
+                  </IconButton>
+                )}
+              </Flex>
+
+              {/* Upload progress indicator */}
+              {isUploading && (
+                <Box
+                  position="absolute"
+                  bottom="-20px"
+                  left="0"
+                  right="0"
+                  width="100%"
+                >
+                  <Progress.Root
+                    size="xs"
+                    colorPalette="teal"
+                    value={uploadProgress}
+                    borderRadius="full"
+                    w="full"
+                  >
+                    <Progress.Track>
+                      <Progress.Range />
+                    </Progress.Track>
+                  </Progress.Root>
+                </Box>
+              )}
+            </Box>
 
             <Box flex={1}>
               <Text fontWeight="bold" fontSize="lg">
@@ -546,6 +771,109 @@ export default function SettingsPage() {
       </Container>
 
       <Footer />
+      {cropModalOpen && selectedImage && (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          w="100vw"
+          h="100vh"
+          bg="blackAlpha.800"
+          zIndex="9999"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          p={4}
+        >
+          <Box
+            bg={bgColor}
+            borderRadius="lg"
+            maxW="md"
+            w="full"
+            maxH="90vh"
+            overflow="hidden"
+            boxShadow="xl"
+            borderColor={borderColor}
+            borderWidth="1px"
+            display="flex"
+            flexDirection="column"
+          >
+            {/* Header */}
+            <Box p={4} borderBottomWidth="1px" borderColor={borderColor}>
+              <Heading size="sm" textAlign="center">
+                Crop Profile Picture
+              </Heading>
+            </Box>
+
+            {/* Cropper container with fixed height */}
+            <Box position="relative" h="300px" flexShrink={0}>
+              {selectedImage && (
+                <Cropper
+                  image={URL.createObjectURL(selectedImage)}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  onCropChange={setCrop}
+                  onCropComplete={(_, croppedPixels) =>
+                    setCroppedAreaPixels(croppedPixels)
+                  }
+                  onZoomChange={setZoom}
+                  cropShape="round"
+                  showGrid={false}
+                />
+              )}
+            </Box>
+
+            {/* Controls */}
+            <VStack
+              p={4}
+              gap={4}
+              borderTopWidth="1px"
+              borderColor={borderColor}
+            >
+              <Box w="full">
+                <Text fontSize="sm" mb={2}>
+                  Zoom
+                </Text>
+
+                <Slider.Root
+                  value={[zoom]}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  onValueChange={(e) => setZoom(e.value[0])}
+                >
+                  <Slider.Control>
+                    <Slider.Track>
+                      <Slider.Range />
+                    </Slider.Track>
+                    <Slider.Thumbs />
+                    <Slider.Marks mt={2} marks={marks} />
+                  </Slider.Control>
+                </Slider.Root>
+              </Box>
+
+              {/* Buttons */}
+              <HStack w="full" gap={3}>
+                <Button
+                  variant="outline"
+                  colorPalette="red"
+                  flex={1}
+                  onClick={() => {
+                    setCropModalOpen(false);
+                    setSelectedImage(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button colorPalette="teal" flex={1} onClick={handleCropDone}>
+                  Save
+                </Button>
+              </HStack>
+            </VStack>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

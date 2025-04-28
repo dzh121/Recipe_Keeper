@@ -6,6 +6,7 @@ import { authenticateToken } from "./middleware/authMiddleware"
 import recipeRoutes from "./routes/recipes";
 import favoritesRoutes from "./routes/favorites";
 import tagsRoute from "./routes/tags";
+import profileRoutes from "./routes/profile";
 
 dotenv.config()
 
@@ -24,6 +25,8 @@ app.use("/api/recipes", recipeRoutes);
 app.use("/api/favorites", favoritesRoutes);
 
 app.use("/api/tags", tagsRoute);
+
+app.use("/api/profile", profileRoutes); 
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
