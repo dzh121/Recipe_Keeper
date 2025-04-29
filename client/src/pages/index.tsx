@@ -39,7 +39,7 @@ const features = [
     description: "Access your favorite recipes in one convenient place.",
     icon: MdOutlineFavoriteBorder,
     href: "/recipes/favorites",
-    requiresAuth: false,
+    requiresAuth: true,
   },
   {
     title: "Explore Public Recipes",
