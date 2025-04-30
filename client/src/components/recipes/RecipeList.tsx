@@ -129,7 +129,9 @@ export default function RecipeList({
           throw new Error("Failed to fetch tags");
         }
         const data = await response.json();
-        setTagOptions(data.tags);
+        setTagOptions(
+          data.tags.sort((a: string, b: string) => a.localeCompare(b))
+        );
       } catch (error) {
         console.error("Error fetching tags:", error);
       }

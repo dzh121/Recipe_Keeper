@@ -57,7 +57,7 @@ export default function RecipeModify({
   const [timeToFinish, setTimeToFinish] = useState(
     initialData.timeToFinish || ""
   );
-  const [rating, setRating] = useState(initialData.rating || 1);
+  const [rating, setRating] = useState(initialData.rating || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [ingredients, setIngredients] = useState(initialData.ingredients || "");
@@ -97,7 +97,9 @@ export default function RecipeModify({
         );
         if (!response.ok) throw new Error("Failed to fetch tags");
         const data = await response.json();
-        setTagOptions(data.tags);
+        setTagOptions(
+          data.tags.sort((a: string, b: string) => a.localeCompare(b))
+        );
       } catch (error) {
         console.error("Error fetching tags:", error);
       }

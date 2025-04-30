@@ -10,6 +10,7 @@ import {
   Input,
   VStack,
   HStack,
+  Stack,
   Flex,
   Spinner,
   IconButton,
@@ -268,7 +269,12 @@ export default function TagsManagementPage() {
           shadow="md"
           mb={8}
         >
-          <Flex direction={{ base: "column", md: "row" }} gap={4} mb={0}>
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            gap={4}
+            mb={0}
+            width="100%"
+          >
             <Input
               placeholder="Enter new tag (e.g., vegan, dessert, spicy)"
               borderWidth="1px"
@@ -276,7 +282,8 @@ export default function TagsManagementPage() {
               value={newTagName}
               size="lg"
               borderRadius="md"
-              flex="1"
+              w="100%" // full width in both column and row
+              minH="48px"
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
@@ -287,6 +294,8 @@ export default function TagsManagementPage() {
             <Button
               colorPalette="teal"
               size="lg"
+              w={{ base: "100%", md: "auto" }} // full width on mobile, auto on desktop
+              minH="48px"
               onClick={handleAddTag}
               loading={isAdding}
               loadingText="Adding"
@@ -296,7 +305,7 @@ export default function TagsManagementPage() {
               <LuPlus />
               Add Tag
             </Button>
-          </Flex>
+          </Stack>
         </Box>
 
         <Box
