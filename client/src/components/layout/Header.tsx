@@ -13,6 +13,8 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import Logo from "@/components/ui/Logo";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
 export default function Header() {
   const hasMounted = useHasMounted();
@@ -23,6 +25,14 @@ export default function Header() {
   //check if the user is authenticated
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
+
+  const saveColorModeToFirestore = async (isDark: boolean) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const settingsRef = doc(db, "users", user.uid, "private", "settings");
+    await setDoc(settingsRef, { darkMode: isDark }, { merge: true });
+  };
   return (
     <Box
       as="header"

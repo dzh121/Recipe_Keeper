@@ -32,7 +32,7 @@ export default function RecipesManage() {
       try {
         const token = await user?.getIdToken();
         const response = await fetch(
-          "http://localhost:5000/api/recipes?type=private",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/recipes?type=private`,
           {
             method: "GET",
             headers: {

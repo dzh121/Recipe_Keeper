@@ -1,48 +1,81 @@
-"use client"
+"use client";
 
-import type { IconButtonProps, SpanProps } from "@chakra-ui/react"
-import { ClientOnly, IconButton, Skeleton, Span } from "@chakra-ui/react"
-import { ThemeProvider, useTheme } from "next-themes"
-import type { ThemeProviderProps } from "next-themes"
-import * as React from "react"
-import { LuMoon, LuSun } from "react-icons/lu"
+import type { IconButtonProps, SpanProps } from "@chakra-ui/react";
+import { ClientOnly, IconButton, Skeleton, Span } from "@chakra-ui/react";
+import { ThemeProvider, useTheme } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
+import * as React from "react";
+import { LuMoon, LuSun } from "react-icons/lu";
+import { auth, db } from "@/lib/firebase";
 
 export interface ColorModeProviderProps extends ThemeProviderProps {}
 
 export function ColorModeProvider(props: ColorModeProviderProps) {
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange {...props} />
-  )
+  );
 }
 
-export type ColorMode = "light" | "dark"
+export type ColorMode = "light" | "dark";
 
 export interface UseColorModeReturn {
-  colorMode: ColorMode
-  setColorMode: (colorMode: ColorMode) => void
-  toggleColorMode: () => void
+  colorMode: ColorMode;
+  setColorMode: (colorMode: ColorMode) => void;
+  toggleColorMode: () => void;
 }
 
 export function useColorMode(): UseColorModeReturn {
-  const { resolvedTheme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const saveColorModeToServer = async (mode: "light" | "dark") => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const token = await user.getIdToken();
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/settings/color-mode`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ darkMode: mode === "dark" }),
+        }
+      );
+    } catch (error) {
+      //get exact error message
+      const errorMessage = (error as Error).message;
+      console.error("Error saving color mode:", errorMessage);
+      console.error("Failed to save color mode:", error);
+    }
+  };
+
   const toggleColorMode = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark")
-  }
+    const nextMode = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(nextMode);
+    saveColorModeToServer(nextMode);
+  };
+
   return {
     colorMode: resolvedTheme as ColorMode,
-    setColorMode: setTheme,
+    setColorMode: (mode: ColorMode) => {
+      setTheme(mode);
+      saveColorModeToServer(mode);
+    },
     toggleColorMode,
-  }
+  };
 }
 
 export function useColorModeValue<T>(light: T, dark: T) {
-  const { colorMode } = useColorMode()
-  return colorMode === "dark" ? dark : light
+  const { colorMode } = useColorMode();
+  return colorMode === "dark" ? dark : light;
 }
 
 export function ColorModeIcon() {
-  const { colorMode } = useColorMode()
-  return colorMode === "dark" ? <LuMoon /> : <LuSun />
+  const { colorMode } = useColorMode();
+  return colorMode === "dark" ? <LuMoon /> : <LuSun />;
 }
 
 interface ColorModeButtonProps extends Omit<IconButtonProps, "aria-label"> {}
@@ -51,7 +84,7 @@ export const ColorModeButton = React.forwardRef<
   HTMLButtonElement,
   ColorModeButtonProps
 >(function ColorModeButton(props, ref) {
-  const { toggleColorMode } = useColorMode()
+  const { toggleColorMode } = useColorMode();
   return (
     <ClientOnly fallback={<Skeleton boxSize="8" />}>
       <IconButton
@@ -71,8 +104,8 @@ export const ColorModeButton = React.forwardRef<
         <ColorModeIcon />
       </IconButton>
     </ClientOnly>
-  )
-})
+  );
+});
 
 export const LightMode = React.forwardRef<HTMLSpanElement, SpanProps>(
   function LightMode(props, ref) {
@@ -86,9 +119,9 @@ export const LightMode = React.forwardRef<HTMLSpanElement, SpanProps>(
         ref={ref}
         {...props}
       />
-    )
-  },
-)
+    );
+  }
+);
 
 export const DarkMode = React.forwardRef<HTMLSpanElement, SpanProps>(
   function DarkMode(props, ref) {
@@ -102,6 +135,6 @@ export const DarkMode = React.forwardRef<HTMLSpanElement, SpanProps>(
         ref={ref}
         {...props}
       />
-    )
-  },
-)
+    );
+  }
+);

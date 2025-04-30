@@ -7,6 +7,7 @@ import recipeRoutes from "./routes/recipes";
 import favoritesRoutes from "./routes/favorites";
 import tagsRoute from "./routes/tags";
 import profileRoutes from "./routes/profile";
+import settingsRoutes from "./routes/settings";
 
 dotenv.config()
 
@@ -27,6 +28,8 @@ app.use("/api/favorites", favoritesRoutes);
 app.use("/api/tags", tagsRoute);
 
 app.use("/api/profile", profileRoutes); 
+
+app.use("/api/settings", settingsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)

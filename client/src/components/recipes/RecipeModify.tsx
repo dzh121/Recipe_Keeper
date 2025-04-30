@@ -86,12 +86,15 @@ export default function RecipeModify({
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/tags", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (!response.ok) throw new Error("Failed to fetch tags");
         const data = await response.json();
         setTagOptions(data.tags);
@@ -247,8 +250,8 @@ export default function RecipeModify({
       };
       const url =
         mode === "edit"
-          ? `http://localhost:5000/api/recipes/${initialData.id}`
-          : "http://localhost:5000/api/recipes";
+          ? `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${initialData.id}`
+          : `${process.env.NEXT_PUBLIC_API_URL}/api/recipes`;
       const method = mode === "edit" ? "PATCH" : "POST";
 
       if (
@@ -257,7 +260,7 @@ export default function RecipeModify({
         initialData.imageURL &&
         !photoPreviewUrl
       ) {
-        const deletePhotoUrl = `http://localhost:5000/api/recipes/delete-photo/${initialData.id}`;
+        const deletePhotoUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/delete-photo/${initialData.id}`;
         await fetch(deletePhotoUrl, {
           method: "DELETE",
           headers: {
@@ -286,13 +289,16 @@ export default function RecipeModify({
         formData.append("file", photoFile);
         formData.append("recipeId", recipeId);
 
-        await fetch("http://localhost:5000/api/recipes/upload-photo", {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${authToken}`,
-          },
-          body: formData,
-        });
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/upload-photo`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${authToken}`,
+            },
+            body: formData,
+          }
+        );
       }
 
       toaster.create({
@@ -349,7 +355,7 @@ export default function RecipeModify({
   const handleRemove = async () => {
     if (mode !== "edit") return;
     const authToken = await auth.currentUser?.getIdToken();
-    const url = `http://localhost:5000/api/recipes/${initialData.id}`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${initialData.id}`;
     const method = "DELETE";
 
     try {

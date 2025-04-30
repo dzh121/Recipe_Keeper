@@ -142,7 +142,7 @@ export default function RecipePage() {
         }
 
         const response = await fetch(
-          `http://localhost:5000/api/recipes/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${id}`,
           {
             method: "GET",
             headers: {
@@ -166,7 +166,7 @@ export default function RecipePage() {
         setRecipe(data.recipe);
         if (id) {
           const imageRes = await fetch(
-            `http://localhost:5000/api/recipes/get-photo-url/${id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/get-photo-url/${id}`,
             {
               method: "GET",
               headers: {
@@ -196,7 +196,7 @@ export default function RecipePage() {
         }
         if (user) {
           const response = await fetch(
-            `http://localhost:5000/api/favorites/${id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/${id}`,
             {
               method: "GET",
               headers: {
@@ -243,7 +243,7 @@ export default function RecipePage() {
     }
     try {
       const response = await fetch(
-        `http://localhost:5000/api/favorites/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/${id}`,
         {
           method: isFavorite ? "DELETE" : "POST",
           headers: {

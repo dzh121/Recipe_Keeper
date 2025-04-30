@@ -56,13 +56,16 @@ export default function TagsManagementPage() {
 
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:5000/api/tags", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
@@ -113,7 +116,7 @@ export default function TagsManagementPage() {
 
     try {
       setIsAdding(true);
-      const response = await fetch(`http://localhost:5000/api/tags`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tags`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +170,7 @@ export default function TagsManagementPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/tags/${tagName}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tags/${tagName}`,
         {
           method: "DELETE",
           headers: {

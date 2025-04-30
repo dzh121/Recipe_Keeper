@@ -169,6 +169,7 @@ export default function StartPage() {
         const privateUserData = {
           email: form.email,
           updatedAt: serverTimestamp(),
+          darkMode: false,
         };
         // set user data in firestore one in public and one in private
         const publicRef = doc(
