@@ -112,6 +112,7 @@ export default function RecipeList({
   useEffect(() => {
     const fetchTags = async () => {
       try {
+        console.log("Del at: ", `${process.env.NEXT_PUBLIC_API_URL}/api/tags`);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
           {
@@ -121,7 +122,12 @@ export default function RecipeList({
             },
           }
         );
-        if (!response.ok) throw new Error("Failed to fetch tags");
+        if (!response.ok) {
+          //get exact error message
+          const errorMessage = await response.text();
+          console.error("Error fetching tags:", errorMessage);
+          throw new Error("Failed to fetch tags");
+        }
         const data = await response.json();
         setTagOptions(data.tags);
       } catch (error) {

@@ -7,14 +7,17 @@ admin.initializeApp({
 
 // Set custom claims
 async function setAdminRole(uid: string) {
-  try {
-    await admin.auth().setCustomUserClaims(uid, { role: "admin" });
-    console.log(`Custom claim 'admin' added to user ${uid}`);
-  } catch (err) {
-    console.error("Error setting admin role:", err);
-  }
+  admin
+  .auth()
+  .setCustomUserClaims(uid, { role: "admin", admin: true })
+  .then(() => {
+    console.log(`✅ Admin role granted to user ${uid}`);
+  })
+  .catch((error) => {
+    console.error("❌ Error setting admin role:", error);
+  });
 }
 
-const userUid = "USER_UID_HERE"; // Replace with the actual UID of the user you want to set as admin
+const userUid = "u9S3hKXJqbO2TXbfCZLZdVUEITP2"; // Replace with the actual UID of the user you want to set as admin
 
 setAdminRole(userUid);

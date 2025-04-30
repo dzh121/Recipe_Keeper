@@ -1,24 +1,21 @@
 "use client";
 
-import {
-  Box,
-  Flex,
-  Heading,
-  Spacer,
-  IconButton,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Flex, Heading, Spacer, Avatar, Button } from "@chakra-ui/react";
 import { ColorModeButton } from "@/components/ui/color-mode";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import Logo from "@/components/ui/Logo";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import type { UserSettings } from "@/lib/types/user";
+import { db } from "@/lib/firebase";
 
 export default function Header() {
   const hasMounted = useHasMounted();
   const Router = useRouter();
+  const [profile, setProfile] = useState<UserSettings | null>(null);
+
   const handleHomeClick = () => {
     Router.push("/");
   };
@@ -26,13 +23,20 @@ export default function Header() {
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
 
-  const saveColorModeToFirestore = async (isDark: boolean) => {
-    const user = auth.currentUser;
-    if (!user) return;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user && authChecked) {
+        const profileRef = doc(db, "users", user.uid, "public", "profile");
+        const snap = await getDoc(profileRef);
+        if (snap.exists()) {
+          setProfile(snap.data() as UserSettings);
+        }
+      }
+    };
 
-    const settingsRef = doc(db, "users", user.uid, "private", "settings");
-    await setDoc(settingsRef, { darkMode: isDark }, { merge: true });
-  };
+    fetchProfile();
+  }, [authChecked, user]);
+
   return (
     <Box
       as="header"
@@ -53,7 +57,20 @@ export default function Header() {
         <Spacer />
 
         {hasMounted && <ColorModeButton mr={3} />}
-        {authChecked && !isAuthenticated && (
+        {authChecked && isAuthenticated ? (
+          <Box ml={2} cursor="pointer" onClick={() => Router.push("/settings")}>
+            <Avatar.Root colorPalette="teal" variant="solid" size="sm">
+              <Avatar.Fallback
+                name={profile?.displayName || user.email || "U"}
+              />
+              <Avatar.Image
+                src={profile?.photoURL || user.photoURL || ""}
+                alt="User Avatar"
+                borderRadius="full"
+              />
+            </Avatar.Root>
+          </Box>
+        ) : (
           <Button
             colorPalette="teal"
             variant="solid"

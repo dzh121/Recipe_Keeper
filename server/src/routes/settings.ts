@@ -48,5 +48,18 @@ router.get("/color-mode", authenticateToken, async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch color mode" });
   }
 });
+router.get("/debug/user", authenticateToken, async (req, res) => {
+  const user = req.user;
+  console.log("Decoded user:", user); // Print to server console
+
+  if (!user) {
+    return res.status(401).json({ error: "No user data found" });
+  }
+
+  return res.status(200).json({
+    message: "User debug info",
+    user,
+  });
+});
 
 export default router;

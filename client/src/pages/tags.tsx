@@ -116,14 +116,17 @@ export default function TagsManagementPage() {
 
     try {
       setIsAdding(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tags`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ tag: newTagName.trim() }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ tag: newTagName.trim() }),
+        }
+      );
 
       if (!response.ok) {
         //get the error message from the response

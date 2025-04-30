@@ -55,7 +55,6 @@ const features = [
     icon: LuPlus,
     href: "/recipes/add",
     requiresAuth: true,
-    adminOnly: true,
   },
 
   {
@@ -65,6 +64,7 @@ const features = [
     icon: LuTag,
     href: "/tags",
     requiresAuth: true,
+    adminOnly: true,
   },
   {
     title: "Settings",
@@ -157,7 +157,11 @@ export default function Home() {
           </Text>
         </VStack>
 
-        <SimpleGrid mt={8} columns={{ base: 1, sm: 2, md: 3 }} gap={6}>
+        <SimpleGrid
+          mt={6}
+          columns={{ base: 2, sm: 2, md: 3 }}
+          gap={{ base: 4, md: 6 }}
+        >
           {features.map(
             ({ title, description, icon, href, requiresAuth, adminOnly }) => {
               const shouldHide = adminOnly && authChecked && !isAdmin;
@@ -167,40 +171,45 @@ export default function Home() {
 
               const CardContent = (
                 <Card.Root
-                  p={5}
-                  borderRadius="xl"
+                  p={{ base: 3, md: 5 }}
+                  borderRadius="lg"
                   bg="white"
                   _dark={{ bg: "gray.800" }}
                   _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
                   transition="all 0.2s"
                   cursor="pointer"
                   opacity={needsLogin ? 0.85 : 1}
+                  height="100%"
                 >
                   <CardBody
                     display="flex"
+                    flexDir="column"
                     alignItems="center"
-                    flexDirection="column"
-                    height="100%"
-                    gap={4}
+                    gap={3}
+                    height="full"
                   >
-                    <HStack align="center" gap={4}>
-                      <Icon as={icon} boxSize={6} />
-                      <Text fontWeight="medium" fontSize="lg">
+                    <HStack align="center" gap={2}>
+                      <Icon as={icon} boxSize={5} />
+                      <Text
+                        fontWeight="medium"
+                        fontSize="md"
+                        textAlign="center"
+                      >
                         {title}
                       </Text>
                     </HStack>
-                    <Text fontSize="sm" opacity={0.75} mt={2}>
+
+                    <Text fontSize="xs" opacity={0.75} textAlign="center">
                       {description}
                     </Text>
 
-                    {/* Always render something here so height is same */}
                     {needsLogin ? (
-                      <Text fontSize="xs" mt={2} color="red.500">
-                        Login required to use this feature
+                      <Text fontSize="xs" color="red.500">
+                        Login required
                       </Text>
                     ) : (
-                      <Text fontSize="xs" mt={2} visibility="hidden">
-                        Login required
+                      <Text fontSize="xs" visibility="hidden">
+                        Placeholder
                       </Text>
                     )}
                   </CardBody>

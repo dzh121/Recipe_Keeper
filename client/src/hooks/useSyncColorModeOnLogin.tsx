@@ -26,14 +26,11 @@ export function useSyncColorModeOnLogin() {
         if (!res.ok) throw new Error("Failed to fetch color mode");
 
         const data = await res.json();
-        console.log("✅ Synced color mode from server:", data.darkMode);
 
         if (typeof data.darkMode === "boolean") {
-          console.log("🎨 Setting theme to:", data.darkMode ? "dark" : "light");
           setTheme(data.darkMode ? "dark" : "light");
         }
       } catch (err) {
-        console.error("❌ Error syncing color mode:", err);
       }
     });
 
