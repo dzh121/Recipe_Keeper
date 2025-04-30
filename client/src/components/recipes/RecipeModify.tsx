@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FiLink,
   FiSave,
@@ -10,6 +10,9 @@ import {
   FiTag,
   FiHome,
   FiGlobe,
+  FiImage,
+  FiUpload,
+  FiTrash2,
 } from "react-icons/fi";
 import {
   Box,
@@ -34,7 +37,6 @@ import { auth } from "@/lib/firebase";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import { RecipeFull } from "@/lib/types/recipe";
-import { useEffect } from "react";
 
 export default function RecipeModify({
   mode = "add",
@@ -66,7 +68,20 @@ export default function RecipeModify({
   const [prepTime, setPrepTime] = useState(initialData.prepTime || "");
   const [cookTime, setCookTime] = useState(initialData.cookTime || "");
   const [tagOptions, setTagOptions] = useState<string[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(
+    initialData.imageURL || null
+  );
+  const [isDragging, setIsDragging] = useState(false);
   const hasMounted = useHasMounted();
+
+  // Colors for theming
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const dropzoneBg = useColorModeValue("gray.50", "gray.700");
+  const hoverBorderColor = "teal.400";
+  const textColor = useColorModeValue("gray.600", "gray.300");
+  const placeholderColor = useColorModeValue("gray.400", "gray.500");
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -102,6 +117,7 @@ export default function RecipeModify({
       setServings(initialData.servings?.toString() || "");
       setPrepTime(initialData.prepTime?.toString() || "");
       setCookTime(initialData.cookTime?.toString() || "");
+      setPhotoPreviewUrl(initialData.imageURL || null);
 
       if (
         initialData.recipeType === "homemade" ||
@@ -112,8 +128,56 @@ export default function RecipeModify({
     }
   }, [initialData?.id, mode]);
 
-  const borderColor = useColorModeValue("gray.200", "gray.600");
-  const cardBg = useColorModeValue("white", "gray.800");
+  const handleDragEnter = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        setPhotoFile(file);
+        setPhotoPreviewUrl(URL.createObjectURL(file));
+      } else {
+        toaster.create({
+          title: "Invalid File",
+          description: "Please upload an image file (JPEG, PNG, etc.)",
+          type: "error",
+          duration: 3000,
+        });
+      }
+    }
+  };
+
+  const handleFileChange = (e: any) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreviewUrl(null);
+  };
 
   const handleAddTag = (tag: string) => {
     if (!selectedTags.includes(tag)) setSelectedTags([...selectedTags, tag]);
@@ -167,7 +231,7 @@ export default function RecipeModify({
         isPublic,
         tags: selectedTags,
         review,
-        timeToFinish: Number(timeToFinish),
+        timeToFinish: Number(timeToFinish) || null,
         rating: Number(rating),
         recipeType,
         ...(recipeType === "link" ? { link } : {}),
@@ -187,6 +251,21 @@ export default function RecipeModify({
           : "http://localhost:5000/api/recipes";
       const method = mode === "edit" ? "PATCH" : "POST";
 
+      if (
+        mode === "edit" &&
+        !photoFile &&
+        initialData.imageURL &&
+        !photoPreviewUrl
+      ) {
+        const deletePhotoUrl = `http://localhost:5000/api/recipes/delete-photo/${initialData.id}`;
+        await fetch(deletePhotoUrl, {
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${authToken}`,
+          },
+        });
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -202,6 +281,20 @@ export default function RecipeModify({
       }
       const data = await response.json();
       recipeId = data.id || initialData.id;
+      if (photoFile && recipeId) {
+        const formData = new FormData();
+        formData.append("file", photoFile);
+        formData.append("recipeId", recipeId);
+
+        await fetch("http://localhost:5000/api/recipes/upload-photo", {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${authToken}`,
+          },
+          body: formData,
+        });
+      }
+
       toaster.create({
         title: `Recipe ${mode === "edit" ? "Saved" : "Added"}`,
         description: `Your recipe was successfully ${
@@ -227,6 +320,8 @@ export default function RecipeModify({
         setServings("");
         setPrepTime("");
         setCookTime("");
+        setPhotoFile(null);
+        setPhotoPreviewUrl(null);
       }
     } catch (err) {
       toaster.create({
@@ -250,6 +345,7 @@ export default function RecipeModify({
       setIsSubmitting(false);
     }
   };
+
   const handleRemove = async () => {
     if (mode !== "edit") return;
     const authToken = await auth.currentUser?.getIdToken();
@@ -285,11 +381,137 @@ export default function RecipeModify({
       });
     }
   };
+
+  // Photo Upload Component
+  const PhotoUploadComponent = () => (
+    <Box mb={6}>
+      <Text fontWeight="medium" mb={2}>
+        Recipe Photo
+      </Text>
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        border="2px dashed"
+        borderColor={
+          isDragging
+            ? hoverBorderColor
+            : photoPreviewUrl
+            ? hoverBorderColor
+            : borderColor
+        }
+        borderRadius="lg"
+        p={6}
+        bg={dropzoneBg}
+        transition="all 0.3s ease"
+        height={photoPreviewUrl ? "auto" : "200px"}
+        _hover={{ borderColor: hoverBorderColor, boxShadow: "sm" }}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        position="relative"
+      >
+        {photoPreviewUrl ? (
+          <Flex direction="column" align="center" width="100%">
+            <Box
+              position="relative"
+              width="100%"
+              maxWidth="400px"
+              mb={4}
+              borderRadius="md"
+              overflow="hidden"
+              boxShadow="md"
+            >
+              <img
+                src={photoPreviewUrl}
+                alt="Recipe Preview"
+                style={{
+                  width: "100%",
+                  maxHeight: "280px",
+                  objectFit: "cover",
+                }}
+              />
+              <Button
+                size="sm"
+                colorPalette="red"
+                position="absolute"
+                top={2}
+                right={2}
+                borderRadius="full"
+                width="32px"
+                height="32px"
+                minWidth="32px"
+                padding={0}
+                onClick={handleRemovePhoto}
+              >
+                <FiTrash2 />
+              </Button>
+            </Box>
+            <Button
+              size="sm"
+              colorPalette="teal"
+              variant="outline"
+              onClick={() => document.getElementById("photo-upload")?.click()}
+            >
+              <FiUpload />
+              Change Photo
+            </Button>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+          </Flex>
+        ) : (
+          <>
+            <VStack gap={3}>
+              <Icon as={FiImage} fontSize="3xl" color={placeholderColor} />
+              <Text textAlign="center" color={textColor} fontWeight="medium">
+                Drag and drop an image here
+              </Text>
+              <Text fontSize="sm" color={placeholderColor} textAlign="center">
+                or
+              </Text>
+              <Button
+                colorPalette="teal"
+                variant="outline"
+                onClick={() => document.getElementById("photo-upload")?.click()}
+                _hover={{ bg: "teal.50" }}
+              >
+                <FiUpload />
+                Browse Files
+              </Button>
+            </VStack>
+            <input
+              id="photo-upload"
+              type="file"
+              accept="image/jpeg, image/png, image/gif"
+              onChange={handleFileChange}
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                opacity: 0,
+                cursor: "pointer",
+              }}
+            />
+          </>
+        )}
+      </Flex>
+      <Text fontSize="sm" color="gray.500" mt={2}>
+        Add a photo of your finished recipe. JPEG or PNG recommended.
+      </Text>
+    </Box>
+  );
+
   if (!hasMounted) return null;
 
   return (
     <Box
-      boxShadow="sm"
+      boxShadow="md"
       borderRadius="lg"
       p={6}
       bg={cardBg}
@@ -303,9 +525,6 @@ export default function RecipeModify({
             <Heading fontSize="2xl">
               {mode === "edit" ? "Edit" : "Add"} Recipe
             </Heading>
-            {/* <Button colorPalette="red" variant="subtle" onClick={handleRemove}>
-              Delete Recipe
-            </Button> */}
             {mode === "edit" && (
               <Dialog.Root role="alertdialog">
                 <Dialog.Trigger asChild>
@@ -384,6 +603,9 @@ export default function RecipeModify({
                   _focus={{ borderColor: "teal.400" }}
                 />
               </Box>
+
+              {/* Photo Upload Component */}
+              <PhotoUploadComponent />
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
@@ -507,6 +729,9 @@ export default function RecipeModify({
                   _focus={{ borderColor: "teal.400" }}
                 />
               </Box>
+
+              {/* Photo Upload Component */}
+              <PhotoUploadComponent />
 
               <HStack gap={6} align="flex-start">
                 <Box flex="1">
@@ -704,7 +929,7 @@ export default function RecipeModify({
           {/* Tag Dropdown with correct Chakra UI Menu structure */}
           <Menu.Root closeOnSelect={false}>
             <Menu.Trigger asChild>
-              <Button size="sm" colorScheme="teal" variant="outline">
+              <Button size="sm" colorPalette="teal" variant="outline">
                 <Icon as={FiTag} />
                 Add Tags
                 <FiChevronDown />
@@ -744,7 +969,6 @@ export default function RecipeModify({
             </Portal>
           </Menu.Root>
         </Box>
-
         <HStack justify="space-between">
           <Text></Text>
           <HStack>

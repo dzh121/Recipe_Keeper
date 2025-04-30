@@ -56,6 +56,7 @@ type Recipe = {
   isPublic: boolean;
   createdAt: Timestamp | null;
   recipeType: "link" | "homemade";
+  imageUrl?: string | null;
   // Homemade recipe fields
   ingredients?: string;
   instructions?: string;
@@ -79,6 +80,7 @@ export default function RecipePage() {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ErrorState>(null);
+  const [imageURL, setImageURL] = useState<string | null>(null);
 
   // Color mode values for consistent theming
   const hasMounted = useHasMounted();
@@ -87,6 +89,7 @@ export default function RecipePage() {
   const textColorValue = useColorModeValue("gray.600", "gray.300");
   const headingColorValue = useColorModeValue("gray.800", "white");
   const bgValue = useColorModeValue("white", "gray.800");
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   // Use the mounted state to set colors after hydration
   const bg = hasMounted ? bgValue : undefined;
@@ -161,6 +164,21 @@ export default function RecipePage() {
 
         const data = await response.json();
         setRecipe(data.recipe);
+        if (id) {
+          const imageRes = await fetch(
+            `http://localhost:5000/api/recipes/get-photo-url/${id}`,
+            {
+              method: "GET",
+              headers: {
+                ...(authToken && { Authorization: `Bearer ${authToken}` }),
+              },
+            }
+          );
+          if (imageRes.ok) {
+            const imageData = await imageRes.json();
+            setImageURL(imageData.imageURL);
+          }
+        }
 
         // Fetch author info if available
         if (data.recipe.ownerId) {
@@ -248,7 +266,6 @@ export default function RecipePage() {
       });
     }
   };
-
   // Loading state
   if (!hasMounted || (loading && !recipe && !error)) {
     return (
@@ -263,16 +280,15 @@ export default function RecipePage() {
         <Header />
         <Container maxW="container.md" px={{ base: 4, md: 8 }} py={10} flex="1">
           <Button
-            variant="ghost"
-            mb={6}
+            variant="outline"
+            mb={8}
             onClick={handleGoBack}
             size="md"
-            display="flex"
-            alignItems="center"
-            gap={2}
+            borderRadius="full"
+            _hover={{ bg: hoverBg }}
           >
-            <Icon as={LuChevronLeft} />
-            <Text>Go Back</Text>
+            <LuChevronLeft />
+            Back
           </Button>
 
           <Box
@@ -326,9 +342,16 @@ export default function RecipePage() {
       >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+          <Button
+            variant="outline"
+            mb={8}
+            onClick={handleGoBack}
+            size="md"
+            borderRadius="full"
+            _hover={{ bg: hoverBg }}
+          >
             <LuChevronLeft />
-            <Text ml={2}>Go Back</Text>
+            Back
           </Button>
 
           <Box
@@ -391,9 +414,16 @@ export default function RecipePage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          <Text ml={2}>Go Back</Text>
+          Back
         </Button>
 
         <Box
@@ -411,6 +441,7 @@ export default function RecipePage() {
                 <Heading color={headingColor} size="xl" mb={1}>
                   {recipe.title}
                 </Heading>
+
                 <Flex gap={2}>
                   <Button
                     aria-label="Save as favorite"
@@ -449,6 +480,41 @@ export default function RecipePage() {
                   </Badge>
                 </Flex>
               </Flex>
+              {imageURL && (
+                <Box
+                  mt={6}
+                  mb={4}
+                  position="relative"
+                  width="100%"
+                  maxHeight="300px"
+                  w="100%"
+                  overflow="hidden"
+                  borderRadius="xl"
+                  boxShadow="lg"
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <img
+                    src={imageURL}
+                    alt={`${recipe.title} photo`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      maxHeight: "300px",
+                      objectFit: "contain",
+                      display: "block",
+                      transition: "transform 0.3s ease-in-out",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.transform = "scale(1.1)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.transform = "scale(1)")
+                    }
+                  />
+                </Box>
+              )}
 
               {/* Recipe timing information */}
               <Flex

@@ -28,6 +28,8 @@ export default function EditRecipePage() {
   const { user, authChecked } = useAuth();
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("white", "gray.800");
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
+
   useEffect(() => {
     if (!id || !authChecked) return;
 
@@ -93,9 +95,16 @@ export default function EditRecipePage() {
       >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+          <Button
+            variant="outline"
+            mb={8}
+            onClick={handleGoBack}
+            size="md"
+            borderRadius="full"
+            _hover={{ bg: hoverBg }}
+          >
             <LuChevronLeft />
-            <Text ml={2}>Go Back</Text>
+            Back
           </Button>
 
           <Box
@@ -177,9 +186,16 @@ export default function EditRecipePage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          Go Back
+          Back
         </Button>
         <RecipeModify mode="edit" initialData={initialData ?? undefined} />
       </Container>

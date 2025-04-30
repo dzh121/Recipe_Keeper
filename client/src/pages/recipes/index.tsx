@@ -18,7 +18,7 @@ import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuth } from "@/context/AuthContext";
 import { Recipe } from "@/lib/types/recipe";
-
+import { useColorModeValue } from "@/components/ui/color-mode";
 import Head from "next/head";
 import RecipeList from "@/components/recipes/RecipeList";
 
@@ -26,6 +26,7 @@ export default function RecipesIndexPage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   const { user } = useAuth();
   const isAuthenticated = !!user;
@@ -96,9 +97,16 @@ export default function RecipesIndexPage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button variant="ghost" mb={4} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          Go Back
+          Back
         </Button>
         <RecipeList
           title="Explore Public Recipes"

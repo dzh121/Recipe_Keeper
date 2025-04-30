@@ -243,7 +243,6 @@ export default function TagsManagementPage() {
           <LuChevronLeft />
           Back
         </Button>
-
         <VStack gap={6} align="stretch" mb={8}>
           <Heading size="xl" fontWeight="bold">
             Manage Recipe Tags

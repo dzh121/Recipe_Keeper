@@ -9,9 +9,10 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import RecipeModify from "@/components/recipes/RecipeModify";
-
+import { useColorModeValue } from "@/components/ui/color-mode";
 export default function AddRecipePage() {
   const router = useRouter();
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   const hasMounted = useHasMounted();
   if (!hasMounted) return null; // Prevents hydration errors
@@ -49,9 +50,16 @@ export default function AddRecipePage() {
       <Header />
 
       <Container maxW="container.md" py={10} flex="1">
-        <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          Go Back
+          Back
         </Button>
         <RecipeModify mode="add" />
       </Container>

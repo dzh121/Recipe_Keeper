@@ -50,6 +50,7 @@ import type { Area } from "react-easy-crop";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import Head from "next/head";
 import { getCroppedImg } from "@/utils/cropImage";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -78,6 +79,7 @@ export default function SettingsPage() {
 
   const bgColor = colorMode === "light" ? "white" : "gray.800";
   const borderColor = colorMode === "light" ? "gray.200" : "gray.700";
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   useEffect(() => {
     console.log("Local photo URL:", localPhotoURL);
@@ -493,9 +495,16 @@ export default function SettingsPage() {
       <Header />
 
       <Container maxW="container.md" py={8} flex={1}>
-        <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          Go Back
+          Back
         </Button>
 
         <VStack
@@ -647,7 +656,7 @@ export default function SettingsPage() {
                     size="md"
                     borderWidth="1px"
                     borderColor={borderColor}
-                    css={{ "--focus-color": "teal.400" }}
+                    _focus={{ borderColor: "teal.400" }}
                   />
                 </InputGroup>
                 <Button
@@ -678,7 +687,7 @@ export default function SettingsPage() {
                   type="email"
                   borderWidth="1px"
                   borderColor={borderColor}
-                  css={{ "--focus-color": "teal.400" }}
+                  _focus={{ borderColor: "teal.400" }}
                 />
                 <Button
                   minW={"150px"}
@@ -707,30 +716,31 @@ export default function SettingsPage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   borderWidth="1px"
                   borderColor={borderColor}
-                  css={{ "--focus-color": "teal.400" }}
+                  _focus={{ borderColor: "teal.400" }}
                 />
-                <Flex gap={3}>
+                <Flex gap={3} direction={{ base: "column", md: "row" }}>
                   <Input
-                    flex="1"
+                    w="100%"
                     type="password"
                     placeholder="New password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     borderWidth="1px"
                     borderColor={borderColor}
-                    css={{ "--focus-color": "teal.400" }}
+                    _focus={{ borderColor: "teal.400" }}
                   />
                   <Input
-                    flex="1"
+                    w="100%"
                     type="password"
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     borderWidth="1px"
                     borderColor={borderColor}
-                    css={{ "--focus-color": "teal.400" }}
+                    _focus={{ borderColor: "teal.400" }}
                   />
                   <Button
+                    w={{ base: "100%", md: "auto" }}
                     minW={"150px"}
                     colorPalette="teal"
                     onClick={handleUpdatePassword}

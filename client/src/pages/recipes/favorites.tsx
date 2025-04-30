@@ -18,13 +18,14 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { Recipe } from "@/lib/types/recipe";
 import { LuChevronLeft } from "react-icons/lu";
 import { toaster, Toaster } from "@/components/ui/toaster";
-
+import { useColorModeValue } from "@/components/ui/color-mode";
 export default function RecipesManage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
   const [recipes, setRecipes] = React.useState<Recipe[]>([]);
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   useEffect(() => {
     const fetchFavoriteRecipes = async () => {
@@ -145,9 +146,16 @@ export default function RecipesManage() {
         </Head>
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+          <Button
+            variant="outline"
+            mb={8}
+            onClick={handleGoBack}
+            size="md"
+            borderRadius="full"
+            _hover={{ bg: hoverBg }}
+          >
             <LuChevronLeft />
-            Go Back
+            Back
           </Button>
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
@@ -175,9 +183,16 @@ export default function RecipesManage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button variant="ghost" mb={6} onClick={handleGoBack} size="md">
+        <Button
+          variant="outline"
+          mb={8}
+          onClick={handleGoBack}
+          size="md"
+          borderRadius="full"
+          _hover={{ bg: hoverBg }}
+        >
           <LuChevronLeft />
-          Go Back
+          Back
         </Button>
         <RecipeList
           title="Favorite Recipes"

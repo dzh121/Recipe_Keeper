@@ -20,6 +20,7 @@ export type RecipeFull = {
   isPublic: boolean;
   createdAt: Timestamp | null;
   recipeType: "link" | "homemade";
+  imageURL?: string | null;
   // Homemade recipe fields
   ingredients?: string;
   instructions?: string;

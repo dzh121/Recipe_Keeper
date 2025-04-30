@@ -1,10 +1,15 @@
 // server/routes/recipes.ts
 import { Router } from "express";
-import { db } from "../firebaseAdmin";
 import { authenticateToken } from "../middleware/authMiddleware";
 import { FieldValue } from "firebase-admin/firestore";
 import admin from "firebase-admin";
+import { db, bucket } from "../firebaseAdmin"; 
+import { v4 as uuidv4 } from "uuid";
+import multer from "multer";
+import sharp from "sharp";
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
 
 router.post("/", authenticateToken, async (req, res) => {
   const {
@@ -314,4 +319,169 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     return res.status(500).json({ error: "Failed to delete recipe" });
   }
 });
+
+// Inside routes/recipes.ts
+router.post(
+  "/upload-photo",
+  upload.single("file"),
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { recipeId } = req.body;
+      const file = req.file;
+
+      if (!recipeId || !file) {
+        return res.status(400).json({ error: "Missing recipeId or file" });
+      }
+      if(!req.user || !req.user.uid) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      
+      // Retrieve recipe from Firestore
+      const recipeDoc = await db.doc(`recipes/${recipeId}`).get();
+
+      if (!recipeDoc.exists) {
+        return res.status(404).json({ error: "Recipe not found" });
+      }
+      
+      const recipeData = recipeDoc.data();
+      const uid = req.user.uid;
+
+      if(!recipeData) {
+        return res.status(404).json({ error: "Recipe not found" }); 
+      }
+
+      if (recipeData.ownerId !== uid) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const fileName = `recipes/${recipeId}/photo.jpg`;
+      const fileUpload = bucket.file(fileName);
+      const downloadToken = uuidv4();
+
+      const compressedBuffer = await sharp(file.buffer)
+      .resize({ width: 800 }) // resize to 800px width (maintains aspect ratio)
+      .jpeg({ quality: 75 })  // convert to JPEG with 75% quality
+      .toBuffer();
+      
+      await fileUpload.save(compressedBuffer, {
+        metadata: {
+          contentType: "image/jpeg",
+          metadata: {
+            firebaseStorageDownloadTokens: downloadToken,
+          },
+        },
+      });
+
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
+        fileName
+      )}?alt=media&token=${downloadToken}`;
+
+      await db.doc(`recipes/${recipeId}`).update({
+        imageURL: publicUrl,
+        updatedAt: new Date(),
+      });
+
+      res.json({ imageURL: publicUrl });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to upload recipe photo" });
+    }
+  }
+);
+
+router.get("/get-photo-url/:recipeId", async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+    if (!recipeId) return res.status(400).json({ error: "Missing recipeId" });
+
+    let uid: string | null = null;
+
+    // Optional auth handling (like your example)
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        uid = decodedToken.uid;
+      } catch (err) {
+        console.warn("Invalid or expired token. Continuing as guest.");
+      }
+    }
+
+    const recipeDoc = await db.doc(`recipes/${recipeId}`).get();
+    if (!recipeDoc.exists) return res.status(404).json({ error: "Recipe not found" });
+
+    const recipeData = recipeDoc.data();
+    if (!recipeData) return res.status(404).json({ error: "Recipe data missing" });
+
+    const isOwner = uid && recipeData.ownerId === uid;
+    if (!recipeData.isPublic && !isOwner) {
+      return res.status(403).json({ error: "Not authorized to view image" });
+    }
+
+    const file = bucket.file(`recipes/${recipeId}/photo.jpg`);
+    
+    const [exists] = await file.exists();
+    if (!exists) return res.status(404).json({ error: "Image not found" });
+
+    const [url] = await file.getSignedUrl({
+      action: "read",
+      expires: Date.now() + 15 * 60 * 1000,
+    });
+
+    return res.json({ imageURL: url });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to get image URL" });
+  }
+});
+
+router.delete("/delete-photo/:recipeId", authenticateToken, async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+
+    if (!recipeId || typeof recipeId !== "string") {
+      return res.status(400).json({ error: "Missing or invalid recipeId" });
+    }
+
+    if (!req.user || !req.user.uid) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const recipeDoc = await db.doc(`recipes/${recipeId}`).get();
+    if (!recipeDoc.exists) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    const recipeData = recipeDoc.data();
+    const uid = req.user.uid;
+
+    if (!recipeData || recipeData.ownerId !== uid) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const fileName = `recipes/${recipeId}/photo.jpg`;
+    const file = bucket.file(fileName);
+
+    const [exists] = await file.exists();
+    if (exists) {
+      await file.delete();
+    }
+
+    // Remove imageURL from Firestore
+    await db.doc(`recipes/${recipeId}`).update({
+      imageURL: null,
+      updatedAt: new Date(),
+    });
+
+    res.json({ message: "Photo deleted successfully" });
+  } catch (error) {
+    console.error("Delete photo error:", error);
+    res.status(500).json({ error: "Failed to delete recipe photo" });
+  }
+});
+
+
 export default router;
