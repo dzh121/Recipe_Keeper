@@ -15,7 +15,7 @@ export function useSyncColorModeOnLogin() {
       try {
         const token = await user.getIdToken();
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/settings/color-mode`,
+          `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

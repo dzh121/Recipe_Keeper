@@ -1,3 +1,10 @@
 *.env
 serviceAccountKey.json
 node_modules
+.env
+.env.local
+.env.production
+firebase-debug.log
+functions/lib/
+functions/node_modules/
+client/node_modules/

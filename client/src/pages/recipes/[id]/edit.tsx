@@ -42,7 +42,7 @@ export default function EditRecipePage() {
         }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes/${id}`,
           {
             method: "GET",
             headers: {

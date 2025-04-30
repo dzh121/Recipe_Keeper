@@ -1,0 +1,41 @@
+name: Deploy to Firebase Hosting Preview on PR
+
+on: pull_request
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install and build client
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install and build functions
+        working-directory: functions
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy preview to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_RECIPEKEEPER_3A217 }}
+          projectId: recipekeeper-3a217

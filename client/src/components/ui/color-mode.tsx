@@ -34,7 +34,7 @@ export function useColorMode(): UseColorModeReturn {
     try {
       const token = await user.getIdToken();
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/settings/color-mode`,
+        `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
         {
           method: "POST",
           headers: {

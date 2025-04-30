@@ -360,7 +360,7 @@ export default function SettingsPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/remove-photo?uid=${user.uid}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/profile/remove-photo?uid=${user.uid}`,
         {
           method: "DELETE",
           headers: {
@@ -428,7 +428,7 @@ export default function SettingsPage() {
       const xhr = new XMLHttpRequest();
       xhr.open(
         "POST",
-        `${process.env.NEXT_PUBLIC_API_URL}/api/profile/upload-photo`,
+        `${process.env.NEXT_PUBLIC_API_URL}/profile/upload-photo`,
         true
       );
       xhr.setRequestHeader("Authorization", `Bearer ${token}`);

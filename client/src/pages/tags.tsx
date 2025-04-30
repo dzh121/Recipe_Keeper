@@ -58,7 +58,7 @@ export default function TagsManagementPage() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+        `${process.env.NEXT_PUBLIC_API_URL}/tags`,
         {
           method: "GET",
           headers: {
@@ -118,7 +118,7 @@ export default function TagsManagementPage() {
     try {
       setIsAdding(true);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+        `${process.env.NEXT_PUBLIC_API_URL}/tags`,
         {
           method: "POST",
           headers: {
@@ -174,7 +174,7 @@ export default function TagsManagementPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/tags/${tagName}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/tags/${tagName}`,
         {
           method: "DELETE",
           headers: {

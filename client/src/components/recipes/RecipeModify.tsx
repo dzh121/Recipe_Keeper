@@ -87,7 +87,7 @@ export default function RecipeModify({
     const fetchTags = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+          `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
             headers: {
@@ -252,8 +252,8 @@ export default function RecipeModify({
       };
       const url =
         mode === "edit"
-          ? `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${initialData.id}`
-          : `${process.env.NEXT_PUBLIC_API_URL}/api/recipes`;
+          ? `${process.env.NEXT_PUBLIC_API_URL}/recipes/${initialData.id}`
+          : `${process.env.NEXT_PUBLIC_API_URL}/recipes`;
       const method = mode === "edit" ? "PATCH" : "POST";
 
       if (
@@ -262,7 +262,7 @@ export default function RecipeModify({
         initialData.imageURL &&
         !photoPreviewUrl
       ) {
-        const deletePhotoUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/delete-photo/${initialData.id}`;
+        const deletePhotoUrl = `${process.env.NEXT_PUBLIC_API_URL}/recipes/delete-photo/${initialData.id}`;
         await fetch(deletePhotoUrl, {
           method: "DELETE",
           headers: {
@@ -292,7 +292,7 @@ export default function RecipeModify({
         formData.append("recipeId", recipeId);
 
         await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/upload-photo`,
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes/upload-photo`,
           {
             method: "POST",
             headers: {
@@ -357,7 +357,7 @@ export default function RecipeModify({
   const handleRemove = async () => {
     if (mode !== "edit") return;
     const authToken = await auth.currentUser?.getIdToken();
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/recipes/${initialData.id}`;
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/recipes/${initialData.id}`;
     const method = "DELETE";
 
     try {

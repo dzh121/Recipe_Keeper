@@ -112,9 +112,8 @@ export default function RecipeList({
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        console.log("Del at: ", `${process.env.NEXT_PUBLIC_API_URL}/api/tags`);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/tags`,
+          `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
             headers: {

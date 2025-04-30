@@ -34,7 +34,7 @@ export default function RecipesManage() {
 
         // Get favorite IDs
         const favoritesRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/favorites`,
+          `${process.env.NEXT_PUBLIC_API_URL}/favorites`,
           {
             method: "GET",
             headers: {
@@ -60,7 +60,7 @@ export default function RecipesManage() {
         const recipesRes = await fetch(
           `${
             process.env.NEXT_PUBLIC_API_URL
-          }/api/recipes?ids=${favoriteIds.join(",")}`,
+          }/recipes?ids=${favoriteIds.join(",")}`,
           {
             method: "GET",
             headers: {
@@ -97,7 +97,7 @@ export default function RecipesManage() {
     try {
       const token = await user?.getIdToken();
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/favorites/${recipeId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/favorites/${recipeId}`,
         {
           method: "DELETE",
           headers: {
