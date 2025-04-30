@@ -28,8 +28,9 @@ router.post("/", authenticateToken, async (req, res) => {
     prepTime,
     cookTime,
   } = req.body;
+  const user = (req as any).user;
 
-  const tokenUid = req.user?.uid;
+  const tokenUid = user?.uid;
   if (!tokenUid) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -177,7 +178,7 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    let query: FirebaseFirestore.Query = db.collection("recipes");
+    let query: admin.firestore.Query = db.collection("recipes");
 
     if (type === "public") {
       query = query.where("isPublic", "==", true);
@@ -215,9 +216,10 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     prepTime,
     cookTime,
   } = req.body;
+  const user = (req as any).user;
 
   const recipeId = req.params.id;
-  const tokenUid = req.user?.uid;
+  const tokenUid = user?.uid;
 
   if (!tokenUid) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -289,8 +291,10 @@ router.patch("/:id", authenticateToken, async (req, res) => {
 });
 
 router.delete("/:id", authenticateToken, async (req, res) => {
+  const user = (req as any).user;
+
   const recipeId = req.params.id;
-  const tokenUid = req.user?.uid;
+  const tokenUid = user?.uid;
 
   if (!tokenUid) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -329,11 +333,12 @@ router.post(
     try {
       const { recipeId } = req.body;
       const file = req.file;
+      const user = (req as any).user;
 
       if (!recipeId || !file) {
         return res.status(400).json({ error: "Missing recipeId or file" });
       }
-      if(!req.user || !req.user.uid) {
+      if(!user || !user.uid) {
         return res.status(401).json({ error: "Unauthorized" });
       }
       
@@ -346,7 +351,7 @@ router.post(
       }
       
       const recipeData = recipeDoc.data();
-      const uid = req.user.uid;
+      const uid = user.uid;
 
       if(!recipeData) {
         return res.status(404).json({ error: "Recipe not found" }); 
@@ -439,14 +444,15 @@ router.get("/get-photo-url/:recipeId", async (req, res) => {
 });
 
 router.delete("/delete-photo/:recipeId", authenticateToken, async (req, res) => {
+  const user = (req as any).user;
   try {
     const { recipeId } = req.params;
 
     if (!recipeId || typeof recipeId !== "string") {
       return res.status(400).json({ error: "Missing or invalid recipeId" });
     }
-
-    if (!req.user || !req.user.uid) {
+    
+    if (!user || !user.uid) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
@@ -454,9 +460,9 @@ router.delete("/delete-photo/:recipeId", authenticateToken, async (req, res) => 
     if (!recipeDoc.exists) {
       return res.status(404).json({ error: "Recipe not found" });
     }
-
+    
     const recipeData = recipeDoc.data();
-    const uid = req.user.uid;
+    const uid = user.uid;
 
     if (!recipeData || recipeData.ownerId !== uid) {
       return res.status(403).json({ error: "Not authorized" });

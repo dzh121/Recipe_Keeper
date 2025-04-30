@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", authenticateToken, async (req, res) => {
-  const user = req.user;
+  const user = (req as any).user; 
   if (!user || !isAdmin(user)) {
     return res.status(403).json({ error: "Forbidden. Admins only." });
   }
@@ -65,7 +65,7 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 router.delete("/:tagName", authenticateToken, async (req, res) => {
-  const user = req.user;
+  const user = (req as any).user; 
   if (!user || !isAdmin(user)) {
     return res.status(403).json({ error: "Forbidden. Admins only." });
   }

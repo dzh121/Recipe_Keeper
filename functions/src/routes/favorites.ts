@@ -1,12 +1,11 @@
 import { Router } from "express";
 import { db } from "../firebaseAdmin";
 import { authenticateToken } from "../middleware/authMiddleware";
-import { FieldValue } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 const router = Router();
 
 router.get("/", authenticateToken,async (req, res) => {
-  const user = req.user;
+  const user = (req as any).user; 
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
   const settingsRef = db.doc(`users/${user.uid}/private/settings`);
@@ -26,7 +25,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
   const recipeId = req.params.id;
   if (!recipeId) return res.status(400).json({ error: "Missing recipeId" });
 
-  const user = req.user;
+  const user = (req as any).user; 
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
   const settingsRef = db.doc(`users/${user.uid}/private/settings`);
@@ -46,7 +45,7 @@ router.post("/:id", authenticateToken, async (req, res) => {
   const recipeId = req.params.id;
   if (!recipeId) return res.status(400).json({ error: "Missing recipeId" });
   
-  const user = req.user;
+  const user = (req as any).user; 
   if (!user) return res.status(401).json({ error: "Unauthorized" });
 
   const settingsRef = db.doc(`users/${user.uid}/private/settings`);
@@ -79,8 +78,8 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   if (!recipeId) {
     return res.status(400).json({ error: "Missing recipeId" });
   }
-
-  const user = req.user;
+  
+  const user = (req as any).user; 
   if (!user) {
     return res.status(401).json({ error: "Unauthorized" });
   }

@@ -5,8 +5,14 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && npm start",
-    "client": "cd client && npm run dev"
+    "server": "cd functions && npm run dev",
+    "client": "cd client && npm run dev",
+
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix functions",
+    "build": "npm run build:server && npm run build:client",
+
+    "deploy": "npm run build && firebase deploy --only hosting,functions"
   },
   "keywords": [],
   "author": "",

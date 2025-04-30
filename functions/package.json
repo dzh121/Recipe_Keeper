@@ -2,9 +2,9 @@
   "name": "functions",
   "main": "lib/index.js",
   "scripts": {
+    "dev": "nodemon",
     "build": "tsc",
-    "lint": "eslint .",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "lint": "eslint src --ext .ts",
     "deploy": "npm run build && firebase deploy --only functions"
   },
   "engines": {
@@ -21,7 +21,11 @@
   "devDependencies": {
     "@types/multer": "^1.4.12",
     "@types/uuid": "^10.0.0",
-    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^8.57.1",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
   }
 }

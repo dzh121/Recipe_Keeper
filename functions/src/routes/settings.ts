@@ -5,7 +5,7 @@ import { db } from "../firebaseAdmin";
 const router = express.Router();
 
 router.post("/color-mode", authenticateToken, async (req, res) => {
-  const user = req.user;
+  const user = (req as any).user; 
   const { darkMode } = req.body;
 
   if (!user || !user.uid) {
@@ -28,8 +28,8 @@ router.post("/color-mode", authenticateToken, async (req, res) => {
 });
 
 router.get("/color-mode", authenticateToken, async (req, res) => {
-  const user = req.user;
-
+  const user = (req as any).user; 
+  
   if (!user || !user.uid) {
     return res.status(401).json({ error: "Unauthorized" });
   }
