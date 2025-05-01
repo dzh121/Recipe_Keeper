@@ -324,7 +324,6 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Inside routes/recipes.ts
 router.post(
   "/upload-photo",
   upload.single("file"),

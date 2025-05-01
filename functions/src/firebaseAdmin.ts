@@ -21,7 +21,7 @@ if (!storageBucket) {
 }
 
 if (!getApps().length) {
-  if (process.env.LOCAL_DEV || process.env.FUNCTIONS_EMULATOR) {
+  if (process.env.LOCAL_DEV?.toLowerCase() === "true" || process.env.FUNCTIONS_EMULATOR) {
     const serviceAccount = require("../serviceAccountKey.json");
     initializeApp({
       credential: cert(serviceAccount),

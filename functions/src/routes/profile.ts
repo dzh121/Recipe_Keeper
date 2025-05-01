@@ -11,9 +11,11 @@ router.post("/upload-photo", upload.single("file"),authenticateToken, async (req
   try {
     const { uid } = req.body;
     const file = req.file;
-
-    if (!uid || !file) {
-      return res.status(400).json({ error: "Missing uid or file" });
+    if (!file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    if (!uid) {
+      return res.status(400).json({ error: "Missing uid" });
     }
 
     const fileName = `users/${uid}/profile.jpg`;
