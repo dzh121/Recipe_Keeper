@@ -174,9 +174,7 @@ export default function RecipeList({
       fetchUserProfiles();
     }
   }, [recipes, showPublisher]);
-  useEffect(() => {
-    console.log("userProfiles", userProfiles);
-  }, [userProfiles]);
+
   const handleTagSelect = (tag: string) => {
     if (!selectedTags.includes(tag)) {
       setSelectedTags([...selectedTags, tag]);

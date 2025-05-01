@@ -1,54 +1,89 @@
 import express from "express";
-import multer from "multer";
 import { authenticateToken } from "../middleware/authMiddleware";
 import { db, bucket } from "../firebaseAdmin"; 
 import { v4 as uuidv4 } from "uuid";
+import Busboy from "busboy";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/upload-photo", upload.single("file"),authenticateToken, async (req, res) => {
-  try {
-    const { uid } = req.body;
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-    if (!uid) {
-      return res.status(400).json({ error: "Missing uid" });
-    }
 
-    const fileName = `users/${uid}/profile.jpg`;
-    const fileUpload = bucket.file(fileName);
-    const downloadToken = uuidv4(); 
-
-    await fileUpload.save(file.buffer, {
-      metadata: {
-        contentType: file.mimetype,
-        metadata: {
-          firebaseStorageDownloadTokens: downloadToken,
-        },
-      },
-    });
-    if (!downloadToken) {
-      return res.status(500).json({ error: "Failed to get download token" });
-    }
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
-
-    await db.doc(`users/${uid}/public/profile`).set(
-      {
-        photoURL: publicUrl,
-        updatedAt: new Date(),
-      },
-      { merge: true }
-    );
-
-    res.json({ photoURL: publicUrl });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to upload photo" });
+router.post("/upload-photo", authenticateToken, (req, res) => {
+  const rawBody = (req as any).rawBody;
+  
+  if (!rawBody) {
+    res.status(400).json({ error: "Missing raw body for file upload" });
+    return;
   }
+
+  const busboy = Busboy({ headers: req.headers });
+  const user = (req as any).user;
+
+  let uid = "";
+  let mimeType = "";
+  let fileBuffer: Buffer | null = null;
+
+  if (!user || !user.uid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  busboy.on("field", (fieldname, val) => {
+    if (fieldname === "uid") {
+      uid = val;
+    }
+  });
+
+  busboy.on("file", (_fieldname, file, info) => {
+    mimeType = info.mimeType;
+    const chunks: Uint8Array[] = [];
+    file.on("data", (data) => chunks.push(data));
+    file.on("end", () => {
+      fileBuffer = Buffer.concat(chunks);
+    });
+  });
+
+  busboy.on("finish", async () => {
+    try {
+      if (!uid || !fileBuffer) {
+        res.status(400).json({ error: "Missing uid or file" });
+        return;
+      }
+
+      const fileName = `users/${uid}/profile.jpg`;
+      const fileUpload = bucket.file(fileName);
+      const downloadToken = uuidv4();
+
+      await fileUpload.save(fileBuffer, {
+        metadata: {
+          contentType: mimeType || "image/jpeg",
+          metadata: {
+            firebaseStorageDownloadTokens: downloadToken,
+          },
+        },
+      });
+
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
+        fileName
+      )}?alt=media&token=${downloadToken}`;
+
+      await db.doc(`users/${uid}/public/profile`).set(
+        {
+          photoURL: publicUrl,
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      );
+
+      res.json({ photoURL: publicUrl });
+    } catch (err) {
+      console.error("Upload failed:", err);
+      res.status(500).json({ error: "Failed to upload photo" });
+    }
+  });
+
+  busboy.end(rawBody);
 });
+
 
 router.delete("/remove-photo", authenticateToken, async (req, res) => {
   try {

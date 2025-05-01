@@ -5,10 +5,10 @@ import { FieldValue } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 import { db, bucket } from "../firebaseAdmin"; 
 import { v4 as uuidv4 } from "uuid";
-import multer from "multer";
 import sharp from "sharp";
+import Busboy from "busboy";
+import { Request, Response } from "express";
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 
 router.post("/", authenticateToken, async (req, res) => {
@@ -324,52 +324,66 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-router.post(
-  "/upload-photo",
-  upload.single("file"),
-  authenticateToken,
-  async (req, res) => {
-    try {
-      const { recipeId } = req.body;
-      const file = req.file;
-      const user = (req as any).user;
+router.post("/upload-photo", authenticateToken, async (req: Request, res: Response) => {
+  const user = (req as any).user;
 
-      if (!recipeId || !file) {
-        return res.status(400).json({ error: "Missing recipeId or file" });
+  let recipeId = "";
+  let fileBuffer: Buffer | null = null;
+
+  if (!user || !user.uid) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const busboy = Busboy({ headers: req.headers });
+
+  busboy.on("field", (name, val) => {
+    if (name === "recipeId") {
+      recipeId = val;
+    }
+  });
+
+  busboy.on("file", (name, file) => {
+    const buffers: Uint8Array[] = [];
+    file.on("data", (data) => buffers.push(data));
+    file.on("end", () => {
+      fileBuffer = Buffer.concat(buffers);
+    });
+  });
+
+  busboy.on("finish", async () => {
+    try {
+      if (!recipeId || !fileBuffer) {
+        res.status(400).json({ error: "Missing recipeId or file" });
+        return;
       }
-      if(!user || !user.uid) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      
-      
-      // Retrieve recipe from Firestore
-      const recipeDoc = await db.doc(`recipes/${recipeId}`).get();
+
+      const recipeRef = db.doc(`recipes/${recipeId}`);
+      const recipeDoc = await recipeRef.get();
 
       if (!recipeDoc.exists) {
-        return res.status(404).json({ error: "Recipe not found" });
+        res.status(404).json({ error: "Recipe not found" });
+        return;
       }
-      
+
       const recipeData = recipeDoc.data();
       const uid = user.uid;
 
-      if(!recipeData) {
-        return res.status(404).json({ error: "Recipe not found" }); 
-      }
-
-      if (recipeData.ownerId !== uid) {
-        return res.status(403).json({ error: "Not authorized" });
+      if (!recipeData || recipeData.ownerId !== uid) {
+        res.status(403).json({ error: "Not authorized" });
+        return;
       }
 
       const fileName = `recipes/${recipeId}/photo.jpg`;
       const fileUpload = bucket.file(fileName);
       const downloadToken = uuidv4();
 
-      const compressedBuffer = await sharp(file.buffer)
-      .resize({ width: 800 }) // resize to 800px width (maintains aspect ratio)
-      .jpeg({ quality: 75 })  // convert to JPEG with 75% quality
-      .toBuffer();
-      
-      await fileUpload.save(compressedBuffer, {
+      const compressed = await sharp(fileBuffer)
+        .resize({ width: 800 })
+        .jpeg({ quality: 75 })
+        .toBuffer();
+
+      await fileUpload.save(compressed, {
         metadata: {
           contentType: "image/jpeg",
           metadata: {
@@ -382,18 +396,26 @@ router.post(
         fileName
       )}?alt=media&token=${downloadToken}`;
 
-      await db.doc(`recipes/${recipeId}`).update({
+      await recipeRef.update({
         imageURL: publicUrl,
         updatedAt: new Date(),
       });
 
       res.json({ imageURL: publicUrl });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Upload failed:", err);
       res.status(500).json({ error: "Failed to upload recipe photo" });
     }
+  });
+
+  const rawBody = (req as any).rawBody;
+  if (!rawBody) {
+    res.status(400).json({ error: "Missing rawBody, are you using body parser verify?" });
+    return;
   }
-);
+
+  busboy.end(rawBody);
+});
 
 router.get("/get-photo-url/:recipeId", async (req, res) => {
   try {

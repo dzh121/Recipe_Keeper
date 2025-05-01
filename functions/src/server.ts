@@ -10,15 +10,26 @@ import settingsRoutes from "./routes/settings";
 import * as functions from "firebase-functions";
 import "dotenv/config";
 import { Request } from "express";
+import bodyParser from "body-parser";
+import rateLimit from "express-rate-limit";
 
 interface AuthedRequest extends Request {
   user?: any;
 }
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser. text({type: "/"}));
+app.use(limiter);
 
 app.get("/api/protected", authenticateToken, (req: AuthedRequest, res) => {
   res.json({ message: "You are authenticated!", user: req.user });
