@@ -6,7 +6,7 @@ A full-stack recipe management app built with **Next.js**, **Firebase**, and **E
 
 ## 🌐 Live Site
 
-> [Live URL Placeholder](https://your-deployment-link.com)
+> [URL for the site](https://recipekeeper-3a217.firebaseapp.com)
 
 ## 🚀 Features
 
@@ -137,6 +137,16 @@ global/tags
 * **Storage**: Firebase Firestore & Storage
 * **Auth**: Firebase Authentication
 * **i18n**: i18next, `react-i18next`
+
+---
+## 🔒 Privacy & Data Policy
+
+RecipeKeeper stores only the data required to provide its core features — like your recipes, tags, profile image, and preferences. Recipes can be marked as **public** or **private**. Only public recipes are viewable by others.
+
+You can also share **external recipe links**, which are stored in the app, but **RecipeKeeper does not host or claim ownership of third-party content**. If you are the owner of linked content and want it removed, please contact us or open an issue.
+
+All data is stored securely via Firebase, and access is protected by Firebase Authentication.  
+You can view the full [Privacy Policy](./PRIVACY.md).
 
 ---
 
