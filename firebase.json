@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "rules": "firestore.rules",
+    "rules": "./firebase/firestore.rules",
     "indexes": "firestore.indexes.json"
   },
   "functions": [
@@ -30,6 +30,6 @@
     "trailingSlash": false
   },
   "storage": {
-    "rules": "storage.rules"
+    "rules": "firebase/storage.rules"
   }
 }
