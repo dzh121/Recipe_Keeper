@@ -60,7 +60,11 @@ export default function Header() {
       <Flex align="center">
         <Button variant="ghost" onClick={handleHomeClick}>
           <Logo />
-          <Heading fontSize="lg" fontWeight="semibold">
+          <Heading
+            fontSize="lg"
+            fontWeight="semibold"
+            display={{ base: "none", md: "inline" }}
+          >
             {t("app.title")}
           </Heading>
         </Button>

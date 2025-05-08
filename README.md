@@ -10,11 +10,11 @@
   
   <br /><br />
 
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" /></a>
-  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black&style=flat-square" alt="Firebase" /></a>
-  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" alt="Express" /></a>
-</div>
+<a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" /></a>
+<a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black&style=flat-square" alt="Firebase" /></a>
+<a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" alt="Express" /></a>
 
+</div>
 
 ---
 
@@ -40,6 +40,10 @@
     </td>
   </tr>
 </table>
+
+> ⚠️ **Note:** Tag management is currently a work in progress.  
+> At this stage, only selected users can create or remove tags.  
+> Some tags may appear in both English and Hebrew until final standardization is complete.
 
 ## 🏗️ Architecture
 
@@ -125,50 +129,50 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### Recipe Management
 
-| Method | Endpoint                   | Description                         |
-|--------|----------------------------|-------------------------------------|
-| GET    | `/recipes?type=public`     | Get all public recipes              |
-| GET    | `/recipes?type=private`    | Get current user's private recipes  |
-| GET    | `/recipes/:id`             | Get single recipe (public or owned) |
-| POST   | `/recipes`                 | Create new recipe                   |
-| PATCH  | `/recipes/:id`             | Update an existing recipe           |
-| DELETE | `/recipes/:id`             | Delete a recipe                     |
+| Method | Endpoint                | Description                         |
+| ------ | ----------------------- | ----------------------------------- |
+| GET    | `/recipes?type=public`  | Get all public recipes              |
+| GET    | `/recipes?type=private` | Get current user's private recipes  |
+| GET    | `/recipes/:id`          | Get single recipe (public or owned) |
+| POST   | `/recipes`              | Create new recipe                   |
+| PATCH  | `/recipes/:id`          | Update an existing recipe           |
+| DELETE | `/recipes/:id`          | Delete a recipe                     |
 
 #### Recipe Media
 
-| Method | Endpoint                           | Description                      |
-|--------|-----------------------------------|----------------------------------|
-| POST   | `/recipes/upload-photo`           | Upload photo to a recipe         |
-| GET    | `/recipes/get-photo-url/:recipeId`| Get signed image URL             |
-| DELETE | `/recipes/delete-photo/:recipeId` | Delete image from Storage        |
+| Method | Endpoint                           | Description               |
+| ------ | ---------------------------------- | ------------------------- |
+| POST   | `/recipes/upload-photo`            | Upload photo to a recipe  |
+| GET    | `/recipes/get-photo-url/:recipeId` | Get signed image URL      |
+| DELETE | `/recipes/delete-photo/:recipeId`  | Delete image from Storage |
 
 #### Favorites
 
-| Method | Endpoint         | Description                        |
-|--------|------------------|------------------------------------|
-| GET    | `/favorites`     | Get user's favorite recipe IDs     |
-| GET    | `/favorites/:id` | Check if recipe is favorited       |
-| POST   | `/favorites/:id` | Add recipe to favorites            |
-| DELETE | `/favorites/:id` | Remove recipe from favorites       |
+| Method | Endpoint         | Description                    |
+| ------ | ---------------- | ------------------------------ |
+| GET    | `/favorites`     | Get user's favorite recipe IDs |
+| GET    | `/favorites/:id` | Check if recipe is favorited   |
+| POST   | `/favorites/:id` | Add recipe to favorites        |
+| DELETE | `/favorites/:id` | Remove recipe from favorites   |
 
 #### User Profile & Settings
 
-| Method | Endpoint                | Description                   |
-|--------|-------------------------|-------------------------------|
-| POST   | `/profile/upload-photo` | Upload profile photo          |
-| DELETE | `/profile/remove-photo` | Remove profile photo          |
-| GET    | `/settings/color-mode`  | Get stored color mode         |
-| POST   | `/settings/color-mode`  | Save preferred color mode     |
-| GET    | `/settings/language`    | Get user language setting     |
-| POST   | `/settings/language`    | Save language preference      |
+| Method | Endpoint                | Description               |
+| ------ | ----------------------- | ------------------------- |
+| POST   | `/profile/upload-photo` | Upload profile photo      |
+| DELETE | `/profile/remove-photo` | Remove profile photo      |
+| GET    | `/settings/color-mode`  | Get stored color mode     |
+| POST   | `/settings/color-mode`  | Save preferred color mode |
+| GET    | `/settings/language`    | Get user language setting |
+| POST   | `/settings/language`    | Save language preference  |
 
 #### Tags
 
-| Method | Endpoint         | Description                |
-|--------|------------------|----------------------------|
-| GET    | `/tags`          | Get global tag list        |
-| POST   | `/tags`          | Add tag (admin only)       |
-| DELETE | `/tags/:tagName` | Remove tag (admin only)    |
+| Method | Endpoint         | Description             |
+| ------ | ---------------- | ----------------------- |
+| GET    | `/tags`          | Get global tag list     |
+| POST   | `/tags`          | Add tag (admin only)    |
+| DELETE | `/tags/:tagName` | Remove tag (admin only) |
 
 ## 📦 Firestore Collections
 

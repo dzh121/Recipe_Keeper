@@ -51,11 +51,14 @@ export const LanguageSwitcher = () => {
           size="md"
           borderColor={borderColor}
           _hover={{ borderColor: "blue.500" }}
-          minW="120px"
+          minW="auto"
+          px={2}
         >
           <Flex align="center">
             {flag}
-            <Text fontSize="sm">{name}</Text>
+            <Text fontSize="sm" display={{ base: "none", md: "inline" }}>
+              {name}
+            </Text>
             <LuChevronDown />
           </Flex>
         </Button>
