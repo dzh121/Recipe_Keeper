@@ -140,6 +140,6 @@ global/tags
 
 ---
 
-## 📄 License
+## License
 
-MIT © Daniel Ziv Harel
+This project is licensed under the [MIT License](./LICENSE).
