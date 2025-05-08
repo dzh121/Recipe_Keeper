@@ -1,8 +1,11 @@
 "use client";
 
 import { Box, Text, Center } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
+  const year = new Date().getFullYear();
   return (
     <Box
       as="footer"
@@ -14,7 +17,7 @@ export default function Footer() {
     >
       <Center>
         <Text fontSize="sm" opacity={0.7}>
-          © {new Date().getFullYear()} RecipeKeeper. All rights reserved.
+          {t("footer.copyright", { year })}
         </Text>
       </Center>
     </Box>

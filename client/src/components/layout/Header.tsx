@@ -1,6 +1,14 @@
 "use client";
 
-import { Box, Flex, Heading, Spacer, Avatar, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Spacer,
+  Avatar,
+  Button,
+  HStack,
+} from "@chakra-ui/react";
 import { ColorModeButton } from "@/components/ui/color-mode";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import Logo from "@/components/ui/Logo";
@@ -10,11 +18,14 @@ import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import type { UserSettings } from "@/lib/types/user";
 import { db } from "@/lib/firebase";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 export default function Header() {
   const hasMounted = useHasMounted();
   const Router = useRouter();
   const [profile, setProfile] = useState<UserSettings | null>(null);
+  const { t } = useTranslation();
 
   const handleHomeClick = () => {
     Router.push("/");
@@ -50,35 +61,41 @@ export default function Header() {
         <Button variant="ghost" onClick={handleHomeClick}>
           <Logo />
           <Heading fontSize="lg" fontWeight="semibold">
-            RecipeKeeper
+            {t("app.title")}
           </Heading>
         </Button>
 
         <Spacer />
-
-        {hasMounted && <ColorModeButton mr={3} />}
-        {authChecked && isAuthenticated ? (
-          <Box ml={2} cursor="pointer" onClick={() => Router.push("/settings")}>
-            <Avatar.Root colorPalette="teal" variant="solid" size="sm">
-              <Avatar.Fallback
-                name={profile?.displayName || user.email || "U"}
-              />
-              <Avatar.Image
-                src={profile?.photoURL || user.photoURL || ""}
-                alt="User Avatar"
-                borderRadius="full"
-              />
-            </Avatar.Root>
-          </Box>
-        ) : (
-          <Button
-            colorPalette="teal"
-            variant="solid"
-            onClick={() => Router.push("/signin")}
-          >
-            Sign Up
-          </Button>
-        )}
+        <HStack gap={4}>
+          {hasMounted && <ColorModeButton mr={3} />}
+          <LanguageSwitcher />
+          {authChecked && isAuthenticated ? (
+            <Box
+              ml={2}
+              cursor="pointer"
+              onClick={() => Router.push("/settings")}
+            >
+              <Avatar.Root colorPalette="teal" variant="solid" size="sm">
+                <Avatar.Fallback
+                  name={profile?.displayName || user.email || "U"}
+                />
+                <Avatar.Image
+                  src={profile?.photoURL || user.photoURL || ""}
+                  alt="User Avatar"
+                  borderRadius="full"
+                />
+              </Avatar.Root>
+            </Box>
+          ) : (
+            <Button
+              colorPalette="teal"
+              variant="solid"
+              onClick={() => Router.push("/signin")}
+            >
+              {t("header.signin")}
+            </Button>
+          )}
+        </HStack>
       </Flex>
     </Box>
   );

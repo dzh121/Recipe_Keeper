@@ -50,7 +50,8 @@ import type { Area } from "react-easy-crop";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import Head from "next/head";
 import { getCroppedImg } from "@/utils/cropImage";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import BackButton from "@/components/ui/back";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -76,10 +77,10 @@ export default function SettingsPage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const { colorMode } = useColorMode();
+  const { t } = useTranslation();
 
   const bgColor = colorMode === "light" ? "white" : "gray.800";
   const borderColor = colorMode === "light" ? "gray.200" : "gray.700";
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   useEffect(() => {
     console.log("Local photo URL:", localPhotoURL);
@@ -176,8 +177,8 @@ export default function SettingsPage() {
       setTimeout(() => setShowEmailSuccess(false), 2000);
 
       toaster.create({
-        title: "Email updated",
-        description: "Your email has been saved successfully.",
+        title: t("settings.toasts.emailUpdated"),
+        description: t("settings.success.email"),
         type: "success",
         duration: 3000,
         meta: { closable: true },
@@ -185,17 +186,17 @@ export default function SettingsPage() {
       });
     } catch (err: any) {
       console.error("Failed to update email:", err);
-      let message = "There was an error updating your email.";
+      let message = t("settings.errors.emailError");
       if (err.code === "auth/invalid-email") {
-        message = "Invalid email format.";
+        message = t("settings.errors.invalidEmail");
       } else if (err.code === "auth/email-already-in-use") {
-        message = "Email already in use. Please use a different email.";
+        message = t("settings.errors.emailInUse");
       } else if (err.code === "auth/network-request-failed") {
-        message = "Network error. Please check your connection.";
+        message = t("settings.errors.network");
       }
 
       toaster.create({
-        title: "Update failed",
+        title: t("settings.errors.update"),
         description: message,
         type: "error",
         duration: 3000,
@@ -211,8 +212,8 @@ export default function SettingsPage() {
     // Ensure user is authenticated
     if (!user) {
       toaster.create({
-        title: "Authentication error",
-        description: "You must be logged in to change your password.",
+        title: t("settings.errors.authError"),
+        description: t("settings.errors.auth"),
         type: "error",
         duration: 3000,
         meta: { closable: true },
@@ -223,8 +224,8 @@ export default function SettingsPage() {
     // Check for empty password
     if (!password.trim() || !confirmPassword.trim()) {
       toaster.create({
-        title: "Missing fields",
-        description: "Please enter and confirm your new password.",
+        title: t("settings.errors.missingField"),
+        description: t("settings.errors.missingPassword"),
         type: "error",
         duration: 3000,
         meta: { closable: true },
@@ -235,8 +236,8 @@ export default function SettingsPage() {
     // Check if passwords match
     if (password !== confirmPassword) {
       toaster.create({
-        title: "Password mismatch",
-        description: "New password and confirmation do not match.",
+        title: t("settings.errors.missingField"),
+        description: t("settings.errors.mismatch"),
         type: "error",
         duration: 3000,
         meta: { closable: true },
@@ -271,8 +272,8 @@ export default function SettingsPage() {
       setTimeout(() => setShowPasswordSuccess(false), 2000);
 
       toaster.create({
-        title: "Password Updated",
-        description: "Your password has been changed successfully.",
+        title: t("settings.toasts.passwordUpdated"),
+        description: t("settings.errors.passwordUpdatedDesc"),
         type: "success",
         duration: 3000,
         meta: { closable: true },
@@ -281,19 +282,19 @@ export default function SettingsPage() {
     } catch (err: any) {
       console.error("Failed to update password:", err);
 
-      let message = "There was an error updating your password.";
+      let message = t("settings.errors.password");
 
       // Provide detailed feedback based on Firebase error code
       if (err.code === "auth/weak-password") {
-        message = "Password must be stronger (e.g., at least 6 characters).";
+        message = t("settings.errors.weakPassword");
       } else if (err.code === "auth/invalid-credential") {
-        message = "Current password is incorrect.";
+        message = t("settings.errors.invalidCredential");
       } else if (err.code === "auth/network-request-failed") {
-        message = "Network error. Please check your connection.";
+        message = t("settings.errors.network");
       }
 
       toaster.create({
-        title: "Update failed",
+        title: t("settings.toasts.updateFailed"),
         description: message,
         type: "error",
         duration: 4000,
@@ -328,8 +329,8 @@ export default function SettingsPage() {
       setTimeout(() => setShowNameSuccess(false), 2000);
 
       toaster.create({
-        title: "Profile updated",
-        description: "Your display name has been saved successfully.",
+        title: t("settings.toasts.nameUpdated"),
+        description: t("settings.toasts.nameUpdatedDesc"),
         type: "success",
         duration: 3000,
         meta: { closable: true },
@@ -338,9 +339,8 @@ export default function SettingsPage() {
     } catch (err) {
       console.error("Failed to update name:", err);
       toaster.create({
-        title: "Update failed",
-        description:
-          "There was an error updating your profile. Please try again.",
+        title: t("settings.toasts.updateFailed"),
+        description: t("settings.toasts.updateFailedDesc"),
         type: "error",
         duration: 3000,
         meta: { closable: true },
@@ -377,8 +377,8 @@ export default function SettingsPage() {
         const data = await res.json();
         console.error(data.error);
         toaster.create({
-          title: "Remove failed",
-          description: "There was an error removing your photo.",
+          title: t("settings.toasts.removeFailed"),
+          description: t("settings.toasts.removeFailedDesc"),
           type: "error",
           duration: 3000,
           meta: { closable: true },
@@ -470,9 +470,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleGoBack = () => {
-    router.back();
-  };
   const marks = [
     { value: 1, label: "1X" },
     { value: 2, label: "2X" },
@@ -499,18 +496,7 @@ export default function SettingsPage() {
       <Header />
 
       <Container maxW="container.md" py={8} flex={1}>
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
-
+        <BackButton />
         <VStack
           gap={8}
           align="start"
@@ -522,7 +508,7 @@ export default function SettingsPage() {
           border="1px"
           borderColor={borderColor}
         >
-          <Heading fontSize="2xl">Account Settings</Heading>
+          <Heading fontSize="2xl">{t("settings.title")}</Heading>
 
           <Stack
             direction={{ base: "column", md: "row" }}
@@ -628,7 +614,7 @@ export default function SettingsPage() {
 
             <Box flex={1}>
               <Text fontWeight="bold" fontSize="lg">
-                {profile?.displayName || "No display name set"}
+                {profile?.displayName || t("settings.noDisplayName")}
               </Text>
               <Text color={colorMode === "light" ? "gray.600" : "gray.300"}>
                 {profile?.email}
@@ -638,7 +624,8 @@ export default function SettingsPage() {
                 fontSize="sm"
                 mt={1}
               >
-                Member since {profile?.createdAt?.toDate().toLocaleDateString()}
+                {t("settings.memberSince")}{" "}
+                {profile?.createdAt?.toDate().toLocaleDateString()}
               </Text>
             </Box>
           </Stack>
@@ -649,14 +636,14 @@ export default function SettingsPage() {
             <Box w="full">
               <HStack mb={2}>
                 <Icon as={FiUser} color="teal.500" />
-                <Text fontWeight="medium">Display Name</Text>
+                <Text fontWeight="medium">{t("settings.name")}</Text>
               </HStack>
               <Flex>
                 <InputGroup flex="1" mr={3}>
                   <Input
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your name"
+                    placeholder={t("settings.namePlaceholder")}
                     size="md"
                     borderWidth="1px"
                     borderColor={borderColor}
@@ -668,10 +655,10 @@ export default function SettingsPage() {
                   colorPalette="teal"
                   onClick={handleUpdateName}
                   loading={updatingUsername}
-                  loadingText="Saving..."
+                  loadingText={t("settings.saving")}
                   size="md"
                 >
-                  {showNameSuccess ? <LuCheck /> : "Save Name"}
+                  {showNameSuccess ? <LuCheck /> : t("settings.saveName")}
                 </Button>
               </Flex>
             </Box>
@@ -679,13 +666,13 @@ export default function SettingsPage() {
             <Box w="full">
               <HStack mb={2}>
                 <Icon as={FiMail} color="teal.500" />
-                <Text fontWeight="medium">Change Email</Text>
+                <Text fontWeight="medium">{t("settings.email")}</Text>
               </HStack>
               <Flex>
                 <Input
                   flex="1"
                   mr={3}
-                  placeholder="New email"
+                  placeholder={t("settings.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
@@ -696,12 +683,12 @@ export default function SettingsPage() {
                 <Button
                   minW={"150px"}
                   colorPalette="teal"
-                  loadingText="Updating..."
+                  loadingText={t("settings.updating")}
                   size="md"
                   loading={updatingEmail}
                   onClick={handleUpdateEmail}
                 >
-                  {showEmailSuccess ? <LuCheck /> : "Update Email"}
+                  {showEmailSuccess ? <LuCheck /> : t("settings.updateEmail")}
                 </Button>
               </Flex>
             </Box>
@@ -709,13 +696,13 @@ export default function SettingsPage() {
             <Box w="full">
               <HStack mb={4} align="center">
                 <Icon as={FiLock} color="teal.500" />
-                <Text fontWeight="medium">Change Password</Text>
+                <Text fontWeight="medium">{t("settings.password")}</Text>
               </HStack>
 
               <VStack gap={3} align="stretch">
                 <Input
                   type="password"
-                  placeholder="Current password"
+                  placeholder={t("settings.currentPassword")}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   borderWidth="1px"
@@ -726,7 +713,7 @@ export default function SettingsPage() {
                   <Input
                     w="100%"
                     type="password"
-                    placeholder="New password"
+                    placeholder={t("settings.newPassword")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     borderWidth="1px"
@@ -736,7 +723,7 @@ export default function SettingsPage() {
                   <Input
                     w="100%"
                     type="password"
-                    placeholder="Confirm new password"
+                    placeholder={t("settings.confirmPassword")}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     borderWidth="1px"
@@ -749,10 +736,14 @@ export default function SettingsPage() {
                     colorPalette="teal"
                     onClick={handleUpdatePassword}
                     loading={updatingPassword}
-                    loadingText="Changing..."
+                    loadingText={t("settings.changing")}
                     size="md"
                   >
-                    {showPasswordSuccess ? <LuCheck /> : "Update Password"}
+                    {showPasswordSuccess ? (
+                      <LuCheck />
+                    ) : (
+                      t("settings.updatePassword")
+                    )}
                   </Button>
                 </Flex>
               </VStack>
@@ -768,8 +759,8 @@ export default function SettingsPage() {
               onClick={async () => {
                 await signOut(auth);
                 toaster.create({
-                  title: "Signed out",
-                  description: "You have been successfully logged out.",
+                  title: t("settings.toasts.signedOut"),
+                  description: t("settings.toasts.signedOutDesc"),
                   type: "info",
                   duration: 3000,
                   meta: { closable: true },
@@ -778,7 +769,7 @@ export default function SettingsPage() {
               }}
             >
               <FiLogOut />
-              Log Out
+              {t("settings.logout")}
             </Button>
           </VStack>
         </VStack>
@@ -815,7 +806,7 @@ export default function SettingsPage() {
             {/* Header */}
             <Box p={4} borderBottomWidth="1px" borderColor={borderColor}>
               <Heading size="sm" textAlign="center">
-                Crop Profile Picture
+                {t("settings.cropTitle")}
               </Heading>
             </Box>
 
@@ -847,7 +838,7 @@ export default function SettingsPage() {
             >
               <Box w="full">
                 <Text fontSize="sm" mb={2}>
-                  Zoom
+                  {t("settings.zoom")}
                 </Text>
 
                 <Slider.Root
@@ -878,10 +869,10 @@ export default function SettingsPage() {
                     setSelectedImage(null);
                   }}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button colorPalette="teal" flex={1} onClick={handleCropDone}>
-                  Save
+                  {t("common.save")}
                 </Button>
               </HStack>
             </VStack>

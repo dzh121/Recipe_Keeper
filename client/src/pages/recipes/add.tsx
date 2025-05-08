@@ -1,25 +1,16 @@
 "use client";
 
-import { LuChevronLeft } from "react-icons/lu";
-import { Box, Container, Button } from "@chakra-ui/react";
+import { Box, Container } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { useRouter } from "next/router";
 import Head from "next/head";
 import RecipeModify from "@/components/recipes/RecipeModify";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import BackButton from "@/components/ui/back";
 export default function AddRecipePage() {
-  const router = useRouter();
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
-
   const hasMounted = useHasMounted();
   if (!hasMounted) return null; // Prevents hydration errors
-
-  const handleGoBack = () => {
-    router.back();
-  };
 
   return (
     <Box
@@ -50,17 +41,7 @@ export default function AddRecipePage() {
       <Header />
 
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
         <RecipeModify mode="add" />
       </Container>
 

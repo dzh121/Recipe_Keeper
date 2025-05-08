@@ -3,29 +3,23 @@ import { useEffect } from "react";
 import Head from "next/head";
 import { useAuth } from "@/context/AuthContext";
 import RecipeList from "@/components/recipes/RecipeList";
-import {
-  Box,
-  Container,
-  VStack,
-  Spinner,
-  Text,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Container, VStack, Spinner, Text } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { Recipe } from "@/lib/types/recipe";
-import { LuChevronLeft } from "react-icons/lu";
 import { toaster, Toaster } from "@/components/ui/toaster";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { useTranslation } from "react-i18next";
+import BackButton from "@/components/ui/back";
+
 export default function RecipesManage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
   const [recipes, setRecipes] = React.useState<Recipe[]>([]);
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchFavoriteRecipes = async () => {
@@ -58,9 +52,9 @@ export default function RecipesManage() {
 
         // Fetch only favorite recipes
         const recipesRes = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_API_URL
-          }/recipes?ids=${favoriteIds.join(",")}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes?ids=${favoriteIds.join(
+            ","
+          )}`,
           {
             method: "GET",
             headers: {
@@ -128,9 +122,6 @@ export default function RecipesManage() {
     }
   };
 
-  const handleGoBack = () => {
-    router.back();
-  };
   if (!hasMounted) {
     return (
       <Box
@@ -148,20 +139,10 @@ export default function RecipesManage() {
         </Head>
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button
-            variant="outline"
-            mb={8}
-            onClick={handleGoBack}
-            size="md"
-            borderRadius="full"
-            _hover={{ bg: hoverBg }}
-          >
-            <LuChevronLeft />
-            Back
-          </Button>
+          <BackButton />
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg">Loading...</Text>
+            <Text fontSize="lg">{t("common.loading")}</Text>
           </VStack>
         </Container>
         <Footer />
@@ -185,19 +166,9 @@ export default function RecipesManage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
         <RecipeList
-          title="Favorite Recipes"
+          title={t("titles.favorites")}
           recipes={recipes}
           allowEdit={false}
           showAddButton={false}

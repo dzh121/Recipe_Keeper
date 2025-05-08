@@ -18,19 +18,20 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { LuChevronLeft, LuPlus, LuTag } from "react-icons/lu";
+import { LuPlus, LuTag } from "react-icons/lu";
 import { FiX } from "react-icons/fi";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { useRouter } from "next/router";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import Head from "next/head";
 import { auth } from "@/lib/firebase";
+import { useTranslation } from "react-i18next";
+import BackButton from "@/components/ui/back";
 
 export default function TagsManagementPage() {
-  const router = useRouter();
   const hasMounted = useHasMounted();
+  const { t } = useTranslation();
 
   const [tags, setTags] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState("");
@@ -42,11 +43,6 @@ export default function TagsManagementPage() {
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const tagBg = useColorModeValue("teal.100", "teal.700");
   const tagColor = useColorModeValue("teal.800", "teal.100");
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
-
-  const handleGoBack = () => {
-    router.back();
-  };
 
   useEffect(() => {
     fetchTags();
@@ -57,16 +53,13 @@ export default function TagsManagementPage() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/tags`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-          },
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
@@ -76,9 +69,11 @@ export default function TagsManagementPage() {
       setTags(data.tags || []);
     } catch (error) {
       toaster.create({
-        title: "Error fetching tags",
+        title: t("tagManagement.toasts.fetchError.title"),
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : t("tagManagement.toasts.fetchError.description"),
         type: "error",
         duration: 5000,
         meta: { closable: true },
@@ -91,8 +86,8 @@ export default function TagsManagementPage() {
   const handleAddTag = async () => {
     if (!newTagName.trim()) {
       toaster.create({
-        title: "Tag name required",
-        description: "Please enter a name for the tag",
+        title: t("tagManagement.toasts.tagNameMissing.title"),
+        description: t("tagManagement.toasts.tagNameMissing.description"),
         type: "warning",
         duration: 3000,
         meta: { closable: true },
@@ -105,8 +100,10 @@ export default function TagsManagementPage() {
       tags.some((tag) => tag.toLowerCase() === newTagName.toLowerCase().trim())
     ) {
       toaster.create({
-        title: "Tag already exists",
-        description: `"${newTagName}" already exists in your tags`,
+        title: t("tagManagement.toasts.tagExists.title"),
+        description: t("tagManagement.toasts.tagExists.description", {
+          tag: newTagName,
+        }),
         type: "warning",
         duration: 3000,
         meta: { closable: true },
@@ -117,24 +114,22 @@ export default function TagsManagementPage() {
 
     try {
       setIsAdding(true);
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/tags`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ tag: newTagName.trim() }),
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ tag: newTagName.trim() }),
+      });
 
       if (!response.ok) {
         //get the error message from the response
         const errorData = await response.json();
-        const errorMessage = errorData.error || "Failed to add tag";
+        const errorMessage =
+          errorData.error || t("tagManagement.toasts.addError.description");
         toaster.create({
-          title: "Error adding tag",
+          title: t("tagManagement.toasts.addError.title"),
           description: errorMessage,
           type: "error",
           duration: 5000,
@@ -143,13 +138,13 @@ export default function TagsManagementPage() {
         throw new Error("Failed to add tag");
       }
 
-      const newTag = await response.json();
       setTags([...tags, newTagName.trim()]);
 
-      console.log("Tag added:", newTag);
       toaster.create({
-        title: "Tag added",
-        description: `"${newTagName}" has been added to your tags`,
+        title: t("tagManagement.toasts.tagAdded.title"),
+        description: t("tagManagement.toasts.tagAdded.description", {
+          tag: newTagName,
+        }),
         type: "success",
         duration: 3000,
         meta: { closable: true },
@@ -157,9 +152,11 @@ export default function TagsManagementPage() {
       setNewTagName("");
     } catch (error) {
       toaster.create({
-        title: "Error adding tag",
+        title: t("tagManagement.toasts.addError.title"),
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : t("tagManagement.toasts.addError.description"),
         type: "error",
         duration: 5000,
         meta: { closable: true },
@@ -191,17 +188,21 @@ export default function TagsManagementPage() {
       setTags(tags.filter((tag) => tag !== tagName));
 
       toaster.create({
-        title: "Tag deleted",
-        description: `"${tagName}" has been removed from your tags`,
+        title: t("tagManagement.toasts.tagDeleted.title"),
+        description: t("tagManagement.toasts.tagDeleted.description", {
+          tag: tagName,
+        }),
         type: "success",
         duration: 3000,
         meta: { closable: true },
       });
     } catch (error) {
       toaster.create({
-        title: "Error deleting tag",
+        title: t("tagManagement.toasts.deleteError.title"),
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : t("tagManagement.toasts.deleteError.description"),
         type: "error",
         duration: 5000,
         meta: { closable: true },
@@ -239,24 +240,13 @@ export default function TagsManagementPage() {
       <Header />
 
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
         <VStack gap={6} align="stretch" mb={8}>
           <Heading size="xl" fontWeight="bold">
-            Manage Recipe Tags
+            {t("tagManagement.title")}
           </Heading>
           <Text fontSize="lg" color={useColorModeValue("gray.600", "gray.400")}>
-            Add, view, and remove tags to better organize your recipe
-            collection.
+            {t("tagManagement.description")}
           </Text>
         </VStack>
 
@@ -276,7 +266,7 @@ export default function TagsManagementPage() {
             width="100%"
           >
             <Input
-              placeholder="Enter new tag (e.g., vegan, dessert, spicy)"
+              placeholder={t("tagManagement.inputPlaceholder")}
               borderWidth="1px"
               borderColor={borderColor}
               value={newTagName}
@@ -298,12 +288,12 @@ export default function TagsManagementPage() {
               minH="48px"
               onClick={handleAddTag}
               loading={isAdding}
-              loadingText="Adding"
+              loadingText={t("tagManagement.adding")}
               borderRadius="md"
               px={6}
             >
               <LuPlus />
-              Add Tag
+              {t("tagManagement.addButton")}
             </Button>
           </Stack>
         </Box>
@@ -319,7 +309,7 @@ export default function TagsManagementPage() {
           <Flex align="center" mb={6}>
             <LuTag size={24} color="teal" />
             <Heading size="md" ml={2}>
-              Your Tags
+              {t("tagManagement.yourTags")}
             </Heading>
             <Badge ml={3} colorPalette="teal" borderRadius="full" px={2}>
               {tags.length}
@@ -373,7 +363,7 @@ export default function TagsManagementPage() {
                 opacity={0.5}
               />
               <Text color="gray.500" fontSize="lg">
-                No tags found. Add your first tag to get started.
+                {t("tagManagement.noTagsFound")}
               </Text>
             </Box>
           )}

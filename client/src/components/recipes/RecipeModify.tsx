@@ -37,6 +37,7 @@ import { auth } from "@/lib/firebase";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import { RecipeFull } from "@/lib/types/recipe";
+import { useTranslation } from "react-i18next";
 
 export default function RecipeModify({
   mode = "add",
@@ -73,6 +74,7 @@ export default function RecipeModify({
     initialData.imageURL || null
   );
   const [isDragging, setIsDragging] = useState(false);
+  const { t, i18n } = useTranslation();
   const hasMounted = useHasMounted();
 
   // Colors for theming
@@ -162,8 +164,8 @@ export default function RecipeModify({
         setPhotoPreviewUrl(URL.createObjectURL(file));
       } else {
         toaster.create({
-          title: "Invalid File",
-          description: "Please upload an image file (JPEG, PNG, etc.)",
+          title: t("recipeModify.invalidFile"),
+          description: t("recipeModify.invalidFileDescription"),
           type: "error",
           duration: 3000,
         });
@@ -199,22 +201,20 @@ export default function RecipeModify({
   );
 
   const validateForm = () => {
-    if (!title.trim())
-      return error("Please enter a recipe title before saving.");
+    if (!title.trim()) return error(t("recipeModify.missingTitle"));
     if (recipeType === "link" && !link.trim())
-      return error("Please enter a recipe link before saving.");
+      return error(t("recipeModify.missingLink"));
     if (recipeType === "homemade" && !ingredients.trim())
-      return error("Please enter ingredients for your homemade recipe.");
+      return error(t("recipeModify.missingIngredients"));
     if (recipeType === "homemade" && !instructions.trim())
-      return error("Please enter instructions for your homemade recipe.");
-    if (!selectedTags.length)
-      return error("Please select at least one tag before saving.");
+      return error(t("recipeModify.missingInstructions"));
+    if (!selectedTags.length) return error(t("recipeModify.missingTags"));
     return true;
   };
 
   const error = (msg: string) => {
     toaster.create({
-      title: "Missing information",
+      title: t("recipeModify.missingInfoTitle"),
       description: msg,
       type: "error",
       duration: 3000,
@@ -291,23 +291,21 @@ export default function RecipeModify({
         formData.append("file", photoFile);
         formData.append("recipeId", recipeId);
 
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/recipes/upload-photo`,
-          {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${authToken}`,
-            },
-            body: formData,
-          }
-        );
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipes/upload-photo`, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${authToken}`,
+          },
+          body: formData,
+        });
       }
 
       toaster.create({
         title: `Recipe ${mode === "edit" ? "Saved" : "Added"}`,
-        description: `Your recipe was successfully ${
-          mode === "edit" ? "updated" : "added"
-        }.`,
+        description:
+          mode === "edit"
+            ? t("recipeModify.saveSuccessDescription")
+            : t("recipeModify.addSuccessDescription"),
         type: "success",
         duration: 3000,
         meta: { closable: true },
@@ -333,8 +331,8 @@ export default function RecipeModify({
       }
     } catch (err) {
       toaster.create({
-        title: "Save Failed",
-        description: "An error occurred.",
+        title: t("recipeModify.saveFailed"),
+        description: t("recipeModify.saveFailedDescription"),
         type: "error",
         duration: 4000,
         meta: { closable: true },
@@ -381,8 +379,8 @@ export default function RecipeModify({
       router.push("/recipes/manage");
     } catch (err) {
       toaster.create({
-        title: "Delete Failed",
-        description: "An error occurred.",
+        title: t("recipeModify.deleteFailed"),
+        description: t("recipeModify.deleteFailedDescription"),
         type: "error",
         duration: 4000,
         meta: { closable: true },
@@ -394,7 +392,7 @@ export default function RecipeModify({
   const PhotoUploadComponent = () => (
     <Box mb={6}>
       <Text fontWeight="medium" mb={2}>
-        Recipe Photo
+        {t("recipeModify.photo")}
       </Text>
       <Flex
         direction="column"
@@ -463,7 +461,7 @@ export default function RecipeModify({
               onClick={() => document.getElementById("photo-upload")?.click()}
             >
               <FiUpload />
-              Change Photo
+              {t("recipeModify.changePhoto")}
             </Button>
             <input
               id="photo-upload"
@@ -478,10 +476,10 @@ export default function RecipeModify({
             <VStack gap={3}>
               <Icon as={FiImage} fontSize="3xl" color={placeholderColor} />
               <Text textAlign="center" color={textColor} fontWeight="medium">
-                Drag and drop an image here
+                {t("recipeModify.dragPhoto")}
               </Text>
               <Text fontSize="sm" color={placeholderColor} textAlign="center">
-                or
+                {t("recipeModify.or")}
               </Text>
               <Button
                 colorPalette="teal"
@@ -490,7 +488,7 @@ export default function RecipeModify({
                 _hover={{ bg: "teal.50" }}
               >
                 <FiUpload />
-                Browse Files
+                {t("recipeModify.browse")}
               </Button>
             </VStack>
             <input
@@ -510,7 +508,7 @@ export default function RecipeModify({
         )}
       </Flex>
       <Text fontSize="sm" color="gray.500" mt={2}>
-        Add a photo of your finished recipe. JPEG or PNG recommended.
+        {t("recipeModify.addPhoto")}
       </Text>
     </Box>
   );
@@ -525,19 +523,23 @@ export default function RecipeModify({
       bg={cardBg}
       borderWidth="1px"
       borderColor={borderColor}
+      dir={i18n.language === "he" ? "rtl" : "ltr"}
     >
       <Toaster />
       <VStack gap={8} align="stretch">
         <Box>
           <Flex justify="space-between" align="center" mb={4}>
             <Heading fontSize="2xl">
-              {mode === "edit" ? "Edit" : "Add"} Recipe
+              {mode === "edit"
+                ? t("recipeModify.editTitle")
+                : t("recipeModify.addTitle")}
             </Heading>
             {mode === "edit" && (
               <Dialog.Root role="alertdialog">
                 <Dialog.Trigger asChild>
                   <Button colorPalette={"red"} variant="subtle" size="sm">
-                    <Icon as={FiX} mr={2} color="red.500" /> Delete Recipe
+                    <Icon as={FiX} mr={2} color="red.500" />{" "}
+                    {t("common.delete")}
                   </Button>
                 </Dialog.Trigger>
                 <Portal>
@@ -545,19 +547,21 @@ export default function RecipeModify({
                   <Dialog.Positioner>
                     <Dialog.Content>
                       <Dialog.Header>
-                        <Dialog.Title>Delete Recipe</Dialog.Title>
+                        <Dialog.Title>{t("common.delete")}</Dialog.Title>
                       </Dialog.Header>
                       <Dialog.Body>
                         <Text fontSize="md" mb={2}>
-                          Are you sure you want to delete this recipe?
+                          {t("recipeModify.deleteConfirm")}
                         </Text>
                       </Dialog.Body>
                       <Dialog.Footer>
                         <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
+                          <Button variant="outline">
+                            {t("common.cancel")}
+                          </Button>
                         </Dialog.ActionTrigger>
                         <Button colorPalette="red" onClick={handleRemove}>
-                          Delete
+                          {t("common.delete")}
                         </Button>
                       </Dialog.Footer>
                       <Dialog.CloseTrigger asChild>
@@ -570,13 +574,12 @@ export default function RecipeModify({
             )}
           </Flex>
 
-          <Text color="gray.500">
-            Save your favorite recipes and customize them with notes and tags.
-          </Text>
+          <Text color="gray.500">{t("recipeModify.subtitle")}</Text>
         </Box>
 
         {/* Recipe Type Selector */}
         <Tabs.Root
+          dir={i18n.language === "he" ? "rtl" : "ltr"}
           colorPalette="teal"
           value={recipeType}
           onValueChange={(e) => setRecipeType(e.value as "link" | "homemade")}
@@ -585,26 +588,30 @@ export default function RecipeModify({
           <Tabs.List mb={4}>
             <Tabs.Trigger value="link">
               <Icon as={FiGlobe} mr={2} />
-              Recipe Link
+              {t("recipeModify.recipeLink")}
             </Tabs.Trigger>
             <Tabs.Trigger value="homemade">
               <Icon as={FiHome} mr={2} />
-              Homemade Recipe
+              {t("recipeModify.homemadeRecipe")}
             </Tabs.Trigger>
           </Tabs.List>
 
           {/* Link Recipe Panel */}
-          <Tabs.Content value="link" p={0}>
+          <Tabs.Content
+            value="link"
+            p={0}
+            dir={i18n.language === "he" ? "rtl" : "ltr"}
+          >
             <VStack gap={6} align="stretch">
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Recipe Title{" "}
+                  {t("recipeModify.title")}{" "}
                   <Text as="span" color="red.500">
                     *
                   </Text>
                 </Text>
                 <Input
-                  placeholder="e.g. Chocolate Chip Cookies"
+                  placeholder={t("recipeModify.titlePlaceholder")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   borderColor={borderColor}
@@ -617,7 +624,7 @@ export default function RecipeModify({
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Recipe Link{" "}
+                  {t("recipeModify.link")}{" "}
                   <Text as="span" color="red.500">
                     *
                   </Text>
@@ -635,16 +642,16 @@ export default function RecipeModify({
                   />
                 </InputGroup>
                 <Text fontSize="sm" color="gray.500" mt={1}>
-                  Enter the URL of the recipe you'd like to save
+                  {t("recipeModify.linkHelp")}
                 </Text>
               </Box>
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Notes
+                  {t("recipeModify.notes")}
                 </Text>
                 <Textarea
-                  placeholder="Why you like it, changes you'd make, etc."
+                  placeholder={t("recipeModify.notesPlaceholder")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   borderColor={borderColor}
@@ -656,13 +663,13 @@ export default function RecipeModify({
               <HStack gap={6} align="flex-start">
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Time to Finish
+                    {t("recipeModify.timeToFinish")}
                   </Text>
                   <InputGroup startElement={<Icon as={FiClock} />}>
                     <Input
                       type="number"
                       min={1}
-                      placeholder="Minutes"
+                      placeholder={t("recipeModify.minutesPlaceholder")}
                       value={timeToFinish}
                       onChange={(e) => setTimeToFinish(e.target.value)}
                       borderColor={borderColor}
@@ -673,7 +680,7 @@ export default function RecipeModify({
 
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Rating
+                    {t("recipeModify.rating")}
                   </Text>
                   <HStack gap={2}>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -705,10 +712,10 @@ export default function RecipeModify({
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Your Review
+                  {t("recipeModify.review")}
                 </Text>
                 <Textarea
-                  placeholder="How was it? Would you make it again?"
+                  placeholder={t("recipeModify.reviewPlaceholder")}
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
                   borderColor={borderColor}
@@ -724,13 +731,13 @@ export default function RecipeModify({
             <VStack gap={6} align="stretch">
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Recipe Title{" "}
+                  {t("recipeModify.title")}{" "}
                   <Text as="span" color="red.500">
                     *
                   </Text>
                 </Text>
                 <Input
-                  placeholder="e.g. Apple Pie"
+                  placeholder={t("recipeModify.titlePlaceholder")}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   borderColor={borderColor}
@@ -744,12 +751,12 @@ export default function RecipeModify({
               <HStack gap={6} align="flex-start">
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Servings
+                    {t("recipeModify.servings")}
                   </Text>
                   <Input
                     type="number"
                     min={1}
-                    placeholder="Number of servings"
+                    placeholder={t("recipeModify.servingsPlaceholder")}
                     value={servings}
                     onChange={(e) => setServings(e.target.value)}
                     borderColor={borderColor}
@@ -759,12 +766,12 @@ export default function RecipeModify({
 
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Prep Time (min)
+                    {t("recipeModify.prepTime")}
                   </Text>
                   <Input
                     type="number"
                     min={1}
-                    placeholder="Minutes"
+                    placeholder={t("recipeModify.minutesPlaceholder")}
                     value={prepTime}
                     onChange={(e) => setPrepTime(e.target.value)}
                     borderColor={borderColor}
@@ -774,12 +781,12 @@ export default function RecipeModify({
 
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Cook Time (min)
+                    {t("recipeModify.cookTime")}
                   </Text>
                   <Input
                     type="number"
                     min={1}
-                    placeholder="Minutes"
+                    placeholder={t("recipeModify.minutesPlaceholder")}
                     value={cookTime}
                     onChange={(e) => setCookTime(e.target.value)}
                     borderColor={borderColor}
@@ -790,16 +797,13 @@ export default function RecipeModify({
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Ingredients{" "}
+                  {t("recipeModify.ingredients")}{" "}
                   <Text as="span" color="red.500">
                     *
                   </Text>
                 </Text>
                 <Textarea
-                  placeholder="List ingredients line by line, e.g.:
-2 cups flour
-1 cup sugar
-1/2 cup butter"
+                  placeholder={t("recipeModify.ingredientsPlaceholder")}
                   value={ingredients}
                   onChange={(e) => setIngredients(e.target.value)}
                   borderColor={borderColor}
@@ -807,22 +811,19 @@ export default function RecipeModify({
                   rows={6}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
-                  Enter each ingredient on a new line with quantities
+                  {t("recipeModify.ingredientsHelp")}
                 </Text>
               </Box>
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Instructions{" "}
+                  {t("recipeModify.instructions")}{" "}
                   <Text as="span" color="red.500">
                     *
                   </Text>
                 </Text>
                 <Textarea
-                  placeholder="List steps in order, e.g.:
-1. Preheat oven to 350°F
-2. Mix dry ingredients
-3. Add wet ingredients and stir until combined"
+                  placeholder={t("recipeModify.instructionsPlaceholder")}
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
                   borderColor={borderColor}
@@ -830,16 +831,16 @@ export default function RecipeModify({
                   rows={8}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
-                  Number your steps or separate them with line breaks
+                  {t("recipeModify.instructionsHelp")}
                 </Text>
               </Box>
 
               <Box>
                 <Text fontWeight="medium" mb={2}>
-                  Notes
+                  {t("recipeModify.notes")}
                 </Text>
                 <Textarea
-                  placeholder="Special tips, variations, or personal notes about this recipe"
+                  placeholder={t("recipeModify.notesPlaceholder")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   borderColor={borderColor}
@@ -851,13 +852,13 @@ export default function RecipeModify({
               <HStack gap={6} align="flex-start">
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Time to Finish
+                    {t("recipeModify.timeToFinish")}
                   </Text>
                   <InputGroup startElement={<Icon as={FiClock} />}>
                     <Input
                       type="number"
                       min={1}
-                      placeholder="Total minutes (incl. prep)"
+                      placeholder={t("recipeModify.timeToFinish")}
                       value={timeToFinish}
                       onChange={(e) => setTimeToFinish(e.target.value)}
                       borderColor={borderColor}
@@ -868,7 +869,7 @@ export default function RecipeModify({
 
                 <Box flex="1">
                   <Text fontWeight="medium" mb={2}>
-                    Rating
+                    {t("recipeModify.rating")}
                   </Text>
                   <HStack gap={2}>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -904,7 +905,7 @@ export default function RecipeModify({
         {/* Common elements for both recipe types */}
         <Box>
           <Text fontWeight="medium" mb={3}>
-            Tags{" "}
+            {t("recipeModify.tags")}{" "}
             <Text as="span" color="red.500">
               *
             </Text>
@@ -939,7 +940,7 @@ export default function RecipeModify({
             <Menu.Trigger asChild>
               <Button size="sm" colorPalette="teal" variant="outline">
                 <Icon as={FiTag} />
-                Add Tags
+                {t("recipeModify.addTags")}
                 <FiChevronDown />
               </Button>
             </Menu.Trigger>
@@ -948,7 +949,7 @@ export default function RecipeModify({
                 <Menu.Content maxH="250px" overflowY="auto" minW="200px">
                   <Box px={3} py={2}>
                     <Input
-                      placeholder="Search tags..."
+                      placeholder={t("recipeModify.searchTags")}
                       size="sm"
                       value={tagSearch}
                       onChange={(e) => setTagSearch(e.target.value)}
@@ -969,7 +970,7 @@ export default function RecipeModify({
                     ))
                   ) : (
                     <Box px={3} py={2} textAlign="center" color="gray.500">
-                      No tags found
+                      {t("recipeModify.noTagsFound")}
                     </Box>
                   )}
                 </Menu.Content>
@@ -977,10 +978,16 @@ export default function RecipeModify({
             </Portal>
           </Menu.Root>
         </Box>
-        <HStack justify="space-between">
-          <Text></Text>
+        <Flex
+          mt={4}
+          justify="space-between"
+          direction={i18n.language === "he" ? "row-reverse" : "row"}
+          align="center"
+          flexWrap="wrap"
+          gap={4}
+        >
           <HStack>
-            <Text fontWeight="medium">Public</Text>
+            <Text fontWeight="medium">{t("recipeModify.public")}</Text>
             <Switch.Root
               colorPalette="teal"
               checked={isPublic}
@@ -995,21 +1002,19 @@ export default function RecipeModify({
               </Switch.Control>
             </Switch.Root>
           </HStack>
-        </HStack>
 
-        <Flex justify="flex-end" mt={4}>
           <Button
             colorPalette="teal"
             onClick={handleSave}
             loading={isSubmitting}
-            loadingText={mode === "edit" ? "Saving" : "Adding"}
+            loadingText={mode === "edit" ? t("common.save") : t("common.add")}
             size="lg"
             px={8}
             borderRadius="md"
             _hover={{ transform: "translateY(-1px)", boxShadow: "sm" }}
           >
             <FiSave />
-            {mode === "edit" ? "Save" : "Add"}
+            {mode === "edit" ? t("common.save") : t("common.add")}
           </Button>
         </Flex>
       </VStack>

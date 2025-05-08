@@ -27,6 +27,7 @@ router.post("/color-mode", authenticateToken, async (req, res) => {
   }
 });
 
+
 router.get("/color-mode", authenticateToken, async (req, res) => {
   const user = (req as any).user; 
   
@@ -49,4 +50,48 @@ router.get("/color-mode", authenticateToken, async (req, res) => {
   }
 });
 
+router.post("/language", authenticateToken, async (req, res) => {
+  const user = (req as any).user; 
+  const { language } = req.body;
+
+  if (!user || !user.uid) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (typeof language !== "string") {
+    return res.status(400).json({ error: "Invalid language value" });
+  }
+
+  try {
+    const settingsRef = db.doc(`users/${user.uid}/private/settings`);
+    await settingsRef.set({ language }, { merge: true });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error saving color mode:", error);
+    return res.status(500).json({ error: "Failed to save color mode" });
+  }
+});
+
+router.get("/language", authenticateToken, async (req, res) => {
+  const user = (req as any).user; 
+  
+  if (!user || !user.uid) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    const settingsRef = db.doc(`users/${user.uid}/private/settings`);
+    const settingsSnap = await settingsRef.get();
+
+    if (!settingsSnap.exists) {
+      return res.status(200).json({ language: null });
+    }
+
+    const data = settingsSnap.data();
+    return res.status(200).json({ language: data?.language });
+  } catch (error) {
+    console.error("Error fetching color mode:", error);
+    return res.status(500).json({ error: "Failed to fetch color mode" });
+  }
+});
 export default router;

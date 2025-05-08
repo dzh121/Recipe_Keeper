@@ -1,0 +1,359 @@
+{
+  "app": {
+    "title": "שומר המתכונים",
+    "description": "לוח הבקרה האישי שלך לארגון, חיפוש ושיתוף מתכונים.",
+    "loginRequired": "דרושה התחברות"
+  },
+  "__features_section": "כרטיסי פיצ'רים שמוצגים במסך הבית / לוח הבקרה",
+
+  "features": {
+    "myRecipes": {
+      "title": "המתכונים שלי",
+      "description": "גישה לכל המתכונים שיצרת או שמרת מהקהילה."
+    },
+    "favorites": {
+      "title": "מתכונים מועדפים",
+      "description": "גישה נוחה לכל המתכונים המועדפים עליך."
+    },
+    "explore": {
+      "title": "חקור מתכונים ציבוריים",
+      "description": "גלה רעיונות חדשים ושמור מתכונים שמשתמשים אחרים שיתפו."
+    },
+    "add": {
+      "title": "הוסף מתכון חדש",
+      "description": "צור ושמור מתכונים משלך עם מרכיבים, הוראות ועוד."
+    },
+    "tags": {
+      "title": "ניהול תגיות",
+      "description": "התאם וארגן תגיות כדי לסנן ולאתר מתכונים בקלות."
+    },
+    "settings": {
+      "title": "הגדרות",
+      "description": "עדכן את הפרופיל שלך, העדפות, וניהול החשבון."
+    }
+  },
+
+  "__general_ui": "תגיות ממשק נפוצות כמו כן, לא, שמור וכו׳",
+  "common": {
+    "yes": "כן",
+    "no": "לא",
+    "cancel": "ביטול",
+    "add": "הוסף",
+    "save": "שמור",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "close": "סגור",
+    "confirm": "אישור",
+    "back": "חזרה",
+    "next": "הבא",
+    "loading": "טוען..."
+  },
+
+  "titles":{
+    "manageRecipes": "נהל את המתכונים שלך",
+    "favorites": "מתכונים מועדפים",
+    "explore": "חקור מתכונים ציבוריים"
+  },
+
+  "__language_menu": "בחירת שפה ושמות שפה לתצוגה",
+  "language": {
+    "en": "English",
+    "he": "עברית",
+    "selectLanguage": "בחר שפה"
+  },
+
+  "__auth_section": "תגיות ומסרים הקשורים לאימות",
+  "startPage": {
+    "title": "התחברות - שומר המתכונים",
+    "metaDescription": "התחבר לחשבון שומר המתכונים שלך.",
+    "welcome": "ברוך הבא לשומר המתכונים",
+    "subtitle": "קבל גישה לכל המתכונים האישיים שלך",
+    "login": "התחברות",
+    "register": "הרשמה",
+    "goHome": "חזרה לדף הבית",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "username": "שם משתמש",
+    "confirmPassword": "אימות סיסמה",
+    "placeholders": {
+      "email": "your@email.com",
+      "password": "הזן סיסמה",
+      "username": "הזן שם משתמש",
+      "confirmPassword": "אמת את הסיסמה"
+    },
+    "errors": {
+      "requiredEmail": "חובה להזין אימייל",
+      "requiredPassword": "חובה להזין סיסמה",
+      "requiredUsername": "חובה להזין שם משתמש",
+      "requiredConfirmPassword": "אשר את הסיסמה",
+      "passwordMismatch": "הסיסמאות אינן תואמות"
+    },
+    "authErrors": {
+      "loginError": "שגיאת התחברות",
+      "registrationError": "שגיאת הרשמה",
+      "loginFailed": "ההתחברות נכשלה",
+      "registrationFailed": "ההרשמה נכשלה",
+      "invalidCredentials": "אימייל או סיסמה שגויים.",
+      "invalidEmail": "כתובת האימייל אינה תקינה.",
+      "emailInUse": "כתובת האימייל כבר נמצאת בשימוש. נסה להתחבר.",
+      "weakPassword": "הסיסמה חלשה מדי. עליה להכיל לפחות 6 תווים.",
+      "tooManyRequests": "יותר מדי ניסיונות. המתן מספר דקות ונסה שוב.",
+      "userDisabled": "החשבון הושבת על ידי מנהל. פנה לתמיכה.",
+      "networkError": "שגיאת רשת. בדוק את החיבור ונסה שוב.",
+      "internalError": "שגיאה פנימית. נסה שוב מאוחר יותר.",
+      "missingPassword": "יש להזין סיסמה.",
+      "unknownErrorLogin": "לא ניתן להתחבר. נסה שוב.",
+      "unknownErrorRegister": "לא ניתן להירשם. נסה שוב."
+    }
+  },
+
+  "footer": {
+    "copyright": "© {{year}} שומר המתכונים. כל הזכויות שמורות."
+  },
+
+  "header":{
+    "signin": "התחברות"
+  },
+
+  "recipeModify": {
+    "addTitle": "הוסף מתכון",
+    "editTitle": "ערוך מתכון",
+    "subtitle": "שמור את המתכונים האהובים עליך והתאם אותם עם הערות ותגיות.",
+    "deleteConfirm": "האם אתה בטוח שברצונך למחוק את המתכון?",
+    "recipeLink": "קישור למתכון",
+    "homemadeRecipe": "מתכון ביתי",
+    "title": "כותרת המתכון",
+    "titlePlaceholder": "לדוג׳ עוגיות שוקולד צ׳יפס",
+    "link": "קישור למתכון",
+    "linkPlaceholder": "https://example.com/your-recipe",
+    "linkHelp": "הזן את הקישור למתכון שברצונך לשמור",
+    "notes": "הערות",
+    "notesPlaceholder": "למה אתה אוהב את המתכון, אילו שינויים תעשה, וכו׳",
+    "timeToFinish": "זמן כולל",
+    "minutesPlaceholder": "דקות",
+    "rating": "דירוג",
+    "review": "הביקורת שלך",
+    "reviewPlaceholder": "איך היה? האם תכין שוב?",
+    "servings": "מנות",
+    "servingsPlaceholder": "מספר מנות",
+    "prepTime": "זמן הכנה (דקות)",
+    "cookTime": "זמן בישול (דקות)",
+    "ingredients": "מרכיבים",
+    "ingredientsPlaceholder": "רשום כל מרכיב בשורה נפרדת",
+    "ingredientsHelp": "כתוב כל מרכיב עם כמות בשורה נפרדת",
+    "instructions": "הוראות הכנה",
+    "instructionsPlaceholder": "רשום שלבים בסדר כרונולוגי...",
+    "instructionsHelp": "מספר את השלבים או הפרד בשורות",
+    "tags": "תגיות",
+    "searchTags": "חפש תגיות...",
+    "noTagsFound": "לא נמצאו תגיות",
+    "addTags": "הוסף תגיות",
+    "public": "ציבורי",
+    "addPhoto": "הוסף תמונה של המתכון המוכן. מומלץ JPEG או PNG.",
+    "dragPhoto": "גרור ושחרר תמונה כאן",
+    "or": "או",
+    "browse": "בחר קובץ",
+    "photo": "תמונה למתכון",
+    "changePhoto": "שנה תמונה",
+    "invalidFile": "קובץ לא תקין",
+    "invalidFileDescription": "אנא העלה קובץ תמונה (JPEG, PNG וכו׳)",
+    "saveSuccessTitle": "המתכון נשמר",
+    "saveSuccessDescription": "המתכון עודכן בהצלחה.",
+    "addSuccessTitle": "המתכון נוסף",
+    "addSuccessDescription": "המתכון נוסף בהצלחה.",
+    "saveFailed": "שמירה נכשלה",
+    "saveFailedDescription": "שגיאה בשמירה. אנא נסה שוב.",
+    "deleteSuccessTitle": "המתכון נמחק",
+    "deleteFailedDescription": "שגיאה במחיקת המתכון. אנא נסה שוב.",
+    "deleteSuccessDescription": "המתכון נמחק בהצלחה.",
+    "deleteFailed": "מחיקה נכשלה",
+    "missingTitle": "יש להזין כותרת למתכון לפני השמירה.",
+    "missingLink": "יש להזין קישור למתכון.",
+    "missingIngredients": "יש להזין מרכיבים למתכון הביתי.",
+    "missingInstructions": "יש להזין הוראות הכנה למתכון הביתי.",
+    "missingTags": "יש לבחור לפחות תגית אחת.",
+    "missingInfoTitle": "מידע חסר"
+  },
+
+  "recipeList": {
+    "searchPlaceholder": "חפש מתכונים...",
+    "typeLabel": "סוג מתכון",
+    "typeAll": "כל הסוגים",
+    "typeLink": "מתכונים עם קישור",
+    "typeHomemade": "מתכונים ביתיים",
+    "visibilityLabel": "נראות",
+    "visibilityAll": "הכל",
+    "visibilityPublic": "ציבורי",
+    "visibilityPrivate": "פרטי",
+    "tagsLabel": "תגיות",
+    "tagSearchPlaceholder": "חפש תגיות...",
+    "selectTags": "בחר תגיות",
+    "noTagsFound": "לא נמצאו תגיות",
+    "clearFilters": "נקה סינון",
+    "clearAllFilters": "נקה את כל הסינונים",
+    "recipesFound_zero": "לא נמצאו מתכונים",
+    "recipesFound_one": "מתכון אחד נמצא",
+    "recipesFound_other": "{{count}} מתכונים נמצאו",
+    "noRecipes": "לא נמצאו מתכונים העונים לקריטריונים שלך.",
+    "addRecipe": "הוסף מתכון",
+    "editTooltip": "ערוך מתכון",
+    "removeFavoriteTooltip": "הסר מהמועדפים",
+    "public": "ציבורי",
+    "private": "פרטי",
+    "homemade": "ביתי",
+    "link": "קישור"
+  },
+
+  "settings": {
+    "title": "הגדרות חשבון",
+    "back": "חזרה",
+    "name": "שם תצוגה",
+    "namePlaceholder": "הזן שם תצוגה",
+    "saveName": "שמור שם",
+    "saving": "שומר...",
+    "email": "שינוי אימייל",
+    "emailPlaceholder": "הזן אימייל",
+    "updateEmail": "עדכן אימייל",
+    "updating": "מעדכן...",
+    "password": "שינוי סיסמה",
+    "currentPassword": "סיסמה נוכחית",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אישור סיסמה חדשה",
+    "updatePassword": "עדכן סיסמה",
+    "changing": "משנה...",
+    "logout": "התנתק",
+    "logoutSuccess": "התנתקת בהצלחה.",
+    "cropTitle": "חתוך תמונת פרופיל",
+    "zoom": "זום",
+    "memberSince": "חבר מאז",
+    "noDisplayName": "לא הוגדר שם תצוגה",
+    "errors": {
+      "update": "עדכון נכשל. אנא נסה שוב.",
+      "authError": "שגיאת אימות.",
+      "auth": "עליך להיות מחובר כדי לשנות את הסיסמה.",
+      "missing": "אנא הזן ואשר את הסיסמה החדשה.",
+      "missingField": "שדות חסרים",
+      "missingPassword": "אנא הזן סיסמה.",
+      "mismatch": "הסיסמאות אינן תואמות.",
+      "weakPassword": "הסיסמה חלשה מדי (לפחות 6 תווים).",
+      "invalidCredential": "הסיסמה הנוכחית שגויה.",
+      "network": "שגיאת רשת. בדוק את החיבור שלך.",
+      "updateFailed": "אירעה שגיאה בעדכון הפרופיל. נסה שוב.",
+      "invalidEmail": "פורמט האימייל שגוי.",
+      "emailInUse": "האימייל כבר בשימוש. נסה אימייל אחר.",
+      "emailErrror": "שגיאה בעדכון האימייל. אנא נסה שוב.",
+      "password": "שגיאה בעדכון הסיסמה. אנא נסה שוב."
+    },
+    "success": {
+      "name": "שם התצוגה נשמר בהצלחה.",
+      "email": "האימייל נשמר בהצלחה.",
+      "password": "הסיסמה עודכנה בהצלחה.",
+      "photoRemoved": "התמונה הוסרה בהצלחה."
+    },
+    "photo": {
+      "upload": "העלה תמונה",
+      "remove": "הסר תמונה",
+      "removeFailed": "אירעה שגיאה בעת הסרת התמונה."
+    },
+    "toasts": {
+      "emailUpdated": "האימייל עודכן",
+      "emailUpdatedDesc": "האימייל נשמר בהצלחה.",
+      "nameUpdated": "הפרופיל עודכן",
+      "nameUpdatedDesc": "שם התצוגה נשמר בהצלחה.",
+      "passwordUpdated": "הסיסמה עודכנה",
+      "passwordUpdatedDesc": "הסיסמה שלך שונתה בהצלחה.",
+      "photoRemoved": "התמונה הוסרה",
+      "photoRemovedDesc": "התמונה שלך הוסרה בהצלחה.",
+      "removeFailed": "ההסרה נכשלה",
+      "removeFailedDesc": "אירעה שגיאה בעת הסרת התמונה.",
+      "updateFailed": "העדכון נכשל",
+      "updateFailedDesc": "אירעה שגיאה בעדכון הפרופיל. נסה שוב.",
+      "signedOut": "התנתקת",
+      "signedOutDesc": "התנתקת מהחשבון בהצלחה."
+    }
+  },
+
+  "tagManagement": {
+    "title": "ניהול תגיות למתכונים",
+    "description": "הוסף, הצג ומחק תגיות כדי לארגן טוב יותר את המתכונים שלך.",
+    "inputPlaceholder": "הכנס תגית חדשה (למשל, טבעוני, קינוח, חריף)",
+    "addButton": "הוסף תגית",
+    "yourTags": "התגיות שלך",
+    "noTagsFound": "לא נמצאו תגיות. הוסף את התגית הראשונה שלך כדי להתחיל.",
+    "adding": "מוסיף תגית...",
+    "toasts": {
+      "fetchError": {
+        "title": "שגיאה בשליפת תגיות",
+        "description": "אירעה בעיה בעת שליפת התגיות שלך."
+      },
+      "tagAdded": {
+        "title": "תגית נוספה",
+        "description": "\"{{tag}}\" נוספה לרשימת התגיות שלך"
+      },
+      "tagExists": {
+        "title": "תגית כבר קיימת",
+        "description": "\"{{tag}}\" כבר קיימת ברשימת התגיות שלך"
+      },
+      "tagNameMissing": {
+        "title": "נדרש שם תגית",
+        "description": "אנא הזן שם לתגית"
+      },
+      "addError": {
+        "title": "שגיאה בהוספת תגית",
+        "description": "אירעה בעיה בעת הוספת התגית"
+      },
+      "tagDeleted": {
+        "title": "תגית נמחקה",
+        "description": "\"{{tag}}\" הוסרה מרשימת התגיות שלך"
+      },
+      "deleteError": {
+        "title": "שגיאה במחיקת תגית",
+        "description": "אירעה בעיה בעת מחיקת התגית"
+      }
+    }
+  },
+
+  "editRecipe": {
+    "pageTitle": "ערוך מתכון",
+    "metaDescription": "הוסף את המתכונים האהובים עליך עם תגיות, הערות וקישורים. שמור אותם לעצמך או שתף עם אחרים.",
+    "loading": "טוען...",
+    "errorTitle": "שגיאה",
+    "errors": {
+      "unauthorized": "אין לך הרשאה לצפות במתכון הזה.",
+      "notFound": "המתכון לא נמצא.",
+      "generic": "אירעה שגיאה בלתי צפויה.",
+      "network": "שגיאת רשת. נסה שוב."
+    },
+    "backToRecipes": "חזור לרשימת המתכונים"
+  },
+
+  "recipeView": {
+    "errorTitle": "שגיאה",
+    "unknownDate": "תאריך לא ידוע",
+    "goToRecipes": "חזרה לרשימת המתכונים",
+    "noPermission": "אין לך הרשאה לצפות במתכון הזה.",
+    "notFound": "המתכון לא נמצא.",
+    "unexpectedError": "משהו השתבש. נסה שוב.",
+    "title": "כותרת",
+    "rating": "דירוג:",
+    "public": "ציבורי",
+    "private": "פרטי",
+    "link": "קישור",
+    "homemade": "ביתי",
+    "totalTime": "{{minutes}} דקות סה״כ",
+    "prepTime": "{{minutes}} דקות הכנה",
+    "cookTime": "{{minutes}} דקות בישול",
+    "servings": "{{count}} מנות",
+    "published": "פורסם בתאריך {{date}}",
+    "recipeLinkLabel": "קישור למתכון:",
+    "ingredients": "מרכיבים",
+    "instructions": "הוראות הכנה",
+    "notes": "הערות",
+    "review": "ביקורת",
+    "addFavorite": "הוסף למועדפים",
+    "removeFavorite": "הסר מהמועדפים",
+    "favoriteError": "אירעה שגיאה בעדכון המועדפים.",
+    "authorFallback": "משתמש מתכון"
+  }
+
+}

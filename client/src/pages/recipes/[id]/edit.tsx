@@ -14,10 +14,11 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import Head from "next/head";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { LuChevronLeft } from "react-icons/lu";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { RecipeFull } from "@/lib/types/recipe";
 import { useAuth } from "@/context/AuthContext";
+import BackButton from "@/components/ui/back";
+import { useTranslation } from "react-i18next";
 
 export default function EditRecipePage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function EditRecipePage() {
   const { user, authChecked } = useAuth();
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("white", "gray.800");
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!id || !authChecked) return;
@@ -53,17 +54,17 @@ export default function EditRecipePage() {
 
         if (!response.ok) {
           if (response.status === 401) {
-            setErrorMessage("You are not authorized to view this recipe.");
+            setErrorMessage(t("editRecipe.errors.unauthorized"));
           } else if (response.status === 404) {
-            setErrorMessage("Recipe not found.");
+            setErrorMessage(t("editRecipe.errors.notFound"));
           } else {
-            setErrorMessage("An unexpected error occurred.");
+            setErrorMessage(t("editRecipe.errors.generic"));
           }
           return;
         }
         const data = await response.json();
         if (!data.recipe) {
-          setErrorMessage("Recipe not found.");
+          setErrorMessage(t("editRecipe.errors.notfound"));
           return;
         }
         const recipe: RecipeFull = {
@@ -73,16 +74,13 @@ export default function EditRecipePage() {
         setInitialData(recipe);
       } catch (error) {
         console.error("Error fetching recipe:", error);
-        setErrorMessage("Network error. Please try again.");
+        setErrorMessage(t("editRecipe.errors.network"));
       }
     };
 
     fetchRecipe();
   }, [id, authChecked, user]);
 
-  const handleGoBack = () => {
-    router.back();
-  };
   if (errorMessage) {
     return (
       <Box
@@ -95,17 +93,7 @@ export default function EditRecipePage() {
       >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button
-            variant="outline"
-            mb={8}
-            onClick={handleGoBack}
-            size="md"
-            borderRadius="full"
-            _hover={{ bg: hoverBg }}
-          >
-            <LuChevronLeft />
-            Back
-          </Button>
+          <BackButton />
 
           <Box
             boxShadow="sm"
@@ -117,7 +105,7 @@ export default function EditRecipePage() {
             textAlign="center"
           >
             <Heading size="lg" mb={4} color="red.500">
-              Error
+              {t("editRecipe.errorTitle")}
             </Heading>
             <Text fontSize="lg">{errorMessage}</Text>
             <Button
@@ -125,7 +113,7 @@ export default function EditRecipePage() {
               colorPalette="teal"
               onClick={() => router.push("/recipes")}
             >
-              Return to Recipes
+              {t("editRecipe.backToRecipes")}
             </Button>
           </Box>
         </Container>
@@ -152,7 +140,7 @@ export default function EditRecipePage() {
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg">Loading...</Text>
+            <Text fontSize="lg"> {t("common.loading")}</Text>
           </VStack>
         </Container>
         <Footer />
@@ -186,17 +174,7 @@ export default function EditRecipePage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
         <RecipeModify mode="edit" initialData={initialData ?? undefined} />
       </Container>
       <Footer />

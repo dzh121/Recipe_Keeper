@@ -32,6 +32,7 @@ import { useAuth } from "@/context/AuthContext";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import Head from "next/head";
 import { FiHome } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 type FormErrors = {
   email: string;
   password: string;
@@ -59,6 +60,7 @@ export default function StartPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { user, authChecked } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (authChecked && user) {
@@ -74,8 +76,8 @@ export default function StartPage() {
 
   const handleLogin = async () => {
     const errors = {
-      email: !form.email ? "Email is required" : "",
-      password: !form.password ? "Password is required" : "",
+      email: !form.email ? t("startPage.errors.requiredEmail") : "",
+      password: !form.password ? t("startPage.errors.requiredPassword") : "",
     };
 
     setFormErrors(errors);
@@ -84,43 +86,41 @@ export default function StartPage() {
         await signInWithEmailAndPassword(auth, form.email, form.password);
         router.replace("/");
       } catch (err: any) {
-        let message = "Login failed";
+        let message = t("startPage.authErrors.loginFailed");
 
         if (err?.code?.startsWith("auth/")) {
           switch (err.code) {
             case "auth/user-not-found":
             case "auth/wrong-password":
             case "auth/invalid-credential":
-              message = "Invalid email or password.";
+              message = t("startPage.authErrors.invalidCredentials");
               break;
             case "auth/invalid-email":
-              message = "The email address format is invalid.";
+              message = t("startPage.authErrors.invalidEmail");
               break;
             case "auth/too-many-requests":
-              message =
-                "Too many failed attempts. Please wait a few minutes and try again.";
+              message = t("startPage.authErrors.tooManyRequests");
               break;
             case "auth/user-disabled":
-              message =
-                "This account has been disabled by an administrator. Please contact support.";
+              message = t("startPage.authErrors.userDisabled");
               break;
             case "auth/network-request-failed":
-              message =
-                "Network error. Please check your internet connection and try again.";
+              message = t("startPage.authErrors.internetError");
               break;
             case "auth/internal-error":
-              message = "Internal error. Please try again shortly.";
+              message = t("startPage.authErrors.internalError");
               break;
             case "auth/missing-password":
-              message = "Password is required.";
+              message = t("startPage.authErrors.missingPassword");
               break;
             default:
-              message = err.message || "Unable to sign in. Please try again.";
+              message =
+                err.message || t("startPage.authErrors.unknownErrorLogin");
           }
         }
 
         toaster.create({
-          title: "Authentication Error",
+          title: t("startPage.authErrors.loginError"),
           description: message,
           type: "error",
           meta: { closable: true },
@@ -132,14 +132,16 @@ export default function StartPage() {
 
   const handleRegister = async () => {
     const errors = {
-      email: !form.email ? "Email is required" : "",
-      password: !form.password ? "Password is required" : "",
+      email: !form.email ? t("startPage.errors.requiredEmail") : "",
+      password: !form.password ? t("startPage.errors.requiredPassword") : "",
       confirmPassword: !form.confirmPassword
-        ? "Confirm your password"
+        ? t("startPage.errors.requiredConfirmPassword")
         : form.confirmPassword !== form.password
-        ? "Passwords do not match"
+        ? t("startPage.errors.passwordMismatch")
         : "",
-      displayName: !form.displayName ? "Display name is required" : "",
+      displayName: !form.displayName
+        ? t("startPage.errors.requiredUsername")
+        : "",
     };
 
     setFormErrors(errors);
@@ -197,33 +199,31 @@ export default function StartPage() {
         if (err?.code?.startsWith("auth/")) {
           switch (err.code) {
             case "auth/email-already-in-use":
-              message = "Email is already in use. Try logging in instead.";
+              message = t("startPage.authErrors.emailInUse");
               break;
             case "auth/invalid-email":
-              message = "The email address is not valid.";
+              message = t("startPage.authErrors.invalidEmail");
               break;
             case "auth/weak-password":
-              message =
-                "Password is too weak. It must be at least 6 characters.";
+              message = t("startPage.authErrors.weakPassword");
               break;
             case "auth/too-many-requests":
-              message =
-                "Too many requests. Please wait a few minutes before trying again.";
+              message = t("startPage.authErrors.tooManyRequests");
               break;
             case "auth/network-request-failed":
-              message =
-                "Network error. Check your internet connection and try again.";
+              message = t("startPage.authErrors.internetError");
               break;
             case "auth/internal-error":
-              message = "Internal error. Please try again later.";
+              message = t("startPage.authErrors.internalError");
               break;
             default:
-              message = err.message || "Registration failed. Please try again.";
+              message =
+                err.message || t("startPage.authErrors.unknownErrorRegister");
           }
         }
 
         toaster.create({
-          title: "Registration Error",
+          title: t("startPage.authErrors.registrationError"),
           description: message,
           type: "error",
           meta: { closable: true },
@@ -270,9 +270,9 @@ export default function StartPage() {
           <CardHeader>
             <VStack gap={4} textAlign="center">
               <Logo />
-              <Heading fontSize="3xl">Welcome to RecipeKeeper</Heading>
+              <Heading fontSize="3xl">{t("startPage.welcome")}</Heading>
               <Text color="gray.500" _dark={{ color: "gray.400" }}>
-                Access your personal recipe vault
+                {t("startPage.subtitle")}
               </Text>
               <Stack direction="row" gap={4} w="full">
                 <Button
@@ -281,7 +281,7 @@ export default function StartPage() {
                   flex={1}
                   onClick={() => setIsLogin(true)}
                 >
-                  Log In
+                  {t("startPage.login")}
                 </Button>
                 <Button
                   variant={!isLogin ? "solid" : "outline"}
@@ -289,7 +289,7 @@ export default function StartPage() {
                   flex={1}
                   onClick={() => setIsLogin(false)}
                 >
-                  Register
+                  {t("startPage.register")}
                 </Button>
               </Stack>
             </VStack>
@@ -300,13 +300,13 @@ export default function StartPage() {
               {!isLogin && (
                 <Field.Root required invalid={!!formErrors.displayName}>
                   <Field.Label>
-                    Username
+                    {t("startPage.username")}
                     <Field.RequiredIndicator />
                   </Field.Label>
                   <Input
                     name="displayName"
                     autoComplete="off"
-                    placeholder="Enter your username"
+                    placeholder={t("startPage.placeholders.username")}
                     onChange={handleInputChange}
                   />
                   <Field.ErrorText>{formErrors.displayName}</Field.ErrorText>
@@ -315,14 +315,14 @@ export default function StartPage() {
 
               <Field.Root required invalid={!!formErrors.email}>
                 <Field.Label>
-                  Email
+                  {t("startPage.email")}
                   <Field.RequiredIndicator />
                 </Field.Label>
                 <Input
                   name="email"
                   type="email"
                   autoComplete="off"
-                  placeholder="you@example.com"
+                  placeholder={t("startPage.placeholders.email")}
                   onChange={handleInputChange}
                 />
                 <Field.ErrorText>{formErrors.email}</Field.ErrorText>
@@ -330,7 +330,7 @@ export default function StartPage() {
 
               <Field.Root required invalid={!!formErrors.password}>
                 <Field.Label>
-                  Password
+                  {t("startPage.password")}
                   <Field.RequiredIndicator />
                 </Field.Label>
                 <InputGroup
@@ -351,7 +351,7 @@ export default function StartPage() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="off"
-                    placeholder="Enter password"
+                    placeholder={t("startPage.placeholders.password")}
                     onChange={handleInputChange}
                   />
                 </InputGroup>
@@ -361,7 +361,7 @@ export default function StartPage() {
               {!isLogin && (
                 <Field.Root required invalid={!!formErrors.confirmPassword}>
                   <Field.Label>
-                    Confirm Password
+                    {t("startPage.confirmPassword")}
                     <Field.RequiredIndicator />
                   </Field.Label>
                   <InputGroup
@@ -384,7 +384,7 @@ export default function StartPage() {
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       autoComplete="off"
-                      placeholder="Confirm password"
+                      placeholder={t("startPage.placeholders.confirmPassword")}
                       onChange={handleInputChange}
                     />
                   </InputGroup>
@@ -402,7 +402,7 @@ export default function StartPage() {
                 }
                 mt={2}
               >
-                {isLogin ? "Log In" : "Register"}
+                {isLogin ? t("startPage.login") : t("startPage.register")}
               </Button>
               <Button
                 variant="ghost"
@@ -410,7 +410,7 @@ export default function StartPage() {
                 onClick={handleGuestLogin}
               >
                 <FiHome />
-                Go Home
+                {t("startPage.goHome")}
               </Button>
             </Stack>
           </CardBody>

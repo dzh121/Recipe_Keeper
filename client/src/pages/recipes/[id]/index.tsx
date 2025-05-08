@@ -43,6 +43,8 @@ import Head from "next/head";
 import { Timestamp } from "firebase/firestore";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuth } from "@/context/AuthContext";
+import BackButton from "@/components/ui/back";
+import { useTranslation } from "react-i18next";
 
 type Recipe = {
   ownerId: string;
@@ -81,6 +83,7 @@ export default function RecipePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ErrorState>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   // Color mode values for consistent theming
   const hasMounted = useHasMounted();
@@ -89,7 +92,6 @@ export default function RecipePage() {
   const textColorValue = useColorModeValue("gray.600", "gray.300");
   const headingColorValue = useColorModeValue("gray.800", "white");
   const bgValue = useColorModeValue("white", "gray.800");
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
 
   // Use the mounted state to set colors after hydration
   const bg = hasMounted ? bgValue : undefined;
@@ -123,7 +125,7 @@ export default function RecipePage() {
 
       setFormattedDate(formatted);
     } else {
-      setFormattedDate("Unknown date");
+      setFormattedDate(t("recipeView.unknownDate"));
     }
   }, [recipe?.createdAt]);
 
@@ -153,11 +155,11 @@ export default function RecipePage() {
 
         if (!response.ok) {
           if (response.status === 403) {
-            setError("You don't have permission to view this recipe.");
+            setError(t("recipeView.noPermission"));
           } else if (response.status === 404) {
-            setError("Recipe not found.");
+            setError(t("recipeView.notFound"));
           } else {
-            setError("Something went wrong. Please try again.");
+            setError(t("recipeView.unexpectedError"));
           }
           return;
         }
@@ -213,7 +215,7 @@ export default function RecipePage() {
         }
       } catch (err) {
         console.error(err);
-        setError("Something went wrong. Please try again.");
+        setError(t("recipeView.unexpectedError"));
       } finally {
         setLoading(false);
       }
@@ -221,10 +223,6 @@ export default function RecipePage() {
 
     fetchRecipe();
   }, [id, authChecked, user]);
-
-  const handleGoBack = () => {
-    router.back();
-  };
 
   // Helper function to format ingredients as list items
   const formatIngredients = (ingredients: string) => {
@@ -238,7 +236,6 @@ export default function RecipePage() {
 
   const toggleFavorite = async () => {
     if (!user) {
-      setError("You must be logged in to save favorites.");
       return;
     }
     try {
@@ -258,8 +255,8 @@ export default function RecipePage() {
     } catch (err) {
       console.error(err);
       toaster.create({
-        title: "Error",
-        description: "Failed to update favorite status.",
+        title: t("recipeView.errorTitle"),
+        description: t("recipeView.favoriteError"),
         type: "error",
         duration: 3000,
         meta: { closable: true },
@@ -279,17 +276,7 @@ export default function RecipePage() {
       >
         <Header />
         <Container maxW="container.md" px={{ base: 4, md: 8 }} py={10} flex="1">
-          <Button
-            variant="outline"
-            mb={8}
-            onClick={handleGoBack}
-            size="md"
-            borderRadius="full"
-            _hover={{ bg: hoverBg }}
-          >
-            <LuChevronLeft />
-            Back
-          </Button>
+          <BackButton />
 
           <Box
             boxShadow="sm"
@@ -342,17 +329,7 @@ export default function RecipePage() {
       >
         <Header />
         <Container maxW="container.md" py={10} flex="1">
-          <Button
-            variant="outline"
-            mb={8}
-            onClick={handleGoBack}
-            size="md"
-            borderRadius="full"
-            _hover={{ bg: hoverBg }}
-          >
-            <LuChevronLeft />
-            Back
-          </Button>
+          <BackButton />
 
           <Box
             boxShadow="sm"
@@ -364,7 +341,7 @@ export default function RecipePage() {
             textAlign="center"
           >
             <Heading size="lg" mb={4} color="red.500">
-              Error
+              {t("recipeView.errorTitle")}
             </Heading>
             <Text fontSize="lg">{error}</Text>
             <Button
@@ -372,7 +349,7 @@ export default function RecipePage() {
               colorPalette="teal"
               onClick={() => router.push("/recipes")}
             >
-              Return to Recipes
+              {t("recipeView.goToRecipes")}
             </Button>
           </Box>
         </Container>
@@ -414,17 +391,7 @@ export default function RecipePage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
 
         <Box
           boxShadow="sm"
@@ -466,7 +433,9 @@ export default function RecipePage() {
                     fontSize="md"
                     borderRadius="md"
                   >
-                    {recipe.recipeType === "homemade" ? "Homemade" : "Link"}
+                    {recipe.recipeType === "homemade"
+                      ? t("recipeView.homemade")
+                      : t("recipeView.link")}
                   </Badge>
 
                   <Badge
@@ -476,7 +445,9 @@ export default function RecipePage() {
                     py={1}
                     borderRadius="md"
                   >
-                    {recipe.isPublic ? "Public" : "Private"}
+                    {recipe.isPublic
+                      ? t("recipeView.public")
+                      : t("recipeView.private")}
                   </Badge>
                 </Flex>
               </Flex>
@@ -526,28 +497,39 @@ export default function RecipePage() {
                 {recipe.timeToFinish && (
                   <HStack color={textColor} gap={1}>
                     <Icon as={LuClock} />
-                    <Text>{recipe.timeToFinish} minutes total</Text>
+                    <Text>
+                      {t("recipeView.totalTime", {
+                        minutes: recipe.timeToFinish,
+                      })}
+                    </Text>
                   </HStack>
                 )}
 
                 {recipe.recipeType === "homemade" && recipe.prepTime && (
                   <HStack color={textColor} gap={1}>
                     <Icon as={LuTimer} />
-                    <Text>{recipe.prepTime} minutes prep</Text>
+                    <Text>
+                      {t("recipeView.prepTime", { minutes: recipe.prepTime })}
+                    </Text>
                   </HStack>
                 )}
 
                 {recipe.recipeType === "homemade" && recipe.cookTime && (
                   <HStack color={textColor} gap={1}>
                     <Icon as={LuChefHat} />
-                    <Text>{recipe.cookTime} minutes cook</Text>
+                    <Text>
+                      {" "}
+                      {t("recipeView.cookTime", { minutes: recipe.cookTime })}
+                    </Text>
                   </HStack>
                 )}
 
                 {recipe.recipeType === "homemade" && recipe.servings && (
                   <HStack color={textColor} gap={1}>
                     <Icon as={LuUtensils} />
-                    <Text>Serves {recipe.servings}</Text>
+                    <Text>
+                      {t("recipeView.servings", { count: recipe.servings })}
+                    </Text>
                   </HStack>
                 )}
               </Flex>
@@ -567,7 +549,8 @@ export default function RecipePage() {
                 </Text>
                 <Text color={textColor} fontSize="sm">
                   <Icon as={LuCalendar} mr={1} />
-                  Published on {formattedDate}
+                  {"   "}
+                  {t("recipeView.published", { date: formattedDate })}
                 </Text>
               </VStack>
             </HStack>
@@ -575,7 +558,7 @@ export default function RecipePage() {
             {/* Rating Stars */}
             {recipe.rating > 0 && (
               <HStack gap={2}>
-                <Text fontWeight="medium">Rating:</Text>
+                <Text fontWeight="medium"> {t("recipeView.rating")}</Text>
                 <HStack>
                   {Array(5)
                     .fill("")
@@ -596,7 +579,9 @@ export default function RecipePage() {
             {recipe.recipeType === "link" && recipe.link && (
               <Box>
                 <Flex align="center" gap={2} mb={3}>
-                  <Text fontWeight="medium">Recipe Link:</Text>
+                  <Text fontWeight="medium">
+                    {t("recipeView.recipeLinkLabel")}
+                  </Text>
                 </Flex>
                 <Link
                   href={recipe.link}
@@ -630,7 +615,7 @@ export default function RecipePage() {
                     <HStack bg={bg} p={2} borderRadius="md" mb={2}>
                       <Icon as={LuUtensils} />
                       <Text fontWeight="bold" fontSize="lg">
-                        Ingredients
+                        {t("recipeView.ingredients")}
                       </Text>
                     </HStack>
 
@@ -650,7 +635,7 @@ export default function RecipePage() {
                     <HStack bg={bg} p={2} borderRadius="md" mt={6} mb={2}>
                       <Icon as={LuChefHat} />
                       <Text fontWeight="bold" fontSize="lg">
-                        Instructions
+                        {t("recipeView.instructions")}
                       </Text>
                     </HStack>
                     <List.Root
@@ -685,7 +670,7 @@ export default function RecipePage() {
                 <HStack bg={bg} p={2} borderRadius="md" mt={6} mb={2}>
                   <Icon as={LuNotebook} />
                   <Text fontWeight="bold" fontSize="lg">
-                    Notes
+                    {t("recipeView.notes")}
                   </Text>
                 </HStack>
                 <Text whiteSpace="pre-wrap">{recipe.notes}</Text>
@@ -698,7 +683,7 @@ export default function RecipePage() {
                 <HStack bg={bg} p={2} borderRadius="md" mt={6} mb={2}>
                   <Icon as={MdOutlineRateReview} />
                   <Text fontWeight="bold" fontSize="lg">
-                    Review
+                    {t("recipeView.review")}
                   </Text>
                 </HStack>
 

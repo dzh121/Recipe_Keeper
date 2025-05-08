@@ -21,14 +21,16 @@ import { Recipe } from "@/lib/types/recipe";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import Head from "next/head";
 import RecipeList from "@/components/recipes/RecipeList";
+import { useTranslation } from "react-i18next";
+import BackButton from "@/components/ui/back";
 
 export default function RecipesIndexPage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
-
+  const { t } = useTranslation();
   const { user } = useAuth();
+
   const isAuthenticated = !!user;
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -51,10 +53,6 @@ export default function RecipesIndexPage() {
     fetchRecipes();
   }, []);
 
-  const handleGoBack = () => {
-    router.back();
-  };
-
   if (!hasMounted) {
     return (
       <Box
@@ -74,7 +72,7 @@ export default function RecipesIndexPage() {
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg">Loading...</Text>
+            <Text fontSize="lg">{t("common.loading")}</Text>
           </VStack>
         </Container>
         <Footer />
@@ -97,19 +95,9 @@ export default function RecipesIndexPage() {
       </Head>
       <Header />
       <Container maxW="container.md" py={10} flex="1">
-        <Button
-          variant="outline"
-          mb={8}
-          onClick={handleGoBack}
-          size="md"
-          borderRadius="full"
-          _hover={{ bg: hoverBg }}
-        >
-          <LuChevronLeft />
-          Back
-        </Button>
+        <BackButton />
         <RecipeList
-          title="Explore Public Recipes"
+          title={t("titles.explore")}
           recipes={recipes}
           allowEdit={false}
           showAddButton={isAuthenticated}

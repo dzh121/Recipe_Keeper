@@ -13,73 +13,19 @@ import {
   Icon,
   Spinner,
 } from "@chakra-ui/react";
-import {
-  LuPlus,
-  LuSearch,
-  LuSettings,
-  LuListChecks,
-  LuTag,
-} from "react-icons/lu";
-import { MdOutlineFavoriteBorder } from "react-icons/md";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import Head from "next/head";
-const features = [
-  {
-    title: "My Recipes",
-    description:
-      "Access all the recipes you’ve created or saved from the community.",
-    icon: LuListChecks,
-    href: "/recipes/manage",
-    requiresAuth: true,
-  },
-  {
-    title: "Favorite Recipes",
-    description: "Access your favorite recipes in one convenient place.",
-    icon: MdOutlineFavoriteBorder,
-    href: "/recipes/favorites",
-    requiresAuth: true,
-  },
-  {
-    title: "Explore Public Recipes",
-    description: "Discover new ideas and save recipes shared by other users.",
-    icon: LuSearch,
-    href: "/recipes",
-    requiresAuth: false,
-  },
-  {
-    title: "Add New Recipe",
-    description:
-      "Create and save your own recipes with ingredients, instructions, and more.",
-    icon: LuPlus,
-    href: "/recipes/add",
-    requiresAuth: true,
-  },
-
-  {
-    title: "Manage Tags",
-    description:
-      "Customize and organize your tags to easily filter and find recipes.",
-    icon: LuTag,
-    href: "/tags",
-    requiresAuth: true,
-    adminOnly: true,
-  },
-  {
-    title: "Settings",
-    description:
-      "Update your profile, preferences, and manage your account settings.",
-    icon: LuSettings,
-    href: "/settings",
-    requiresAuth: true,
-  },
-];
+import { useFeatureList } from "@/hooks/useFeatureList";
+import { useTranslation } from "react-i18next";
 
 export default function Home() {
   const { user, authChecked } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminChecked, setAdminChecked] = useState(false);
+  const features = useFeatureList();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -145,15 +91,14 @@ export default function Home() {
             fontWeight="bold"
             color="teal.500"
           >
-            RecipeKeeper
+            {t("app.title")}
           </Heading>
           <Text
             fontSize={{ base: "md", md: "lg" }}
             color="gray.600"
             _dark={{ color: "gray.400" }}
           >
-            Your personal dashboard for organizing, searching, and sharing
-            recipes.
+            {t("app.description")}
           </Text>
         </VStack>
 
@@ -205,7 +150,7 @@ export default function Home() {
 
                     {needsLogin ? (
                       <Text fontSize="xs" color="red.500">
-                        Login required
+                        {t("app.loginRequired")}
                       </Text>
                     ) : (
                       <Text fontSize="xs" visibility="hidden">

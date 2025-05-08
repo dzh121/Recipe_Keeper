@@ -40,6 +40,7 @@ import NextLink from "next/link";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
 
 export type Recipe = {
   id: string;
@@ -68,21 +69,6 @@ interface RecipeListProps {
   onFavoriteClick?: (id: string) => void;
 }
 
-const recipeTypes = createListCollection({
-  items: [
-    { label: "All Types", value: "all" },
-    { label: "Link Recipes", value: "link" },
-    { label: "Homemade Recipes", value: "homemade" },
-  ],
-});
-const recipePublic = createListCollection({
-  items: [
-    { label: "All", value: "all" },
-    { label: "Public", value: "public" },
-    { label: "Private", value: "private" },
-  ],
-});
-
 export default function RecipeList({
   title,
   recipes,
@@ -108,7 +94,22 @@ export default function RecipeList({
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
+  const { t } = useTranslation();
 
+  const recipeTypes = createListCollection({
+    items: [
+      { label: t("recipeList.typeAll"), value: "all" },
+      { label: t("recipeList.typeLink"), value: "link" },
+      { label: t("recipeList.typeHomemade"), value: "homemade" },
+    ],
+  });
+  const recipePublic = createListCollection({
+    items: [
+      { label: t("recipeList.visibilityAll"), value: "all" },
+      { label: t("recipeList.visibilityPublic"), value: "public" },
+      { label: t("recipeList.visibilityPrivate"), value: "private" },
+    ],
+  });
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -280,7 +281,7 @@ export default function RecipeList({
               transition="all 0.2s"
             >
               <Icon as={LuPlus} boxSize={5} />
-              Add Recipe
+              {t("recipeList.addRecipe")}
             </Button>
           )}
         </Flex>
@@ -310,7 +311,7 @@ export default function RecipeList({
                 borderColor: "teal.500",
                 boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)",
               }}
-              placeholder="Search recipes..."
+              placeholder={t("recipeList.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               borderRadius="md"
@@ -334,7 +335,9 @@ export default function RecipeList({
                 size="md"
               >
                 <Select.HiddenSelect />
-                <Select.Label fontWeight="medium">Recipe Type</Select.Label>
+                <Select.Label fontWeight="medium">
+                  {t("recipeList.typeLabel")}
+                </Select.Label>
                 <Select.Control
                   borderWidth="2px"
                   borderColor="gray.300"
@@ -392,7 +395,9 @@ export default function RecipeList({
                   onValueChange={(e) => setVisibilityFilter(e.value)}
                   width="160px"
                 >
-                  <Select.Label fontWeight="medium">Visibility</Select.Label>
+                  <Select.Label fontWeight="medium">
+                    {t("recipeList.visibilityLabel")}
+                  </Select.Label>
                   <Select.HiddenSelect />
                   <Select.Control
                     borderWidth="2px"
@@ -403,7 +408,9 @@ export default function RecipeList({
                     _dark={{ borderColor: "gray.600" }}
                   >
                     <Select.Trigger>
-                      <Select.ValueText placeholder="Visibility" />
+                      <Select.ValueText
+                        placeholder={t("recipeList.visibilityLabel")}
+                      />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
                       <Select.Indicator />
@@ -445,7 +452,7 @@ export default function RecipeList({
             <HStack gap={2} flex="1">
               <Icon as={LuTag} color="teal.500" boxSize={5} />
               <VStack gap={1}>
-                <Text fontWeight="medium">Tags</Text>
+                <Text fontWeight="medium">{t("recipeList.tagsLabel")}</Text>
                 <Menu.Root closeOnSelect={false}>
                   <Menu.Trigger asChild>
                     <Button
@@ -460,7 +467,7 @@ export default function RecipeList({
                       borderRadius="md"
                     >
                       <LuChevronDown />
-                      Select Tags
+                      {t("recipeList.selectTags")}
                     </Button>
                   </Menu.Trigger>
                   <Portal>
@@ -486,7 +493,7 @@ export default function RecipeList({
                             }
                           >
                             <Input
-                              placeholder="Search tags..."
+                              placeholder={t("recipeList.tagSearchPlaceholder")}
                               size="md"
                               value={tagSearch}
                               onChange={(e) => setTagSearch(e.target.value)}
@@ -545,7 +552,7 @@ export default function RecipeList({
                 height="40px"
               >
                 <Icon as={LuX} />
-                Clear Filters
+                {t("recipeList.clearFilters")}
               </Button>
             )}
           </Flex>
@@ -583,8 +590,7 @@ export default function RecipeList({
       {/* Results header with count */}
       <HStack justify="space-between">
         <Text fontWeight="medium" color={textColor}>
-          {filteredRecipes.length}{" "}
-          {filteredRecipes.length === 1 ? "recipe" : "recipes"} found
+          {t("recipeList.recipesFound", { count: filteredRecipes.length })}
         </Text>
       </HStack>
 
@@ -598,14 +604,14 @@ export default function RecipeList({
           bg={cardBg}
           borderColor={borderColor}
         >
-          <Text fontSize="lg">No recipes found matching your criteria.</Text>
+          <Text fontSize="lg">{t("recipeList.noRecipes")}</Text>
           <Button
             mt={4}
             colorPalette="teal"
             variant="outline"
             onClick={clearFilters}
           >
-            Clear All Filters
+            {t("recipeList.clearFilters")}
           </Button>
         </Box>
       ) : (
@@ -644,7 +650,9 @@ export default function RecipeList({
                         py={1}
                         borderRadius="md"
                       >
-                        {recipe.isPublic ? "Public" : "Private"}
+                        {recipe.isPublic
+                          ? t("recipeList.public")
+                          : t("recipeList.private")}
                       </Badge>
                     )}
 
@@ -657,12 +665,14 @@ export default function RecipeList({
                       py={1}
                       borderRadius="md"
                     >
-                      {recipe.recipeType === "homemade" ? "Homemade" : "Link"}
+                      {recipe.recipeType === "homemade"
+                        ? t("recipeList.homemade")
+                        : t("recipeList.link")}
                     </Badge>
 
                     {allowEdit && (
                       <Tooltip
-                        content="Edit Recipe"
+                        content={t("recipeList.editTooltip")}
                         positioning={{ placement: "top" }}
                       >
                         <IconButton
@@ -682,11 +692,11 @@ export default function RecipeList({
                     )}
                     {showFavorite && (
                       <Tooltip
-                        content="Remove from Favorites"
+                        content={t("recipeList.removeFavoriteTooltip")}
                         positioning={{ placement: "top" }}
                       >
                         <IconButton
-                          aria-label="Remove from favorites"
+                          aria-label={t("recipeList.removeFavoriteTooltip")}
                           variant="ghost"
                           size="sm"
                           colorPalette="red"

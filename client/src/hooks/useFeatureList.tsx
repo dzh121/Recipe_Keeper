@@ -1,0 +1,61 @@
+import { useTranslation } from "react-i18next";
+import {
+  LuListChecks,
+  LuSearch,
+  LuPlus,
+  LuTag,
+  LuSettings,
+} from "react-icons/lu";
+import { MdOutlineFavoriteBorder } from "react-icons/md";
+
+export const useFeatureList = () => {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      title: t("features.myRecipes.title"),
+      description: t("features.myRecipes.description"),
+      icon: LuListChecks,
+      href: "/recipes/manage",
+      requiresAuth: true,
+    },
+    {
+      title: t("features.favorites.title"),
+      description: t("features.favorites.description"),
+      icon: MdOutlineFavoriteBorder,
+      href: "/recipes/favorites",
+      requiresAuth: true,
+    },
+    {
+      title: t("features.explore.title"),
+      description: t("features.explore.description"),
+      icon: LuSearch,
+      href: "/recipes",
+      requiresAuth: false,
+    },
+    {
+      title: t("features.add.title"),
+      description: t("features.add.description"),
+      icon: LuPlus,
+      href: "/recipes/add",
+      requiresAuth: true,
+    },
+    {
+      title: t("features.tags.title"),
+      description: t("features.tags.description"),
+      icon: LuTag,
+      href: "/tags",
+      requiresAuth: true,
+      adminOnly: true,
+    },
+    {
+      title: t("features.settings.title"),
+      description: t("features.settings.description"),
+      icon: LuSettings,
+      href: "/settings",
+      requiresAuth: true,
+    },
+  ];
+
+  return features;
+};

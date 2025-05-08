@@ -1,0 +1,358 @@
+{
+  "app": {
+    "title": "Recipe Keeper",
+    "description": "Your personal dashboard for organizing, searching, and sharing recipes.",
+    "loginRequired": "Login Required"
+  },
+  "__features_section": "Feature cards on the home/dashboard screen",
+
+  "features": {
+    "myRecipes": {
+      "title": "My Recipes",
+      "description": "Access all the recipes you’ve created or saved from the community."
+    },
+    "favorites": {
+      "title": "Favorite Recipes",
+      "description": "Access your favorite recipes in one convenient place."
+    },
+    "explore": {
+      "title": "Explore Public Recipes",
+      "description": "Discover new ideas and save recipes shared by other users."
+    },
+    "add": {
+      "title": "Add New Recipe",
+      "description": "Create and save your own recipes with ingredients, instructions, and more."
+    },
+    "tags": {
+      "title": "Manage Tags",
+      "description": "Customize and organize your tags to easily filter and find recipes."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Update your profile, preferences, and manage your account settings."
+    }
+  },
+
+  "__general_ui": "Common UI labels like Yes, No, Save, etc.",
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading..."
+  },
+
+  "titles":{
+    "manageRecipes": "Manage Your Recipes",
+    "favorites": "Favorite Recipes",
+    "explore": "Explore Public Recipes"
+  },
+
+  "__language_menu": "Language selection and display names",
+  "language": {
+    "en": "English",
+    "he": "עברית",
+    "selectLanguage": "Select Language"
+  },
+
+  "__auth_section": "Authentication-related labels and messages",
+  "startPage": {
+    "title": "Sign In - RecipeKeeper",
+    "metaDescription": "Log in to your RecipeKeeper account.",
+    "welcome": "Welcome to RecipeKeeper",
+    "subtitle": "Access your personal recipe vault",
+    "login": "Log In",
+    "register": "Register",
+    "goHome": "Go Home",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "placeholders": {
+      "email": "you@example.com",
+      "password": "Enter password",
+      "username": "Enter your username",
+      "confirmPassword": "Confirm password"
+    },
+    "errors": {
+      "requiredEmail": "Email is required",
+      "requiredPassword": "Password is required",
+      "requiredUsername": "Display name is required",
+      "requiredConfirmPassword": "Confirm your password",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "authErrors": {
+      "loginError": "Login error",
+      "registrationError": "Registration error",
+      "loginFailed": "Login failed",
+      "registrationFailed": "Registration failed",
+      "invalidCredentials": "Invalid email or password.",
+      "invalidEmail": "The email address format is invalid.",
+      "emailInUse": "Email is already in use. Try logging in instead.",
+      "weakPassword": "Password is too weak. It must be at least 6 characters.",
+      "tooManyRequests": "Too many requests. Please wait a few minutes before trying again.",
+      "userDisabled": "This account has been disabled by an administrator. Please contact support.",
+      "networkError": "Network error. Please check your internet connection and try again.",
+      "internalError": "Internal error. Please try again shortly.",
+      "missingPassword": "Password is required.",
+      "unknownErrorLogin": "Unable to sign in. Please try again.",
+      "unknownErrorRegister": "Unable to register. Please try again."
+    }
+  },
+
+  "footer": {
+    "copyright": "© {{year}} RecipeKeeper. All rights reserved."
+  },
+
+  "header":{
+    "signin": "Sign In"
+  },
+
+  "recipeModify": {
+    "addTitle": "Add Recipe",
+    "editTitle": "Edit Recipe",
+    "subtitle": "Save your favorite recipes and customize them with notes and tags.",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "recipeLink": "Recipe Link",
+    "homemadeRecipe": "Homemade Recipe",
+    "title": "Recipe Title",
+    "titlePlaceholder": "e.g. Chocolate Chip Cookies",
+    "link": "Recipe Link",
+    "linkPlaceholder": "https://example.com/your-recipe",
+    "linkHelp": "Enter the URL of the recipe you'd like to save",
+    "notes": "Notes",
+    "notesPlaceholder": "Why you like it, changes you'd make, etc.",
+    "timeToFinish": "Time to Finish",
+    "timeToFinishPlaceholder": "Total minutes (incl. prep)",
+    "minutesPlaceholder": "Minutes",
+    "rating": "Rating",
+    "review": "Your Review",
+    "reviewPlaceholder": "How was it? Would you make it again?",
+    "servings": "Servings",
+    "servingsPlaceholder": "Number of servings",
+    "prepTime": "Prep Time (min)",
+    "cookTime": "Cook Time (min)",
+    "ingredients": "Ingredients",
+    "ingredientsPlaceholder": "List ingredients line by line",
+    "ingredientsHelp": "Enter each ingredient on a new line with quantities",
+    "instructions": "Instructions",
+    "instructionsPlaceholder": "List steps in order...",
+    "instructionsHelp": "Number your steps or separate them with line breaks",
+    "tags": "Tags",
+    "searchTags": "Search tags...",
+    "noTagsFound": "No tags found",
+    "addTags": "Add Tags",
+    "public": "Public",
+    "photo": "Recipe Photo",
+    "addPhoto": "Add a photo of your finished recipe. JPEG or PNG recommended.",
+    "dragPhoto": "Drag and drop an image here",
+    "or": "or",
+    "browse": "Browse Files",
+    "changePhoto": "Change Photo",
+    "invalidFile": "Invalid File",
+    "invalidFileDescription": "Please upload an image file (JPEG, PNG, etc.)",
+    "saveSuccessTitle": "Recipe Saved",
+    "saveSuccessDescription": "Your recipe was successfully updated.",
+    "addSuccessTitle": "Recipe Added",
+    "addSuccessDescription": "Your recipe was successfully added.",
+    "saveFailed": "Save Failed",
+    "saveFailedDescription": "An error occurred while saving your recipe. Please try again.",
+    "deleteSuccessTitle": "Recipe Deleted",
+    "deleteSuccessDescription": "Your recipe was successfully deleted.",
+    "deleteFailed": "Delete Failed",
+    "deleteFailedDescription": "An error occurred while deleting your recipe. Please try again.",
+    "missingTitle": "Please enter a recipe title before saving.",
+    "missingLink": "Please enter a recipe link before saving.",
+    "missingIngredients": "Please enter ingredients for your homemade recipe.",
+    "missingInstructions": "Please enter instructions for your homemade recipe.",
+    "missingTags": "Please select at least one tag before saving.",
+    "missingInfoTitle": "Missing information"
+  },
+
+  "recipeList": {
+    "searchPlaceholder": "Search recipes...",
+    "typeLabel": "Recipe Type",
+    "typeAll": "All Types",
+    "typeLink": "Link Recipes",
+    "typeHomemade": "Homemade Recipes",
+    "visibilityLabel": "Visibility",
+    "visibilityAll": "All",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Private",
+    "tagsLabel": "Tags",
+    "tagSearchPlaceholder": "Search tags...",
+    "selectTags": "Select Tags",
+    "noTagsFound": "No tags found",
+    "clearFilters": "Clear Filters",
+    "clearAllFilters": "Clear All Filters",
+    "recipesFound_zero": "No recipes found",
+    "recipesFound_one": "One recipe found",
+    "recipesFound_other": "{{count}} recipes found",
+    "noRecipes": "No recipes found matching your criteria.",
+    "addRecipe": "Add Recipe",
+    "editTooltip": "Edit Recipe",
+    "removeFavoriteTooltip": "Remove from Favorites",
+    "public": "Public",
+    "private": "Private",
+    "homemade": "Homemade",
+    "link": "Link"
+  },
+
+  "settings": {
+    "title": "Account Settings",
+    "back": "Back",
+    "name": "Display Name",
+    "namePlaceholder": "e.g. John Doe",
+    "saveName": "Save Name",
+    "saving": "Saving...",
+    "email": "Change Email",
+    "emailPlaceholder": "New email address",
+    "updateEmail": "Update Email",
+    "updating": "Updating...",
+    "password": "Change Password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updatePassword": "Update Password",
+    "changing": "Changing...",
+    "logout": "Log Out",
+    "logoutSuccess": "You have been successfully logged out.",
+    "cropTitle": "Crop Profile Picture",
+    "zoom": "Zoom",
+    "memberSince": "Member since",
+    "noDisplayName": "No display name set",
+    "errors": {
+      "update": "Update failed",
+      "AuthError": "Authentication error",
+      "auth": "You must be logged in to change your password.",
+      "missingField": "Missing fields",
+      "missingPassword": "Please enter and confirm your new password.",
+      "missing": "Please enter and confirm your new password.",
+      "mismatch": "New password and confirmation do not match.",
+      "weakPassword": "Password must be stronger (e.g., at least 6 characters).",
+      "invalidCredential": "Current password is incorrect.",
+      "network": "Network error. Please check your connection.",
+      "updateFailed": "There was an error updating your profile. Please try again.",
+      "invalidEmail": "Invalid email format.",
+      "emailInUse": "Email already in use. Please use a different email.",
+      "emailError": "There was an error updating your email.",
+      "password": "There was an error updating your password."
+    },
+    "success": {
+      "name": "Your display name has been saved successfully.",
+      "email": "Your email has been saved successfully.",
+      "password": "Your password has been changed successfully.",
+      "photoRemoved": "Your photo has been removed successfully."
+    },
+    "photo": {
+      "upload": "Upload photo",
+      "remove": "Remove photo",
+      "removeFailed": "There was an error removing your photo."
+    },
+    "toasts": {
+      "emailUpdated": "Email updated",
+      "emailUpdatedDesc": "Your email has been saved successfully.",
+      "nameUpdated": "Profile updated",
+      "nameUpdatedDesc": "Your display name has been saved successfully.",
+      "passwordUpdated": "Password updated",
+      "passwordUpdatedDesc": "Your password has been changed successfully.",
+      "photoRemoved": "Photo removed",
+      "photoRemovedDesc": "Your photo has been removed successfully.",
+      "removeFailed": "Remove failed",
+      "removeFailedDesc": "There was an error removing your photo.",
+      "updateFailed": "Update failed",
+      "updateFailedDesc": "There was an error updating your profile. Please try again.",
+      "signedOut": "Signed out",
+      "signedOutDesc": "You have been successfully logged out."
+    }
+  },
+
+  "tagManagement": {
+    "title": "Manage Recipe Tags",
+    "description": "Add, view, and remove tags to better organize your recipe collection.",
+    "inputPlaceholder": "Enter new tag (e.g., vegan, dessert, spicy)",
+    "addButton": "Add Tag",
+    "yourTags": "Your Tags",
+    "noTagsFound": "No tags found. Add your first tag to get started.",
+    "adding": "Adding...",
+    "toasts": {
+      "fetchError": {
+        "title": "Error fetching tags",
+        "description": "There was a problem retrieving your tags."
+      },
+      "tagAdded": {
+        "title": "Tag added",
+        "description": "\"{{tag}}\" has been added to your tags"
+      },
+      "tagExists": {
+        "title": "Tag already exists",
+        "description": "\"{{tag}}\" already exists in your tags"
+      },
+      "tagNameMissing": {
+        "title": "Tag name required",
+        "description": "Please enter a name for the tag"
+      },
+      "addError": {
+        "title": "Error adding tag",
+        "description": "There was a problem adding the tag"
+      },
+      "tagDeleted": {
+        "title": "Tag deleted",
+        "description": "\"{{tag}}\" has been removed from your tags"
+      },
+      "deleteError": {
+        "title": "Error deleting tag",
+        "description": "There was a problem deleting the tag"
+      }
+    }
+  },
+
+  "editRecipe": {
+    "pageTitle": "Edit Recipe",
+    "metaDescription": "Add your favorite recipes with notes, tags, and links. Keep them private or share them with others.",
+    "errorTitle": "Error",
+    "errors": {
+      "unauthorized": "You are not authorized to view this recipe.",
+      "notFound": "Recipe not found.",
+      "generic": "An unexpected error occurred.",
+      "network": "Network error. Please try again."
+    },
+    "backToRecipes": "Return to Recipes"
+  },
+
+  "recipeView": {
+    "errorTitle": "Error",
+    "unknownDate": "Unknown date",
+    "goToRecipes": "Return to Recipes",
+    "noPermission": "You don't have permission to view this recipe.",
+    "notFound": "Recipe not found.",
+    "unexpectedError": "Something went wrong. Please try again.",
+    "title": "Title",
+    "rating": "Rating:",
+    "public": "Public",
+    "private": "Private",
+    "link": "Link",
+    "homemade": "Homemade",
+    "totalTime": "{{minutes}} minutes total",
+    "prepTime": "{{minutes}} minutes prep",
+    "cookTime": "{{minutes}} minutes cook",
+    "servings": "Serves {{count}}",
+    "published": "Published on {{date}}",
+    "recipeLinkLabel": "Recipe Link:",
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "notes": "Notes",
+    "review": "Review",
+    "addFavorite": "Add to Favorites",
+    "removeFavorite": "Remove from Favorites",
+    "favoriteError": "Failed to update favorite status.",
+    "authorFallback": "Recipe User"
+  }
+
+}
