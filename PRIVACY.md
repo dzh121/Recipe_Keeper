@@ -35,7 +35,7 @@ RecipeKeeper stores the following types of user data in Firebase:
 * Recipes marked as **public** are viewable by all users.
 * Recipes marked as **private** are only visible to the creator.
 * You can also share **external recipe links**, which are saved and optionally made public.
-
+* RecipeKeeper does not host or own third-party content. If you are the owner of a linked recipe and wish it removed, please contact us.
 ## 🛡️ Security
 
 * All access is protected via Firebase Authentication.
