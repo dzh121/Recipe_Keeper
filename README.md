@@ -13,6 +13,7 @@
 <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" /></a>
 <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black&style=flat-square" alt="Firebase" /></a>
 <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" alt="Express" /></a>
+<a href="https://azure.microsoft.com/en-us/products/cognitive-services/translator/"><img src="https://img.shields.io/badge/Azure_Translator-0078D4?logo=microsoftazure&logoColor=white&style=flat-square" alt="Azure Translator" /></a>
 
 </div>
 
@@ -36,14 +37,14 @@
         <li>⭐ <strong>Favorite Recipes</strong> for quick access</li>
         <li>🎨 <strong>Light/Dark Mode</strong> with user preference persistence</li>
         <li>📱 <strong>Responsive Design</strong> for all devices</li>
+        <li>🧠 <strong>Smart Tag Translation</strong> using Azure Cognitive Services</li>
+        <li>🌍 <strong>Dual-Language Tags</strong> with English & Hebrew fallback</li>
+        <li>🚥 <strong>Rate Limit Detection</strong> with global fetch interceptor</li>
       </ul>
     </td>
+
   </tr>
 </table>
-
-> ⚠️ **Note:** Tag management is currently a work in progress.  
-> At this stage, only selected users can create or remove tags.  
-> Some tags may appear in both English and Hebrew until final standardization is complete.
 
 ## 🏗️ Architecture
 
@@ -54,6 +55,7 @@ recipe_keeper/
 ├── client/              # Frontend (Next.js + Chakra UI)
 │   └── out/             # Static export for Firebase Hosting
 ├── functions/           # Backend (Express + Firebase Admin)
+│   └──serviceAccountKey.json  # Private Firebase Admin key
 ├── firebase/            # Firebase configuration
 │   ├── firestore.rules
 │   ├── firestore.indexes.json
@@ -62,6 +64,7 @@ recipe_keeper/
 ├── firebase.json
 ├── PRIVACY.md
 ├── README.md
+├── LICENSE
 └── package.json         # Root scripts and shared configs
 ```
 
@@ -118,6 +121,7 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
         <li>Firebase Storage</li>
         <li>Firebase Hosting</li>
         <li>Firebase Functions</li>
+        <li>Azure Cognitive Services (Translator API)</li>
       </ul>
     </td>
   </tr>
@@ -125,7 +129,7 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 ## 📡 API Endpoints
 
-### 🔒 Authentication Required for All Endpoints
+### 🔒 Authentication Required for most of Endpoints
 
 #### Recipe Management
 

@@ -6,7 +6,7 @@ const router = express.Router();
 // Helper to check if user is admin
 const isAdmin = (user: any) => user?.role === "admin" || user?.admin === true;
 
-const TAGS_DOC_PATH = "global/tags";
+const TAGS_DOC_PATH = "global/tagss";
 
 router.get("/", async (req, res) => {
   try {
@@ -25,63 +25,73 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", authenticateToken, async (req, res) => {
-  const user = (req as any).user; 
+  const user = (req as any).user;
   if (!user || !isAdmin(user)) {
     return res.status(403).json({ error: "Forbidden. Admins only." });
   }
 
-  const { tag } = req.body;
-  if (!tag || typeof tag !== "string") {
-    return res.status(400).json({ error: "Missing or invalid 'tag' field." });
+  const { id, translations } = req.body;
+
+  if (
+    !id || typeof id !== "string" ||
+    !translations || typeof translations !== "object" ||
+    typeof translations.en !== "string"
+  ) {
+    return res.status(400).json({ error: "Missing or invalid tag data." });
   }
 
-  try {
-    await admin
-      .firestore()
-      .doc(TAGS_DOC_PATH)
-      .update({
-        tags: admin.firestore.FieldValue.arrayUnion(tag),
-      });
+  const newTag = { id, translations };
 
-    return res.status(200).json({ message: "Tag added successfully." });
-  } catch (err: any) {
-    if (err.code === 5) {
-      // Document not found
-      // If document does not exist, create it
-      await admin
-        .firestore()
-        .doc(TAGS_DOC_PATH)
-        .set({
-          tags: [tag],
-        });
-      return res
-        .status(201)
-        .json({ message: "Tag document created and tag added." });
+  try {
+    const tagsRef = admin.firestore().doc(TAGS_DOC_PATH);
+    const tagsDoc = await tagsRef.get();
+
+    if (!tagsDoc.exists) {
+      await tagsRef.set({ tags: [newTag] });
+      return res.status(201).json({ message: "Tag document created and tag added." });
     }
 
+    const existingTags = tagsDoc.data()?.tags || [];
+    const alreadyExists = existingTags.some((tag: any) => tag.id === id);
+
+    if (alreadyExists) {
+      return res.status(409).json({ error: "Tag already exists." });
+    }
+
+    await tagsRef.update({
+      tags: admin.firestore.FieldValue.arrayUnion(newTag),
+    });
+
+    return res.status(200).json({ message: "Tag added successfully." });
+  } catch (err) {
     console.error("Error adding tag:", err);
     return res.status(500).json({ error: "Failed to add tag." });
   }
 });
 
-router.delete("/:tagName", authenticateToken, async (req, res) => {
-  const user = (req as any).user; 
+router.delete("/:tagId", authenticateToken, async (req, res) => {
+  const user = (req as any).user;
   if (!user || !isAdmin(user)) {
     return res.status(403).json({ error: "Forbidden. Admins only." });
   }
 
-  const tagName = req.params.tagName;
-  if (!tagName) {
-    return res.status(400).json({ error: "Missing tag name in URL." });
+  const tagId = req.params.tagId;
+  if (!tagId) {
+    return res.status(400).json({ error: "Missing tag ID in URL." });
   }
 
   try {
-    await admin
-      .firestore()
-      .doc(TAGS_DOC_PATH)
-      .update({
-        tags: admin.firestore.FieldValue.arrayRemove(tagName),
-      });
+    const tagsRef = admin.firestore().doc(TAGS_DOC_PATH);
+    const tagsDoc = await tagsRef.get();
+
+    if (!tagsDoc.exists) {
+      return res.status(404).json({ error: "Tags document not found." });
+    }
+
+    const existingTags = tagsDoc.data()?.tags || [];
+    const updatedTags = existingTags.filter((tag: any) => tag.id !== tagId);
+
+    await tagsRef.update({ tags: updatedTags });
 
     return res.status(200).json({ message: "Tag removed successfully." });
   } catch (err) {

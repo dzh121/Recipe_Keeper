@@ -48,6 +48,7 @@ export default function Header() {
     fetchProfile();
   }, [authChecked, user]);
 
+  if (!hasMounted) return null;
   return (
     <Box
       as="header"
@@ -84,7 +85,7 @@ export default function Header() {
                   name={profile?.displayName || user.email || "U"}
                 />
                 <Avatar.Image
-                  src={profile?.photoURL || user.photoURL || ""}
+                  src={profile?.photoURL || user.photoURL || undefined}
                   alt="User Avatar"
                   borderRadius="full"
                 />

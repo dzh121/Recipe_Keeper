@@ -38,6 +38,7 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { useRouter } from "next/router";
 import { RecipeFull } from "@/lib/types/recipe";
 import { useTranslation } from "react-i18next";
+import { Tag as TagType } from "@/lib/types/tag";
 
 export default function RecipeModify({
   mode = "add",
@@ -68,7 +69,7 @@ export default function RecipeModify({
   const [servings, setServings] = useState(initialData.servings || "");
   const [prepTime, setPrepTime] = useState(initialData.prepTime || "");
   const [cookTime, setCookTime] = useState(initialData.cookTime || "");
-  const [tagOptions, setTagOptions] = useState<string[]>([]);
+  const [tagOptions, setTagOptions] = useState<TagType[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(
     initialData.imageURL || null
@@ -100,7 +101,9 @@ export default function RecipeModify({
         if (!response.ok) throw new Error("Failed to fetch tags");
         const data = await response.json();
         setTagOptions(
-          data.tags.sort((a: string, b: string) => a.localeCompare(b))
+          (data.tags || []).sort((a: TagType, b: TagType) =>
+            a.translations.en.localeCompare(b.translations.en)
+          )
         );
       } catch (error) {
         console.error("Error fetching tags:", error);
@@ -196,8 +199,10 @@ export default function RecipeModify({
 
   const filteredTags = tagOptions.filter(
     (tag) =>
-      !selectedTags.includes(tag) &&
-      tag.toLowerCase().includes(tagSearch.toLowerCase())
+      !selectedTags.includes(tag.id) &&
+      (tag.translations[i18n.language] ?? tag.translations.en ?? tag.id)
+        .toLowerCase()
+        .includes(tagSearch.toLowerCase())
   );
 
   const validateForm = () => {
@@ -928,7 +933,13 @@ export default function RecipeModify({
                   style={{ cursor: "pointer" }}
                   onClick={() => handleRemoveTag(tag)}
                 >
-                  <Tag.Label>{tag} </Tag.Label>
+                  <Tag.Label>
+                    {tagOptions.find((t) => t.id === tag)?.translations[
+                      i18n.language
+                    ] ??
+                      tagOptions.find((t) => t.id === tag)?.translations.en ??
+                      tag}
+                  </Tag.Label>
                   <FiX />
                 </button>
               </Tag.Root>
@@ -961,11 +972,13 @@ export default function RecipeModify({
                   {filteredTags.length > 0 ? (
                     filteredTags.map((tag) => (
                       <Menu.Item
-                        key={tag}
-                        value={tag}
-                        onClick={() => handleAddTag(tag)}
+                        key={tag.id}
+                        value={tag.id}
+                        onClick={() => handleAddTag(tag.id)}
                       >
-                        {tag}
+                        {tag.translations[i18n.language] ??
+                          tag.translations.en ??
+                          tag.id}
                       </Menu.Item>
                     ))
                   ) : (

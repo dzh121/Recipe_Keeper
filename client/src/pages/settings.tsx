@@ -82,9 +82,6 @@ export default function SettingsPage() {
   const bgColor = colorMode === "light" ? "white" : "gray.800";
   const borderColor = colorMode === "light" ? "gray.200" : "gray.700";
 
-  useEffect(() => {
-    console.log("Local photo URL:", localPhotoURL);
-  }, [localPhotoURL]);
   // Redirect or fetch user profile from Firestore
   useEffect(() => {
     if (authChecked && !user) {
@@ -530,7 +527,10 @@ export default function SettingsPage() {
                 />
                 <Avatar.Image
                   src={
-                    localPhotoURL || profile?.photoURL || user.photoURL || ""
+                    localPhotoURL ||
+                    profile?.photoURL ||
+                    user.photoURL ||
+                    undefined
                   }
                   alt="User Avatar"
                   borderRadius="full"

@@ -71,7 +71,6 @@ export default function RecipesManage() {
         const recipesData = await recipesRes.json();
         setRecipes(recipesData.recipes);
 
-        console.log("Fetched favorite recipes:", recipesData.recipes);
       } catch (err) {
         console.error("Error fetching favorite recipes:", err);
       }
@@ -106,7 +105,6 @@ export default function RecipesManage() {
       }
 
       const data = await response.json();
-      console.log("Removed favorite:", data);
       setRecipes((prevRecipes) =>
         prevRecipes.filter((recipe) => recipe.id !== recipeId)
       );

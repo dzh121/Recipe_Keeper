@@ -41,6 +41,7 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
+import type { Tag as TagType } from "@/lib/types/tag";
 
 export type Recipe = {
   id: string;
@@ -89,12 +90,12 @@ export default function RecipeList({
     {}
   );
   const [visibilityFilter, setVisibilityFilter] = useState<string[]>(["all"]);
-  const [tagOptions, setTagOptions] = useState<string[]>([]);
+  const [tagOptions, setTagOptions] = useState<TagType[]>([]);
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const recipeTypes = createListCollection({
     items: [
@@ -130,7 +131,9 @@ export default function RecipeList({
         }
         const data = await response.json();
         setTagOptions(
-          data.tags.sort((a: string, b: string) => a.localeCompare(b))
+          (data.tags || []).sort((a: TagType, b: TagType) =>
+            a.translations.en.localeCompare(b.translations.en)
+          )
         );
       } catch (error) {
         console.error("Error fetching tags:", error);
@@ -159,7 +162,7 @@ export default function RecipeList({
               const userData = authorSnapshot.data();
               profiles[uid] = {
                 displayName: userData.displayName || "Unknown User",
-                photoURL: userData.photoURL || "",
+                photoURL: userData.photoURL || undefined,
               };
             } else {
               console.warn(`User profile not found for UID: ${uid}`);
@@ -224,8 +227,10 @@ export default function RecipeList({
 
   const filteredTags = tagOptions.filter(
     (tag) =>
-      !selectedTags.includes(tag) &&
-      tag.toLowerCase().includes(tagSearch.toLowerCase())
+      !selectedTags.includes(tag.id) &&
+      tag.translations[i18n.language || "en"]
+        ?.toLowerCase()
+        .includes(tagSearch.toLowerCase())
   );
 
   return (
@@ -507,9 +512,9 @@ export default function RecipeList({
                         {filteredTags.length > 0 ? (
                           filteredTags.map((tag) => (
                             <Menu.Item
-                              key={tag}
-                              value={tag}
-                              onClick={() => handleTagSelect(tag)}
+                              key={tag.id}
+                              value={tag.id}
+                              onClick={() => handleTagSelect(tag.id)}
                               _hover={{
                                 bg: "teal.50",
                                 _dark: { bg: "teal.900" },
@@ -517,7 +522,9 @@ export default function RecipeList({
                               px={4}
                               py={2}
                             >
-                              {tag}
+                              {tag.translations[i18n.language] ??
+                                tag.translations.en ??
+                                tag.id}
                             </Menu.Item>
                           ))
                         ) : (
@@ -576,8 +583,13 @@ export default function RecipeList({
                     onClick={() => handleTagRemove(tag)}
                   >
                     <Tag.Label fontWeight="medium" mr={1}>
-                      {tag}
+                      {tagOptions.find((t) => t.id === tag)?.translations[
+                        i18n.language
+                      ] ??
+                        tagOptions.find((t) => t.id === tag)?.translations.en ??
+                        tag}
                     </Tag.Label>
+
                     <Icon as={FiX} boxSize={3.5} />
                   </button>
                 </Tag.Root>
@@ -731,7 +743,7 @@ export default function RecipeList({
                           name={userProfiles[recipe.ownerId]?.displayName}
                         />
                         <Avatar.Image
-                          src={userProfiles[recipe.ownerId]?.photoURL || ""}
+                          src={userProfiles[recipe.ownerId]?.photoURL || undefined}
                           alt="User Avatar"
                           borderRadius="full"
                         />
@@ -745,21 +757,30 @@ export default function RecipeList({
 
                 {recipe.tags && recipe.tags.length > 0 && (
                   <Flex mt={3} wrap="wrap" gap={2}>
-                    {recipe.tags.map((tag) => (
-                      <Tag.Root
-                        key={tag}
-                        size="md"
-                        borderRadius="full"
-                        variant="subtle"
-                        onClick={(e) => {
-                          e.preventDefault(); // prevent navigation
-                          !selectedTags.includes(tag) && handleTagSelect(tag);
-                        }}
-                        cursor="pointer"
-                      >
-                        <Tag.Label>{tag}</Tag.Label>
-                      </Tag.Root>
-                    ))}
+                    {recipe.tags.map((tagId) => {
+                      const tagObj = tagOptions.find((t) => t.id === tagId);
+                      const label =
+                        tagObj?.translations[i18n.language] ??
+                        tagObj?.translations.en ??
+                        tagId;
+
+                      return (
+                        <Tag.Root
+                          key={tagId}
+                          size="md"
+                          borderRadius="full"
+                          variant="subtle"
+                          onClick={(e) => {
+                            e.preventDefault(); // prevent navigation
+                            !selectedTags.includes(tagId) &&
+                              handleTagSelect(tagId);
+                          }}
+                          cursor="pointer"
+                        >
+                          <Tag.Label>{label}</Tag.Label>
+                        </Tag.Root>
+                      );
+                    })}
                   </Flex>
                 )}
               </Box>

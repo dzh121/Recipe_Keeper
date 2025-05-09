@@ -10,12 +10,13 @@ import {
   Input,
   VStack,
   HStack,
-  Stack,
+  Group,
   Flex,
   Spinner,
   IconButton,
   Badge,
   SimpleGrid,
+  InputGroup,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { LuPlus, LuTag } from "react-icons/lu";
@@ -28,13 +29,15 @@ import Head from "next/head";
 import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
 import BackButton from "@/components/ui/back";
+import type { Tag } from "@/lib/types/tag";
 
 export default function TagsManagementPage() {
   const hasMounted = useHasMounted();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const [tags, setTags] = useState<string[]>([]);
-  const [newTagName, setNewTagName] = useState("");
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [newTagEn, setNewTagEn] = useState("");
+  const [newTagHe, setNewTagHe] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -54,16 +57,13 @@ export default function TagsManagementPage() {
     try {
       setIsLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`, {
-        method: "GET",
         headers: {
           "Content-Type": "application/json",
           ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch tags");
-      }
+      if (!response.ok) throw new Error("Failed to fetch tags");
 
       const data = await response.json();
       setTags(data.tags || []);
@@ -84,7 +84,7 @@ export default function TagsManagementPage() {
   };
 
   const handleAddTag = async () => {
-    if (!newTagName.trim()) {
+    if (!newTagEn.trim()) {
       toaster.create({
         title: t("tagManagement.toasts.tagNameMissing.title"),
         description: t("tagManagement.toasts.tagNameMissing.description"),
@@ -95,14 +95,13 @@ export default function TagsManagementPage() {
       return;
     }
 
-    // Check if tag already exists
-    if (
-      tags.some((tag) => tag.toLowerCase() === newTagName.toLowerCase().trim())
-    ) {
+    const newId = newTagEn.trim().toLowerCase().replace(/\s+/g, "-");
+
+    if (tags.some((tag) => tag.id === newId)) {
       toaster.create({
         title: t("tagManagement.toasts.tagExists.title"),
         description: t("tagManagement.toasts.tagExists.description", {
-          tag: newTagName,
+          tag: newTagEn,
         }),
         type: "warning",
         duration: 3000,
@@ -110,46 +109,55 @@ export default function TagsManagementPage() {
       });
       return;
     }
+
     const authToken = await auth.currentUser?.getIdToken();
 
     try {
       setIsAdding(true);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ tag: newTagName.trim() }),
+        body: JSON.stringify({
+          id: newId,
+          translations: {
+            en: newTagEn.trim(),
+            he: newTagHe.trim(),
+          },
+        }),
       });
 
       if (!response.ok) {
-        //get the error message from the response
         const errorData = await response.json();
-        const errorMessage =
-          errorData.error || t("tagManagement.toasts.addError.description");
-        toaster.create({
-          title: t("tagManagement.toasts.addError.title"),
-          description: errorMessage,
-          type: "error",
-          duration: 5000,
-          meta: { closable: true },
-        });
-        throw new Error("Failed to add tag");
+        throw new Error(errorData.error || "Failed to add tag");
       }
 
-      setTags([...tags, newTagName.trim()]);
+      setTags([
+        ...tags,
+        {
+          id: newId,
+          translations: {
+            en: newTagEn.trim(),
+            he: newTagHe.trim(),
+          },
+        },
+      ]);
 
       toaster.create({
         title: t("tagManagement.toasts.tagAdded.title"),
         description: t("tagManagement.toasts.tagAdded.description", {
-          tag: newTagName,
+          tag: newTagEn,
         }),
         type: "success",
         duration: 3000,
         meta: { closable: true },
       });
-      setNewTagName("");
+
+      setNewTagEn("");
+      setNewTagHe("");
     } catch (error) {
       toaster.create({
         title: t("tagManagement.toasts.addError.title"),
@@ -166,12 +174,12 @@ export default function TagsManagementPage() {
     }
   };
 
-  const handleDeleteTag = async (tagName: string) => {
+  const handleDeleteTag = async (tagId: string) => {
     const authToken = await auth.currentUser?.getIdToken();
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/tags/${tagName}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/tags/${tagId}`,
         {
           method: "DELETE",
           headers: {
@@ -181,16 +189,14 @@ export default function TagsManagementPage() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete tag");
-      }
+      if (!response.ok) throw new Error("Failed to delete tag");
 
-      setTags(tags.filter((tag) => tag !== tagName));
+      setTags(tags.filter((tag) => tag.id !== tagId));
 
       toaster.create({
         title: t("tagManagement.toasts.tagDeleted.title"),
         description: t("tagManagement.toasts.tagDeleted.description", {
-          tag: tagName,
+          tag: tagId,
         }),
         type: "success",
         duration: 3000,
@@ -209,6 +215,29 @@ export default function TagsManagementPage() {
       });
     }
   };
+
+  async function translateText(
+    text: string,
+    from: string,
+    to: string
+  ): Promise<string> {
+    const endpoint =
+      "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0";
+
+    const response = await fetch(`${endpoint}&from=${from}&to=${to}`, {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": process.env.NEXT_PUBLIC_TRANSLATOR_KEY!,
+        "Ocp-Apim-Subscription-Region":
+          process.env.NEXT_PUBLIC_TRANSLATOR_REGION!,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([{ Text: text }]),
+    });
+
+    const result = await response.json();
+    return result[0].translations[0].text;
+  }
 
   if (!hasMounted) return null; // Prevents hydration errors
 
@@ -259,43 +288,111 @@ export default function TagsManagementPage() {
           shadow="md"
           mb={8}
         >
-          <Stack
-            direction={{ base: "column", md: "row" }}
-            gap={4}
-            mb={0}
-            width="100%"
-          >
-            <Input
-              placeholder={t("tagManagement.inputPlaceholder")}
-              borderWidth="1px"
-              borderColor={borderColor}
-              value={newTagName}
-              size="lg"
-              borderRadius="md"
-              w="100%" // full width in both column and row
-              minH="48px"
-              onChange={(e) => setNewTagName(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleAddTag();
-                }
-              }}
-            />
+          <VStack align="stretch" gap={4}>
+            {/* Hebrew → English */}
+            <Box mb={6}>
+              <Text mb={2} fontWeight="medium">
+                {t("tagManagement.translationSection")}
+              </Text>
+
+              <VStack gap={4} align="stretch">
+                <Box>
+                  <Text
+                    mb={1}
+                    fontSize="sm"
+                    color={useColorModeValue("gray.600", "gray.400")}
+                  >
+                    {t("tagManagement.hebrewLabel")}
+                  </Text>
+                  <Group>
+                    <Input
+                      placeholder={t("tagManagement.inputHebrew")}
+                      value={newTagHe}
+                      onChange={(e) => setNewTagHe(e.target.value)}
+                      borderRadius="md"
+                      borderWidth="1px"
+                      borderColor={borderColor}
+                      _focus={{ borderColor: "teal.400" }}
+                    />
+                    <Button
+                      ml={2}
+                      variant="outline"
+                      colorPalette="teal"
+                      disabled={!newTagHe.trim()}
+                      onClick={async () => {
+                        const translated = await translateText(
+                          newTagHe.trim(),
+                          "he",
+                          "en"
+                        );
+                        if (translated) {
+                          const capitalized =
+                            translated.charAt(0).toUpperCase() +
+                            translated.slice(1);
+                          setNewTagEn(capitalized);
+                        }
+                      }}
+                    >
+                      {t("tagManagement.translateToEnglish")}
+                    </Button>
+                  </Group>
+                </Box>
+
+                {/* English → Hebrew */}
+                <Box>
+                  <Text
+                    mb={1}
+                    fontSize="sm"
+                    color={useColorModeValue("gray.600", "gray.400")}
+                  >
+                    {t("tagManagement.englishLabel")}
+                  </Text>
+                  <Group>
+                    <Input
+                      placeholder={t("tagManagement.inputEnglish")}
+                      value={newTagEn}
+                      onChange={(e) => setNewTagEn(e.target.value)}
+                      borderRadius="md"
+                      borderWidth="1px"
+                      borderColor={borderColor}
+                      _focus={{ borderColor: "teal.400" }}
+                    />
+                    <Button
+                      ml={2}
+                      variant="outline"
+                      colorPalette="teal"
+                      disabled={!newTagEn.trim()}
+                      onClick={async () => {
+                        const translated = await translateText(
+                          newTagEn.trim(),
+                          "en",
+                          "he"
+                        );
+                        if (translated) setNewTagHe(translated);
+                      }}
+                    >
+                      {t("tagManagement.translateToHebrew")}
+                    </Button>
+                  </Group>
+                </Box>
+              </VStack>
+            </Box>
+
+            {/* Add Tag Button */}
             <Button
               colorPalette="teal"
-              size="lg"
-              w={{ base: "100%", md: "auto" }} // full width on mobile, auto on desktop
-              minH="48px"
+              size="md"
               onClick={handleAddTag}
               loading={isAdding}
               loadingText={t("tagManagement.adding")}
               borderRadius="md"
               px={6}
+              alignSelf="start"
             >
               <LuPlus />
               {t("tagManagement.addButton")}
             </Button>
-          </Stack>
+          </VStack>
         </Box>
 
         <Box
@@ -324,7 +421,7 @@ export default function TagsManagementPage() {
             <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} gap={4}>
               {tags.map((tag) => (
                 <HStack
-                  key={tag}
+                  key={tag.id}
                   bg={tagBg}
                   color={tagColor}
                   py={2}
@@ -334,13 +431,22 @@ export default function TagsManagementPage() {
                   transition="all 0.2s"
                   _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
                 >
-                  <Text fontWeight="medium">{tag}</Text>
+                  <Text fontWeight="medium" textAlign="center">
+                    {i18n.language === "he"
+                      ? `${tag.translations.he || tag.id} / ${
+                          tag.translations.en
+                        }`
+                      : `${tag.translations.en} / ${
+                          tag.translations.he || tag.id
+                        }`}
+                  </Text>
+
                   <IconButton
-                    aria-label={`Remove ${tag} tag`}
+                    aria-label={`Remove ${tag.id} tag`}
                     size="xs"
                     variant="ghost"
                     colorPalette="teal"
-                    onClick={() => handleDeleteTag(tag)}
+                    onClick={() => handleDeleteTag(tag.id)}
                     borderRadius="full"
                   >
                     <FiX />

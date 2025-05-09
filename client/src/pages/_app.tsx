@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import i18n from "../i18n";
 import "@/styles/globals.css";
 import LanguageSync from "@/components/LanguageSync";
+import "@/lib/init/fetchInterceptor";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +28,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <Provider>
         <AuthProvider>
+          <Toaster />
           <LanguageSync />
           <ColorModeSync />
           <Component {...pageProps} />

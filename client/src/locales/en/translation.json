@@ -281,7 +281,19 @@
     "yourTags": "Your Tags",
     "noTagsFound": "No tags found. Add your first tag to get started.",
     "adding": "Adding...",
+    "inputEnglish": "Enter tag name in English",
+    "inputHebrew": "Enter tag name in Hebrew",
+    "translate": "Translate",
+    "translationSection": "Translation",
+    "translateToHebrew": "Translate to Hebrew",
+    "translateToEnglish": "Translate to English",
+    "englishLabel": "English",
+    "hebrewLabel": "Hebrew",
     "toasts": {
+        "translationMissing": {
+        "title": "Translation failed",
+        "description": "Could not translate the tag text"
+      },
       "fetchError": {
         "title": "Error fetching tags",
         "description": "There was a problem retrieving your tags."
@@ -353,6 +365,11 @@
     "removeFavorite": "Remove from Favorites",
     "favoriteError": "Failed to update favorite status.",
     "authorFallback": "Recipe User"
+  },
+
+  "rateLimit": {
+    "title": "Rate Limit Exceeded",
+    "description": "You're sending too many requests. Please wait and try again."
   }
 
 }

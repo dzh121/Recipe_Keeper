@@ -27,7 +27,6 @@ export function useSyncLanguageOnLogin() {
         if (!res.ok) throw new Error("Failed to fetch language");
 
         const data = await res.json();
-        console.log("Language data:", data.language); // Debugging line
         if (typeof data.language === "string") {
           i18n.changeLanguage(data.language);
           document.documentElement.dir = data.language === "he" ? "rtl" : "ltr";

@@ -45,7 +45,7 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuth } from "@/context/AuthContext";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
-
+import { Tag as TagType } from "@/lib/types/tag";
 type Recipe = {
   ownerId: string;
   title: string | null;
@@ -83,7 +83,8 @@ export default function RecipePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ErrorState>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [tagOptions, setTagOptions] = useState<TagType[]>([]);
 
   // Color mode values for consistent theming
   const hasMounted = useHasMounted();
@@ -102,6 +103,37 @@ export default function RecipePage() {
 
   const [formattedDate, setFormattedDate] = useState<string>("");
   const { user, authChecked } = useAuth();
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/tags`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          //get exact error message
+          const errorMessage = await response.text();
+          console.error("Error fetching tags:", errorMessage);
+          throw new Error("Failed to fetch tags");
+        }
+        const data = await response.json();
+        setTagOptions(
+          (data.tags || []).sort((a: TagType, b: TagType) =>
+            a.translations.en.localeCompare(b.translations.en)
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   useEffect(() => {
     if (
@@ -695,18 +727,24 @@ export default function RecipePage() {
             {recipe.tags && recipe.tags.length > 0 && (
               <Box>
                 <Flex wrap="wrap" gap={2}>
-                  {recipe.tags.map((tag) => (
-                    <Tag.Root
-                      key={tag}
-                      size="md"
-                      colorPalette="teal"
-                      borderRadius="full"
-                      py={1}
-                      px={3}
-                    >
-                      {tag}
-                    </Tag.Root>
-                  ))}
+                  {recipe.tags.map((tagId) => {
+                    const translated =
+                      tagOptions.find((t) => t.id === tagId)?.translations[
+                        i18n.language
+                      ] ?? tagId;
+                    return (
+                      <Tag.Root
+                        key={tagId}
+                        size="md"
+                        colorPalette="teal"
+                        borderRadius="full"
+                        py={1}
+                        px={3}
+                      >
+                        {translated}
+                      </Tag.Root>
+                    );
+                  })}
                 </Flex>
               </Box>
             )}

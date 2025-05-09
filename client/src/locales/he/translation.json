@@ -281,7 +281,19 @@
     "yourTags": "התגיות שלך",
     "noTagsFound": "לא נמצאו תגיות. הוסף את התגית הראשונה שלך כדי להתחיל.",
     "adding": "מוסיף תגית...",
+    "inputHebrew": "הכנס תג בעברית",
+    "translate": "תרגם",
+    "translationSection": "תרגום",
+    "translateToHebrew": "תרגם לעברית",
+    "translateToEnglish": "תרגם לאנגלית",
+    "inputEnglish": "הכנס תג באנגלית",
+    "englishLabel": "אנגלית",
+    "hebrewLabel": "עברית",
     "toasts": {
+      "translationMissing": {
+        "title": "התרגום נכשל",
+        "description": "לא הצלחנו לתרגם את התג"
+      },
       "fetchError": {
         "title": "שגיאה בשליפת תגיות",
         "description": "אירעה בעיה בעת שליפת התגיות שלך."
@@ -354,6 +366,11 @@
     "removeFavorite": "הסר מהמועדפים",
     "favoriteError": "אירעה שגיאה בעדכון המועדפים.",
     "authorFallback": "משתמש מתכון"
+  },
+
+  "rateLimit": {
+    "title": "חרגת ממגבלת הבקשות",
+    "description": "אתה שולח יותר מדי בקשות. אנא המתן ונסה שוב."
   }
 
 }
