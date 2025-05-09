@@ -6,7 +6,7 @@ const router = express.Router();
 // Helper to check if user is admin
 const isAdmin = (user: any) => user?.role === "admin" || user?.admin === true;
 
-const TAGS_DOC_PATH = "global/tagss";
+const TAGS_DOC_PATH = "global/tags";
 
 router.get("/", async (req, res) => {
   try {
