@@ -31,7 +31,9 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 
   const { id, translations } = req.body;
-
+  // log the request body
+  console.log("Request body:", req.body);
+  
   if (
     !id || typeof id !== "string" ||
     !translations || typeof translations !== "object" ||
