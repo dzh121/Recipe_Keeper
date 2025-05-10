@@ -201,7 +201,8 @@
     "public": "ציבורי",
     "private": "פרטי",
     "homemade": "ביתי",
-    "link": "קישור"
+    "link": "קישור",
+    "editButton": "ערוך"
   },
 
   "settings": {
@@ -289,6 +290,7 @@
     "inputEnglish": "הכנס תג באנגלית",
     "englishLabel": "אנגלית",
     "hebrewLabel": "עברית",
+    "searchPlaceholder": "חפש תגיות...",
     "toasts": {
       "translationMissing": {
         "title": "התרגום נכשל",

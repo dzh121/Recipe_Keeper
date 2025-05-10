@@ -130,17 +130,29 @@ export default function RecipeList({
           throw new Error("Failed to fetch tags");
         }
         const data = await response.json();
-        setTagOptions(
-          (data.tags || []).sort((a: TagType, b: TagType) =>
-            a.translations.en.localeCompare(b.translations.en)
-          )
-        );
+        sortAndSetTags(data.tags || []);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
     fetchTags();
   }, []);
+
+  useEffect(() => {
+    sortAndSetTags(tagOptions);
+  }, [i18n.language]);
+
+  function sortAndSetTags(tags: TagType[]) {
+    const lang = i18n.language || "en";
+    const sorted = [...tags].sort((a, b) =>
+      a.translations[lang]?.localeCompare(
+        b.translations[lang],
+        lang === "he" ? "he" : "en",
+        { sensitivity: "base" }
+      )
+    );
+    setTagOptions(sorted);
+  }
 
   // Fetch user profiles for recipes if showPublisher is true
   useEffect(() => {
@@ -687,19 +699,38 @@ export default function RecipeList({
                         content={t("recipeList.editTooltip")}
                         positioning={{ placement: "top" }}
                       >
-                        <IconButton
-                          aria-label="Edit recipe"
-                          variant="outline"
-                          size="sm"
-                          colorPalette="teal"
-                          borderRadius="full"
-                          onClick={(e) => {
-                            e.preventDefault(); // prevent navigation
-                            onEditClick?.(recipe.id);
-                          }}
-                        >
-                          <MdOutlineEdit />
-                        </IconButton>
+                        <Flex gap={2} align="center">
+                          {/* IconButton for larger screens */}
+                          <IconButton
+                            aria-label="Edit"
+                            display={{ base: "none", sm: "inline-flex" }}
+                            variant="outline"
+                            size="sm"
+                            colorPalette="teal"
+                            borderRadius="full"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onEditClick?.(recipe.id);
+                            }}
+                          >
+                            <MdOutlineEdit />
+                          </IconButton>
+
+                          {/* Full button on small screens */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorPalette="teal"
+                            display={{ base: "inline-flex", sm: "none" }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onEditClick?.(recipe.id);
+                            }}
+                          >
+                            <MdOutlineEdit />
+                            {t("recipeList.editButton")}
+                          </Button>
+                        </Flex>
                       </Tooltip>
                     )}
                     {showFavorite && (
@@ -743,7 +774,9 @@ export default function RecipeList({
                           name={userProfiles[recipe.ownerId]?.displayName}
                         />
                         <Avatar.Image
-                          src={userProfiles[recipe.ownerId]?.photoURL || undefined}
+                          src={
+                            userProfiles[recipe.ownerId]?.photoURL || undefined
+                          }
                           alt="User Avatar"
                           borderRadius="full"
                         />

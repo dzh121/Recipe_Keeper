@@ -16,7 +16,7 @@ import {
   IconButton,
   Badge,
   SimpleGrid,
-  InputGroup,
+  Stack,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { LuPlus, LuTag } from "react-icons/lu";
@@ -40,6 +40,7 @@ export default function TagsManagementPage() {
   const [newTagHe, setNewTagHe] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Chakra UI color mode values
   const cardBg = useColorModeValue("white", "gray.800");
@@ -403,15 +404,33 @@ export default function TagsManagementPage() {
           borderColor={borderColor}
           shadow="md"
         >
-          <Flex align="center" mb={6}>
-            <LuTag size={24} color="teal" />
-            <Heading size="md" ml={2}>
-              {t("tagManagement.yourTags")}
-            </Heading>
-            <Badge ml={3} colorPalette="teal" borderRadius="full" px={2}>
-              {tags.length}
-            </Badge>
-          </Flex>
+          <Stack
+            direction={{ base: "column", sm: "row" }}
+            align={{ base: "stretch", sm: "center" }}
+            justify="space-between"
+            gap={4}
+            mb={6}
+          >
+            <Input
+              placeholder={t("tagManagement.searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              borderRadius="md"
+              borderWidth="1px"
+              borderColor={borderColor}
+              w="100%"
+              maxW={{ base: "100%", sm: "300px", md: "500px" }}
+              _focus={{ borderColor: "teal.400" }}
+            />
+
+            <HStack gap={3}>
+              <LuTag size={24} color="teal" />
+              <Heading size="md">{t("tagManagement.yourTags")}</Heading>
+              <Badge colorPalette="teal" borderRadius="full" px={2}>
+                {tags.length}
+              </Badge>
+            </HStack>
+          </Stack>
 
           {isLoading ? (
             <Flex justify="center" align="center" h="120px">
@@ -419,40 +438,62 @@ export default function TagsManagementPage() {
             </Flex>
           ) : tags.length > 0 ? (
             <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} gap={4}>
-              {tags.map((tag) => (
-                <HStack
-                  key={tag.id}
-                  bg={tagBg}
-                  color={tagColor}
-                  py={2}
-                  px={4}
-                  borderRadius="full"
-                  justify="space-between"
-                  transition="all 0.2s"
-                  _hover={{ boxShadow: "md", transform: "translateY(-2px)" }}
-                >
-                  <Text fontWeight="medium" textAlign="center">
-                    {i18n.language === "he"
-                      ? `${tag.translations.he || tag.id} / ${
-                          tag.translations.en
-                        }`
-                      : `${tag.translations.en} / ${
-                          tag.translations.he || tag.id
-                        }`}
-                  </Text>
-
-                  <IconButton
-                    aria-label={`Remove ${tag.id} tag`}
-                    size="xs"
-                    variant="ghost"
-                    colorPalette="teal"
-                    onClick={() => handleDeleteTag(tag.id)}
-                    borderRadius="full"
+              {tags
+                .filter((tag) => {
+                  const query = searchQuery.toLowerCase();
+                  const lang = i18n.language;
+                  const matchText = `${tag.translations[lang] || ""} ${
+                    tag.translations.en || ""
+                  } ${tag.translations.he || ""}`.toLowerCase();
+                  return matchText.includes(query);
+                })
+                .map((tag) => (
+                  <Box
+                    key={tag.id}
+                    bg={tagBg}
+                    color={tagColor}
+                    px={3}
+                    py={1.5}
+                    borderRadius="md"
+                    fontSize="sm"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    flexWrap="wrap"
+                    minW="0"
+                    maxW="100%"
+                    _hover={{ boxShadow: "sm", transform: "translateY(-1px)" }}
                   >
-                    <FiX />
-                  </IconButton>
-                </HStack>
-              ))}
+                    <Text
+                      fontWeight="medium"
+                      flex="1"
+                      minW="0"
+                      lineClamp={2}
+                      lineHeight="1.3"
+                      truncate={false}
+                      fontSize="sm"
+                      whiteSpace="normal"
+                    >
+                      {i18n.language === "he"
+                        ? `${tag.translations.he || tag.id} / ${
+                            tag.translations.en
+                          }`
+                        : `${tag.translations.en} / ${
+                            tag.translations.he || tag.id
+                          }`}
+                    </Text>
+                    <IconButton
+                      aria-label={`Remove ${tag.id} tag`}
+                      size="xs"
+                      variant="ghost"
+                      colorPalette="teal"
+                      ml={2}
+                      onClick={() => handleDeleteTag(tag.id)}
+                    >
+                      <FiX />
+                    </IconButton>
+                  </Box>
+                ))}
             </SimpleGrid>
           ) : (
             <Box

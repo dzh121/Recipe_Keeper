@@ -56,6 +56,7 @@ export default function PrivacyPage() {
       <Header />
 
       <Container maxW="container.md" py={10} flex={1}>
+        <BackButton />
         <VStack align="start" gap={8} width="100%">
           <Box width="100%" textAlign="center">
             <Heading size="xl" mb={2}>
@@ -66,7 +67,6 @@ export default function PrivacyPage() {
               the <strong>RecipeKeeper</strong> application.
             </Text>
           </Box>
-          <BackButton />
           <Box
             width="100%"
             p={6}

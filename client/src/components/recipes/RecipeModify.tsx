@@ -100,17 +100,29 @@ export default function RecipeModify({
         );
         if (!response.ok) throw new Error("Failed to fetch tags");
         const data = await response.json();
-        setTagOptions(
-          (data.tags || []).sort((a: TagType, b: TagType) =>
-            a.translations.en.localeCompare(b.translations.en)
-          )
-        );
+        sortAndSetTags(data.tags || []);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
     fetchTags();
   }, []);
+
+  useEffect(() => {
+    sortAndSetTags(tagOptions);
+  }, [i18n.language]);
+
+  function sortAndSetTags(tags: TagType[]) {
+    const lang = i18n.language || "en";
+    const sorted = [...tags].sort((a, b) =>
+      a.translations[lang]?.localeCompare(
+        b.translations[lang],
+        lang === "he" ? "he" : "en",
+        { sensitivity: "base" }
+      )
+    );
+    setTagOptions(sorted);
+  }
 
   useEffect(() => {
     if (mode === "edit" && initialData && Object.keys(initialData).length > 0) {
@@ -917,7 +929,12 @@ export default function RecipeModify({
           </Text>
 
           {/* Selected Tags Display */}
-          <Flex wrap="wrap" gap={2} mb={3}>
+          <Flex
+            wrap="wrap"
+            gap={2}
+            mb={3}
+            dir={i18n.language === "he" ? "ltr" : "rtl"}
+          >
             {selectedTags.map((tag) => (
               <Tag.Root
                 asChild

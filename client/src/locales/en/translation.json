@@ -201,7 +201,8 @@
     "public": "Public",
     "private": "Private",
     "homemade": "Homemade",
-    "link": "Link"
+    "link": "Link",
+    "editButton": "Edit"
   },
 
   "settings": {
@@ -289,6 +290,7 @@
     "translateToEnglish": "Translate to English",
     "englishLabel": "English",
     "hebrewLabel": "Hebrew",
+    "searchPlaceholder": "Search tags...",
     "toasts": {
         "translationMissing": {
         "title": "Translation failed",
