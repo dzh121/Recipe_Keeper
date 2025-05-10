@@ -27,6 +27,10 @@
       "title": "ניהול תגיות",
       "description": "התאם וארגן תגיות כדי לסנן ולאתר מתכונים בקלות."
     },
+    "tagsSuggest": {
+      "title": "הצעות לתגים",
+      "description": "הצע תגיות חדשות שיעזרו לארגן מתכונים"
+    },
     "settings": {
       "title": "הגדרות",
       "description": "עדכן את הפרופיל שלך, העדפות, וניהול החשבון."
@@ -373,6 +377,65 @@
   "rateLimit": {
     "title": "חרגת ממגבלת הבקשות",
     "description": "אתה שולח יותר מדי בקשות. אנא המתן ונסה שוב."
+  },
+
+  "tagSuggestions": {
+    "title": "הצעות לתגים",
+    "description": "הצע תגים חדשים כדי לארגן טוב יותר את המתכונים. הצוות שלנו יבדוק את ההצעות שלך.",
+    "suggestNewTag": "הצע תג חדש",
+    "englishLabel": "אנגלית",
+    "hebrewLabel": "עברית",
+    "inputEnglish": "הכנס שם תג באנגלית",
+    "inputHebrew": "הכנס שם תג בעברית",
+    "translateToHebrew": "תרגם לעברית",
+    "translateToEnglish": "תרגם לאנגלית",
+    "suggestNote": "הכנס תג לפחות בשפה אחת. הצוות שלנו יבחן את ההצעה.",
+    "suggestButton": "שלח הצעה",
+    "submitting": "שולח...",
+    "yourSuggestions": "ההצעות שלך",
+    "searchPlaceholder": "חפש הצעות...",
+    "statusLabel": "סטטוס",
+    "allStatuses": "כל הסטטוסים",
+    "statusPending": "ממתין",
+    "statusApproved": "מאושר",
+    "statusRejected": "נדחה",
+    "noSuggestionsFound": "לא נמצאו הצעות לתגים",
+    "actions": {
+      "approve": "אישור",
+      "reject": "דחייה"
+    },
+    "toasts": {
+      "unauthorized": {
+        "title": "לא מחובר",
+        "description": "התחבר כדי להציע תג."
+      },
+      "fetchError": {
+        "title": "שגיאה בטעינה",
+        "description": "אירעה שגיאה בעת קבלת ההצעות."
+      },
+      "submitError": {
+        "title": "שגיאה בשליחה",
+        "description": "אירעה שגיאה בשליחת ההצעה שלך."
+      },
+      "suggestionSubmitted": {
+        "title": "ההצעה נשלחה",
+        "description": "ההצעה שלך נשלחה לבדיקה."
+      },
+      "emptyFields": {
+        "title": "שדות ריקים",
+        "description": "אנא מלא לפחות שדה אחד לפני השליחה."
+      },
+      "statusChanged": {
+        "title": "הסטטוס עודכן",
+        "description": "הסטטוס של ההצעה עודכן בהצלחה"
+      },
+      "statusError": {
+        "title": "עדכון נכשל",
+        "description": "לא ניתן היה לעדכן את הסטטוס של ההצעה"
+      }
+    }
   }
+
+
 
 }

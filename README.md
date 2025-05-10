@@ -29,6 +29,8 @@
         <li>📝 <strong>Create & Manage Recipes</strong> (Homemade or External Links)</li>
         <li>🏷️ <strong>Custom Tag System</strong> for easy organization</li>
         <li>🌐 <strong>Internationalization</strong> with English & Hebrew support</li>
+        <li>📱 <strong>Responsive Design</strong> for all devices</li>
+        <li>🚥 <strong>Rate Limit Detection</strong> with global fetch interceptor</li>
       </ul>
     </td>
     <td width="50%">
@@ -36,15 +38,16 @@
         <li>☁️ <strong>Image Upload</strong> via Firebase Storage</li>
         <li>⭐ <strong>Favorite Recipes</strong> for quick access</li>
         <li>🎨 <strong>Light/Dark Mode</strong> with user preference persistence</li>
-        <li>📱 <strong>Responsive Design</strong> for all devices</li>
         <li>🧠 <strong>Smart Tag Translation</strong> using Azure Cognitive Services</li>
         <li>🌍 <strong>Dual-Language Tags</strong> with English & Hebrew fallback</li>
-        <li>🚥 <strong>Rate Limit Detection</strong> with global fetch interceptor</li>
+        <li>💡 <strong>Suggest Tags</strong> with admin approval workflow</li>
       </ul>
     </td>
 
   </tr>
 </table>
+
+> You can even suggest new tags for recipes, which admins can review and approve!
 
 ## 🏗️ Architecture
 
@@ -172,11 +175,15 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### Tags
 
-| Method | Endpoint         | Description             |
-| ------ | ---------------- | ----------------------- |
-| GET    | `/tags`          | Get global tag list     |
-| POST   | `/tags`          | Add tag (admin only)    |
-| DELETE | `/tags/:tagName` | Remove tag (admin only) |
+| Method | Endpoint                          | Description                           |
+| ------ | --------------------------------- | ------------------------------------- |
+| GET    | `/tags`                           | Get global tag list                   |
+| POST   | `/tags`                           | Add tag (admin only)                  |
+| DELETE | `/tags/:tagName`                  | Remove tag (admin only)               |
+| POST   | `/tags/suggest`                   | Suggest a new tag (authenticated)     |
+| GET    | `/tags/suggestions`               | Get all tag suggestions (admin only)  |
+| GET    | `/tags/suggestions/user`          | Get current user's tag suggestions    |
+| PATCH  | `/tags/suggestions/:docId/status` | Update suggestion status (admin only) |
 
 ## 📦 Firestore Collections
 

@@ -49,6 +49,17 @@ export const useFeatureList = () => {
       adminOnly: true,
     },
     {
+      title: t("features.tagsSuggest.title", "Tag Suggestions"),
+      description: t(
+        "features.tagsSuggest.description",
+        "Suggest new tags to help organize recipes"
+      ),
+      icon: LuTag,
+      href: "/tags/suggest",
+      requiresAuth: true,
+      adminOnly: false,
+    },
+    {
       title: t("features.settings.title"),
       description: t("features.settings.description"),
       icon: LuSettings,

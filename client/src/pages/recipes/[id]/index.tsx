@@ -136,30 +136,35 @@ export default function RecipePage() {
   }, []);
 
   useEffect(() => {
-    if (
-      recipe?.createdAt &&
-      typeof recipe.createdAt === "object" &&
-      "_seconds" in recipe.createdAt &&
-      "_nanoseconds" in recipe.createdAt
-    ) {
-      const { _seconds, _nanoseconds } = recipe.createdAt as {
-        _seconds: number;
-        _nanoseconds: number;
-      };
+    const getFormattedDate = (timestamp: any) => {
+      if (!timestamp) return "";
 
-      const recreated = new Timestamp(_seconds, _nanoseconds).toDate();
+      try {
+        // 🔧 Fix: rehydrate into a proper Timestamp if needed
+        const normalized =
+          typeof timestamp.toDate === "function"
+            ? timestamp
+            : new Timestamp(timestamp._seconds, timestamp._nanoseconds);
 
-      const formatted = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }).format(recreated);
+        const date = normalized.toDate();
 
-      setFormattedDate(formatted);
-    } else {
-      setFormattedDate(t("recipeView.unknownDate"));
-    }
-  }, [recipe?.createdAt]);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date in tag suggestion:", timestamp);
+          return "";
+        }
+
+        return new Intl.DateTimeFormat(i18n.language, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }).format(date);
+      } catch (err) {
+        console.warn("Error formatting date:", err, timestamp);
+        return "";
+      }
+    };
+    setFormattedDate(getFormattedDate(recipe?.createdAt));
+  }, [recipe?.createdAt, i18n.language]);
 
   // Check if the user is authenticated
   useEffect(() => {

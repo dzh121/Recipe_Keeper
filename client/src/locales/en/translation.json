@@ -27,6 +27,10 @@
       "title": "Manage Tags",
       "description": "Customize and organize your tags to easily filter and find recipes."
     },
+    "tagsSuggest": {
+      "title": "Tag Suggestions",
+      "description": "Suggest new tags to help organize recipes"
+    },
     "settings": {
       "title": "Settings",
       "description": "Update your profile, preferences, and manage your account settings."
@@ -372,6 +376,65 @@
   "rateLimit": {
     "title": "Rate Limit Exceeded",
     "description": "You're sending too many requests. Please wait and try again."
+  },
+
+  "tagSuggestions": {
+    "title": "Tag Suggestions",
+    "description": "Suggest new tags to better organize and find recipes. Our team will review your suggestions.",
+    "suggestNewTag": "Suggest a New Tag",
+    "englishLabel": "English",
+    "hebrewLabel": "Hebrew",
+    "inputEnglish": "Enter tag name in English",
+    "inputHebrew": "Enter tag name in Hebrew",
+    "translateToHebrew": "Translate to Hebrew",
+    "translateToEnglish": "Translate to English",
+    "suggestNote": "Enter the tag in at least one language. Our team will review your suggestion.",
+    "suggestButton": "Submit Suggestion",
+    "submitting": "Submitting...",
+    "yourSuggestions": "Your Suggestions",
+    "searchPlaceholder": "Search suggestions...",
+    "statusLabel": "Status",
+    "allStatuses": "All Statuses",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "noSuggestionsFound": "No tag suggestions found",
+
+    "toasts": {
+      "unauthorized": {
+        "title": "Unauthorized",
+        "description": "Please log in to suggest a tag."
+      },
+      "fetchError": {
+        "title": "Failed to load suggestions",
+        "description": "There was a problem fetching suggestions."
+      },
+      "submitError": {
+        "title": "Submission failed",
+        "description": "An error occurred while submitting your suggestion."
+      },
+      "suggestionSubmitted": {
+        "title": "Suggestion submitted",
+        "description": "Your tag suggestion has been sent for review."
+      },
+      "emptyFields": {
+        "title": "No content",
+        "description": "Please fill at least one language before submitting."
+      },
+      "statusChanged": {
+      "title": "Status updated",
+      "description": "Tag suggestion status was updated successfully"
+    },
+    "statusError": {
+      "title": "Update failed",
+      "description": "Could not update the tag suggestion status"
+    }
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    }
+
   }
 
 }
