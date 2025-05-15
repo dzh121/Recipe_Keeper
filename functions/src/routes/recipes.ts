@@ -315,8 +315,14 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     if (existingData.ownerId !== tokenUid) {
       return res.status(403).json({ error: "Permission denied." });
     }
-
+    
     await docRef.delete();
+
+    const file = bucket.file(`recipes/${recipeId}/photo.jpg`);
+    await file.delete().catch((err) => {
+      if (err.code !== 404) throw err; // ignore not-found error
+    });
+    
     return res.status(200).json({ message: "Recipe deleted" });
   } catch (error) {
     console.error("Failed to delete recipe:", error);
