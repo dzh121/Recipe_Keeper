@@ -136,14 +136,24 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### Recipe Management
 
-| Method | Endpoint                | Description                         |
-| ------ | ----------------------- | ----------------------------------- |
-| GET    | `/recipes?type=public`  | Get all public recipes              |
-| GET    | `/recipes?type=private` | Get current user's private recipes  |
-| GET    | `/recipes/:id`          | Get single recipe (public or owned) |
-| POST   | `/recipes`              | Create new recipe                   |
-| PATCH  | `/recipes/:id`          | Update an existing recipe           |
-| DELETE | `/recipes/:id`          | Delete a recipe                     |
+| Method | Endpoint       | Description                                                             |
+| ------ | -------------- | ----------------------------------------------------------------------- |
+| GET    | `/recipes`     | Get paginated list of recipes (public or private based on `type` param) |
+| GET    | `/recipes/:id` | Get single recipe by ID (if public or owned by user)                    |
+| POST   | `/recipes`     | Create a new recipe (requires authentication)                           |
+| PATCH  | `/recipes/:id` | Update a recipe (requires authentication and ownership)                 |
+| DELETE | `/recipes/:id` | Delete a recipe (requires authentication and ownership)                 |
+
+#### `/recipes` Query Parameters
+
+- `type=public | private` – Required to specify visibility
+- `page` – Page number for pagination (default: 1)
+- `pageSize` – Items per page (default: 10)
+- `recipeType=link | homemade | all` – Filter by recipe type
+- `kosher=true` – Only return kosher recipes
+- `tags=tag1,tag2,...` – Filter recipes that include all listed tags
+- `visibility=public | private` – (only for `type=private`) filter user-owned recipes by visibility
+- `search=term` – Filter by search term in title
 
 #### Recipe Media
 
