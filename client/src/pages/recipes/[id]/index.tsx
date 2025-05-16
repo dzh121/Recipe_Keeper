@@ -666,10 +666,12 @@ export default function RecipePage() {
                       </Text>
                     </HStack>
 
-                    <List.Root gap={2} pl={4} fontSize="sm">
+                    <List.Root gap={2} px={4} fontSize="sm">
                       {formatIngredients(recipe.ingredients).map(
                         (ingredient, idx) => (
-                          <List.Item key={idx}>{ingredient}</List.Item>
+                          <List.Item key={idx}>
+                            <Text textStyle="md">{ingredient}</Text>
+                          </List.Item>
                         )
                       )}
                     </List.Root>
@@ -688,14 +690,14 @@ export default function RecipePage() {
                     <List.Root
                       as="ol"
                       gap={3}
-                      pl={5}
+                      px={5}
                       style={{ listStyleType: "decimal" }}
                     >
                       {formatInstructions(recipe.instructions).map(
                         (step, idx) => (
                           <List.Item key={idx} pb={2}>
                             <Flex align="center" gap={2}>
-                              <Text>
+                              <Text textStyle="md">
                                 {step.replace(
                                   /^(\(?0*[1-9][0-9]?\)?[\.\):\-]?\s)/,
                                   ""
