@@ -66,7 +66,6 @@ type UserProfile = {
 
 interface RecipeListProps {
   title: string;
-  recipes: Recipe[];
   isPublic?: boolean;
   allowEdit?: boolean;
   showAddButton?: boolean;
@@ -80,7 +79,6 @@ interface RecipeListProps {
 
 export default function RecipeList({
   title,
-  recipes,
   isPublic = true,
   allowEdit = false,
   showAddButton = false,
@@ -267,7 +265,9 @@ export default function RecipeList({
     if (showPublisher) {
       const fetchUserProfiles = async () => {
         const userIds = [
-          ...new Set(recipes.map((recipe) => recipe.ownerId).filter(Boolean)),
+          ...new Set(
+            paginatedRecipes.map((recipe) => recipe.ownerId).filter(Boolean)
+          ),
         ];
         const profiles: Record<string, UserProfile> = {};
 
@@ -297,7 +297,7 @@ export default function RecipeList({
 
       fetchUserProfiles();
     }
-  }, [recipes, showPublisher]);
+  }, [paginatedRecipes, showPublisher]);
 
   const handleTagSelect = (tag: string) => {
     if (!selectedTags.includes(tag)) {

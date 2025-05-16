@@ -133,7 +133,13 @@ router.get("/", async (req, res) => {
     kosher,     
     search           
   } = req.query;
-
+  console.log("type:", type);
+  console.log("pageSize:", pageSize);
+  console.log("page:", page);
+  console.log("tags:", tags);
+  console.log("recipeType:", recipeType);
+  console.log("kosher:", kosher);
+  console.log("search:", search);
   const limit = Math.max(1, parseInt(pageSize as string));
   const currentPage = Math.max(1, parseInt(page as string));
   const neededToSkip = (currentPage - 1) * limit;
@@ -185,13 +191,16 @@ router.get("/", async (req, res) => {
     let skipped = 0;
     let totalMatched = 0;
 
-    while (true) {
+    let keepFetching = true;
+    while (keepFetching) {
       let run = query;
       if (lastDoc) run = run.startAfter(lastDoc);
 
       const snap = await run.limit(BATCH).get();
-      if (snap.empty) break;
-
+      if (snap.empty) {
+        keepFetching = false;
+        break;
+      }
       for (const d of snap.docs) {
         lastDoc = d;
         const data = d.data();
@@ -214,7 +223,8 @@ router.get("/", async (req, res) => {
         break;  
       }
     }
-
+    console.log("Total matched recipes:", totalMatched);
+    console.log("matches:", matches);
     return res.json({ recipes: matches, totalCount: totalMatched });
   } catch (err) {
     console.error("Error fetching paginated recipes:", err);
@@ -346,7 +356,10 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
     const file = bucket.file(`recipes/${recipeId}/photo.jpg`);
     await file.delete().catch((err) => {
-      if (err.code !== 404) throw err; // ignore not-found error
+      if (err.code !== 404){
+        console.error("Error deleting file:", err);
+        throw err;
+      }
     });
     
     return res.status(200).json({ message: "Recipe deleted" });

@@ -3,21 +3,11 @@ import { useEffect } from "react";
 import Head from "next/head";
 import { useAuth } from "@/context/AuthContext";
 import RecipeList from "@/components/recipes/RecipeList";
-import {
-  Box,
-  Container,
-  VStack,
-  Spinner,
-  Text,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Container, VStack, Spinner, Text } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { Recipe } from "@/lib/types/recipe";
-import { LuChevronLeft } from "react-icons/lu";
-import { useColorModeValue } from "@/components/ui/color-mode";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 
@@ -26,40 +16,7 @@ export default function RecipesManage() {
   const router = useRouter();
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
-  const [recipes, setRecipes] = React.useState<Recipe[]>([]);
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        const token = await user?.getIdToken();
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/recipes?type=private`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch recipes");
-        }
-
-        const data = await response.json();
-        setRecipes(data.recipes);
-      } catch (err) {
-        console.error("Error fetching recipes:", err);
-      }
-    };
-
-    if (user) {
-      fetchRecipes();
-    }
-  }, [user]);
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated && authChecked) {
@@ -67,9 +24,6 @@ export default function RecipesManage() {
     }
   }, [hasMounted, isAuthenticated, authChecked]);
 
-  const handleGoBack = () => {
-    router.back();
-  };
   if (!hasMounted) {
     return (
       <Box
@@ -116,7 +70,6 @@ export default function RecipesManage() {
         <BackButton />
         <RecipeList
           title={t("titles.manageRecipes")}
-          recipes={recipes}
           isPublic={false}
           allowEdit={true}
           showAddButton={isAuthenticated}

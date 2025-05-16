@@ -1,24 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import {
-  Box,
-  Container,
-  VStack,
-  Text,
-  Spinner,
-  Button,
-} from "@chakra-ui/react";
-import { LuChevronLeft } from "react-icons/lu";
+import { Box, Container, VStack, Text, Spinner } from "@chakra-ui/react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuth } from "@/context/AuthContext";
-import { Recipe } from "@/lib/types/recipe";
-import { useColorModeValue } from "@/components/ui/color-mode";
 import Head from "next/head";
 import RecipeList from "@/components/recipes/RecipeList";
 import { useTranslation } from "react-i18next";
@@ -27,31 +14,10 @@ import BackButton from "@/components/ui/back";
 export default function RecipesIndexPage() {
   const hasMounted = useHasMounted();
   const router = useRouter();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const { t } = useTranslation();
   const { user } = useAuth();
 
   const isAuthenticated = !!user;
-  // useEffect(() => {
-  //   const fetchRecipes = async () => {
-  //     try {
-  //       const q = query(
-  //         collection(db, "recipes"),
-  //         where("isPublic", "==", true)
-  //       );
-  //       const snapshot = await getDocs(q);
-  //       const result: Recipe[] = snapshot.docs.map((doc) => ({
-  //         id: doc.id,
-  //         ...(doc.data() as Omit<Recipe, "id">),
-  //       }));
-  //       setRecipes(result);
-  //     } catch (err) {
-  //       console.error("Error fetching recipes:", err);
-  //     }
-  //   };
-
-  //   fetchRecipes();
-  // }, []);
 
   if (!hasMounted) {
     return (
@@ -98,7 +64,6 @@ export default function RecipesIndexPage() {
         <BackButton />
         <RecipeList
           title={t("titles.explore")}
-          recipes={recipes}
           isPublic={true}
           allowEdit={false}
           showAddButton={isAuthenticated}
