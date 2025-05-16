@@ -22,66 +22,6 @@ export default function RecipesManage() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const fetchFavoriteRecipes = async () => {
-      try {
-        const token = await user?.getIdToken();
-
-        // Get favorite IDs
-        const favoritesRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/favorites`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-
-        if (!favoritesRes.ok) {
-          throw new Error("Failed to fetch favorites");
-        }
-
-        const favoritesData = await favoritesRes.json();
-
-        const favoriteIds = favoritesData.favorites.map((fav: any) => fav);
-        if (favoriteIds.length === 0) {
-          setRecipes([]);
-          return;
-        }
-
-        // Fetch only favorite recipes
-        const recipesRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/recipes?ids=${favoriteIds.join(
-            ","
-          )}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-
-        if (!recipesRes.ok) {
-          throw new Error("Failed to fetch favorite recipes");
-        }
-
-        const recipesData = await recipesRes.json();
-        setRecipes(recipesData.recipes);
-
-      } catch (err) {
-        console.error("Error fetching favorite recipes:", err);
-      }
-    };
-
-    if (user) {
-      fetchFavoriteRecipes();
-    }
-  }, [user]);
-
-  useEffect(() => {
     if (hasMounted && !isAuthenticated && authChecked) {
       router.push("/recipes");
     }
@@ -167,12 +107,12 @@ export default function RecipesManage() {
         <BackButton />
         <RecipeList
           title={t("titles.favorites")}
-          recipes={recipes}
           allowEdit={false}
           showAddButton={false}
           showPublicTag={true}
           showPublisher={true}
           showFavorite={true}
+          onlyFavorites={true}
           onFavoriteClick={(recipeId: string) => {
             removeFavorite(recipeId);
           }}

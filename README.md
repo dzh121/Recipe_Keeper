@@ -146,14 +146,17 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### `/recipes` Query Parameters
 
-- `type=public | private` – Required to specify visibility
-- `page` – Page number for pagination (default: 1)
-- `pageSize` – Items per page (default: 10)
-- `recipeType=link | homemade | all` – Filter by recipe type
-- `kosher=true` – Only return kosher recipes
-- `tags=tag1,tag2,...` – Filter recipes that include all listed tags
-- `visibility=public | private` – (only for `type=private`) filter user-owned recipes by visibility
-- `search=term` – Filter by search term in title
+| Parameter    | Type                          | Description                                                             |
+| ------------ | ----------------------------- | ----------------------------------------------------------------------- |
+| `type`       | `public` \| `private`         | **Required**. Determines recipe visibility scope (public or user-only)  |
+| `favorites`  | `true`                        | Optional. If set, filters results to only the user's favorite recipes   |
+| `page`       | number                        | Optional. Page number for pagination (default: `1`)                     |
+| `pageSize`   | number                        | Optional. Number of results per page (default: `10`)                    |
+| `recipeType` | `link` \| `homemade` \| `all` | Optional. Filter by type of recipe                                      |
+| `kosher`     | `true`                        | Optional. Only return kosher recipes                                    |
+| `tags`       | comma-separated list          | Optional. Filter recipes that include **all** listed tag IDs            |
+| `visibility` | `public` \| `private`         | Optional. Only for `type=private`, filters user's recipes by visibility |
+| `search`     | string                        | Optional. Full-text search in `title`                                   |
 
 #### Recipe Media
 
@@ -165,12 +168,11 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### Favorites
 
-| Method | Endpoint         | Description                    |
-| ------ | ---------------- | ------------------------------ |
-| GET    | `/favorites`     | Get user's favorite recipe IDs |
-| GET    | `/favorites/:id` | Check if recipe is favorited   |
-| POST   | `/favorites/:id` | Add recipe to favorites        |
-| DELETE | `/favorites/:id` | Remove recipe from favorites   |
+| Method | Endpoint         | Description                  |
+| ------ | ---------------- | ---------------------------- |
+| GET    | `/favorites/:id` | Check if recipe is favorited |
+| POST   | `/favorites/:id` | Add recipe to favorites      |
+| DELETE | `/favorites/:id` | Remove recipe from favorites |
 
 #### User Profile & Settings
 

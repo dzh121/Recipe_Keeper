@@ -125,21 +125,17 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   let uid: string | null = null;
   const {
-    type,                    
+    type,
     pageSize = "10",
     page = "1",
-    tags,                     
-    recipeType,  
-    kosher,     
-    search           
+    tags,
+    recipeType,
+    kosher,
+    search,
   } = req.query;
-  console.log("type:", type);
-  console.log("pageSize:", pageSize);
-  console.log("page:", page);
-  console.log("tags:", tags);
-  console.log("recipeType:", recipeType);
-  console.log("kosher:", kosher);
-  console.log("search:", search);
+
+  const onlyFavorites = req.query.favorites === "true";
+
   const limit = Math.max(1, parseInt(pageSize as string));
   const currentPage = Math.max(1, parseInt(page as string));
   const neededToSkip = (currentPage - 1) * limit;
@@ -149,9 +145,21 @@ router.get("/", async (req, res) => {
   if (auth?.startsWith("Bearer ")) {
     try {
       uid = (await admin.auth().verifyIdToken(auth.split(" ")[1])).uid;
-    } catch { /* guest – ignore */ }
+    } catch {
+      /* guest – ignore */
+    }
   }
+
   try {
+    let favoriteIds: string[] = [];
+    if (onlyFavorites) {
+      if (!uid) return res.status(401).json({ error: "Unauthorized" });
+      const settingsSnap = await db.doc(`users/${uid}/private/settings`).get();
+      favoriteIds = settingsSnap.data()?.favorites || [];
+      if (favoriteIds.length === 0) {
+        return res.json({ recipes: [], totalCount: 0 });
+      }
+    }
 
     let query: admin.firestore.Query = db.collection("recipes").orderBy("createdAt", "desc");
 
@@ -159,16 +167,12 @@ router.get("/", async (req, res) => {
       query = query.where("isPublic", "==", true);
     } else if (type === "private") {
       if (!uid) return res.status(401).json({ error: "Unauthorized" });
-
       query = query.where("ownerId", "==", uid);
-      const visibility = req.query.visibility as string | undefined;
-      if (visibility === "public") {
-        query = query.where("isPublic", "==", true);
-      } else if (visibility === "private") {
-        query = query.where("isPublic", "==", false);
-      }
-    }
 
+      const visibility = req.query.visibility as string | undefined;
+      if (visibility === "public") query = query.where("isPublic", "==", true);
+      else if (visibility === "private") query = query.where("isPublic", "==", false);
+    }
 
     if (recipeType && recipeType !== "all") {
       query = query.where("recipeType", "==", recipeType);
@@ -179,13 +183,13 @@ router.get("/", async (req, res) => {
     }
 
     if (tagList.length > 0) {
-      query = query.where("tags", "array-contains", tagList[0]);
+      query = query.where("tags", "array-contains", tagList[0]); // rest handled manually
     }
 
-    const rawSearch   = (search as string | undefined) ?? "";
-    const searchTerm  = rawSearch.trim() ? rawSearch.trim().toLowerCase() : null;
+    const rawSearch = (search as string | undefined) ?? "";
+    const searchTerm = rawSearch.trim().toLowerCase() || null;
 
-    const BATCH       = 50;
+    const BATCH = 50;
     const matches: any[] = [];
     let lastDoc: admin.firestore.DocumentSnapshot | null = null;
     let skipped = 0;
@@ -197,41 +201,41 @@ router.get("/", async (req, res) => {
       if (lastDoc) run = run.startAfter(lastDoc);
 
       const snap = await run.limit(BATCH).get();
-      if (snap.empty) {
-        keepFetching = false;
-        break;
-      }
-      for (const d of snap.docs) {
-        lastDoc = d;
-        const data = d.data();
+      if (snap.empty) break;
 
-        if (tagList.length && !tagList.every(t => data.tags?.includes(t))) continue;
+      for (const doc of snap.docs) {
+        lastDoc = doc;
+        const data = doc.data();
+
+        // Apply all secondary filters
+        if (onlyFavorites && !favoriteIds.includes(doc.id)) continue;
+        if (tagList.length > 0 && !tagList.every(t => data.tags?.includes(t))) continue;
         if (searchTerm) {
-          const haystack = `${data.title ?? ""}`.toLowerCase();
+          const haystack = `${data.title ?? ""} ${data.notes ?? ""}`.toLowerCase();
           if (!haystack.includes(searchTerm)) continue;
         }
 
         totalMatched++;
+        if (skipped < neededToSkip) {
+          skipped++;
+          continue;
+        }
 
-        if (skipped < neededToSkip) { skipped++; continue; }
-        if (matches.length < limit)  matches.push({ id: d.id, ...data });
+        if (matches.length < limit) {
+          matches.push({ id: doc.id, ...data });
+        }
       }
 
-      if (snap.size < BATCH) break;   
-      if (matches.length === limit    
-          && skipped + matches.length === totalMatched) {
-        break;  
-      }
+      if (snap.size < BATCH) break;
+      if (matches.length === limit) break;
     }
-    console.log("Total matched recipes:", totalMatched);
-    console.log("matches:", matches);
+
     return res.json({ recipes: matches, totalCount: totalMatched });
   } catch (err) {
     console.error("Error fetching paginated recipes:", err);
     return res.status(500).json({ error: "Failed to fetch recipes" });
   }
 });
-
 
 router.patch("/:id", authenticateToken, async (req, res) => {
   const {

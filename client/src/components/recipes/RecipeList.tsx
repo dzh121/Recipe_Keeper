@@ -75,6 +75,7 @@ interface RecipeListProps {
   onAddClick?: () => void;
   onEditClick?: (id: string) => void;
   onFavoriteClick?: (id: string) => void;
+  onlyFavorites?: boolean;
 }
 
 export default function RecipeList({
@@ -88,6 +89,7 @@ export default function RecipeList({
   onAddClick,
   onEditClick,
   onFavoriteClick,
+  onlyFavorites = false,
 }: RecipeListProps) {
   const [tagSearch, setTagSearch] = useState("");
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>(
@@ -177,6 +179,7 @@ export default function RecipeList({
           visibilityFilter[0] !== "all" && {
             visibility: visibilityFilter[0],
           }),
+        ...(onlyFavorites && { favorites: "true" }),
       });
 
       if (!user && !isPublic) {

@@ -4,22 +4,6 @@ import { authenticateToken } from "../middleware/authMiddleware";
 import admin from "firebase-admin";
 const router = Router();
 
-router.get("/", authenticateToken,async (req, res) => {
-  const user = (req as any).user; 
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
-
-  const settingsRef = db.doc(`users/${user.uid}/private/settings`);
-  const settingsSnap = await settingsRef.get();
-
-  if (!settingsSnap.exists) {
-    return res.status(404).json({ error: "Settings not found" });
-  }
-
-  const data = settingsSnap.data();
-  const favorites = data?.favorites ?? [];
-  
-  return res.status(200).json({ favorites });
-});
 
 router.get("/:id", authenticateToken, async (req, res) => {
   const recipeId = req.params.id;
