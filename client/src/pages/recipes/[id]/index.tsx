@@ -141,7 +141,6 @@ export default function RecipePage() {
       if (!timestamp) return "";
 
       try {
-        // 🔧 Fix: rehydrate into a proper Timestamp if needed
         const normalized =
           typeof timestamp.toDate === "function"
             ? timestamp

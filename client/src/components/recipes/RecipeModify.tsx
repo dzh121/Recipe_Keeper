@@ -761,7 +761,11 @@ export default function RecipeModify({
           </Tabs.Content>
 
           {/* Homemade Recipe Panel */}
-          <Tabs.Content value="homemade" p={0}>
+          <Tabs.Content
+            value="homemade"
+            p={0}
+            dir={i18n.language === "he" ? "rtl" : "ltr"}
+          >
             <VStack gap={6} align="stretch">
               <Box>
                 <Text fontWeight="medium" mb={2}>
