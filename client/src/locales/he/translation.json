@@ -206,7 +206,9 @@
     "private": "פרטי",
     "homemade": "ביתי",
     "link": "קישור",
-    "editButton": "ערוך"
+    "editButton": "ערוך",
+    "kosherOnly": "כשר",
+    "kosherBadge": "כשר"
   },
 
   "settings": {
@@ -232,6 +234,9 @@
     "zoom": "זום",
     "memberSince": "חבר מאז",
     "noDisplayName": "לא הוגדר שם תצוגה",
+    "defaultKosher": "הגדר מתכונים ככשרים כברירת מחדל",
+    "defaultPublic": "הגדר מתכונים כציבוריים כברירת מחדל",
+    "preferences": "העדפות",
     "errors": {
       "update": "עדכון נכשל. אנא נסה שוב.",
       "authError": "שגיאת אימות.",

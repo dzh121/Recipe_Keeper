@@ -32,26 +32,26 @@ export default function RecipesIndexPage() {
   const { user } = useAuth();
 
   const isAuthenticated = !!user;
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        const q = query(
-          collection(db, "recipes"),
-          where("isPublic", "==", true)
-        );
-        const snapshot = await getDocs(q);
-        const result: Recipe[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Recipe, "id">),
-        }));
-        setRecipes(result);
-      } catch (err) {
-        console.error("Error fetching recipes:", err);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchRecipes = async () => {
+  //     try {
+  //       const q = query(
+  //         collection(db, "recipes"),
+  //         where("isPublic", "==", true)
+  //       );
+  //       const snapshot = await getDocs(q);
+  //       const result: Recipe[] = snapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...(doc.data() as Omit<Recipe, "id">),
+  //       }));
+  //       setRecipes(result);
+  //     } catch (err) {
+  //       console.error("Error fetching recipes:", err);
+  //     }
+  //   };
 
-    fetchRecipes();
-  }, []);
+  //   fetchRecipes();
+  // }, []);
 
   if (!hasMounted) {
     return (
@@ -99,6 +99,7 @@ export default function RecipesIndexPage() {
         <RecipeList
           title={t("titles.explore")}
           recipes={recipes}
+          isPublic={true}
           allowEdit={false}
           showAddButton={isAuthenticated}
           showPublisher={true}

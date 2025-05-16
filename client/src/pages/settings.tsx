@@ -19,6 +19,7 @@ import {
   Progress,
   IconButton,
   Slider,
+  Switch,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { use, useEffect, useState } from "react";
@@ -77,10 +78,29 @@ export default function SettingsPage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const { colorMode } = useColorMode();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [defaultKosher, setDefaultKosher] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("defaultKosher");
+    return stored ? JSON.parse(stored) : false;
+  });
+
+  const [defaultPublic, setDefaultPublic] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("defaultPublic");
+    return stored ? JSON.parse(stored) : true;
+  });
 
   const bgColor = colorMode === "light" ? "white" : "gray.800";
   const borderColor = colorMode === "light" ? "gray.200" : "gray.700";
+
+  useEffect(() => {
+    localStorage.setItem("defaultKosher", JSON.stringify(defaultKosher));
+  }, [defaultKosher]);
+
+  useEffect(() => {
+    localStorage.setItem("defaultPublic", JSON.stringify(defaultPublic));
+  }, [defaultPublic]);
 
   // Redirect or fetch user profile from Firestore
   useEffect(() => {
@@ -749,8 +769,54 @@ export default function SettingsPage() {
               </VStack>
             </Box>
 
-            <StackSeparator my={4} />
+            <Box w="full">
+              <HStack mb={2}>
+                <Icon as={LuCheck} color="teal.500" />
+                <Text fontWeight="medium">{t("settings.preferences")}</Text>
+              </HStack>
 
+              <VStack gap={4} align="start" w="full">
+                <Switch.Root
+                  checked={defaultKosher}
+                  onCheckedChange={(e) => setDefaultKosher(e.checked)}
+                  size="md"
+                  colorPalette="teal"
+                >
+                  <Switch.HiddenInput />
+                  <HStack gap={3}>
+                    <Switch.Control
+                      bg={defaultKosher ? "teal.500" : "gray.300"}
+                      borderRadius="full"
+                      flexDirection={
+                        i18n.language === "he" ? "row-reverse" : "row"
+                      }
+                    />
+                    <Switch.Label>{t("settings.defaultKosher")}</Switch.Label>
+                  </HStack>
+                </Switch.Root>
+
+                <Switch.Root
+                  checked={defaultPublic}
+                  onCheckedChange={(e) => setDefaultPublic(e.checked)}
+                  size="md"
+                  colorPalette="teal"
+                >
+                  <Switch.HiddenInput />
+                  <HStack gap={3}>
+                    <Switch.Control
+                      bg={defaultPublic ? "teal.500" : "gray.300"}
+                      borderRadius="full"
+                      flexDirection={
+                        i18n.language === "he" ? "row-reverse" : "row"
+                      }
+                    />
+                    <Switch.Label>{t("settings.defaultPublic")}</Switch.Label>
+                  </HStack>
+                </Switch.Root>
+              </VStack>
+            </Box>
+
+            <StackSeparator my={4} />
             <Button
               w="full"
               colorPalette="red"

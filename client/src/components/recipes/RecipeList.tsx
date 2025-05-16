@@ -2,7 +2,7 @@
 
 import {
   Box,
-  Heading,
+  Checkbox,
   VStack,
   HStack,
   Text,
@@ -13,7 +13,7 @@ import {
   Button,
   Flex,
   Tag,
-  TagLabel,
+  Pagination,
   Link,
   Select,
   Menu,
@@ -21,6 +21,7 @@ import {
   createListCollection,
   Avatar,
   IconButton,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
@@ -32,6 +33,8 @@ import {
   LuTag,
   LuChevronDown,
   LuGlobe,
+  LuCheck,
+  LuShieldCheck,
 } from "react-icons/lu";
 import { MdOutlineEdit, MdOutlineFavorite } from "react-icons/md";
 import { FiX } from "react-icons/fi";
@@ -42,12 +45,16 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 import type { Tag as TagType } from "@/lib/types/tag";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import { getAuth } from "firebase/auth";
+import { useAuth } from "@/context/AuthContext";
 
 export type Recipe = {
   id: string;
   title: string;
   isPublic: boolean;
   tags?: string[];
+  kosher?: boolean;
   recipeType?: "link" | "homemade";
   ownerId?: string;
 };
@@ -60,6 +67,7 @@ type UserProfile = {
 interface RecipeListProps {
   title: string;
   recipes: Recipe[];
+  isPublic?: boolean;
   allowEdit?: boolean;
   showAddButton?: boolean;
   showPublicTag?: boolean;
@@ -73,6 +81,7 @@ interface RecipeListProps {
 export default function RecipeList({
   title,
   recipes,
+  isPublic = true,
   allowEdit = false,
   showAddButton = false,
   showPublicTag = false,
@@ -82,20 +91,56 @@ export default function RecipeList({
   onEditClick,
   onFavoriteClick,
 }: RecipeListProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string[]>(["all"]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagSearch, setTagSearch] = useState("");
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>(
     {}
   );
-  const [visibilityFilter, setVisibilityFilter] = useState<string[]>(["all"]);
   const [tagOptions, setTagOptions] = useState<TagType[]>([]);
+
+  const [searchQuery, setSearchQuery] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("recipeSearchQuery") || "";
+  });
+
+  const [rawSearchQuery, setRawSearchQuery] = useState(searchQuery);
+
+  const [typeFilter, setTypeFilter] = useState<string[]>(() => {
+    if (typeof window === "undefined") return ["all"];
+    return JSON.parse(localStorage.getItem("recipeTypeFilter") || '["all"]');
+  });
+
+  const [visibilityFilter, setVisibilityFilter] = useState<string[]>(() => {
+    if (typeof window === "undefined") return ["all"];
+    return JSON.parse(
+      localStorage.getItem("recipeVisibilityFilter") || '["all"]'
+    );
+  });
+
+  const [isKosher, setIsKosher] = useState<boolean | null>(() => {
+    if (typeof window === "undefined") return null;
+
+    const stored = localStorage.getItem("recipeKosherFilter");
+    if (stored !== null) return JSON.parse(stored);
+
+    const defaultKosher = localStorage.getItem("defaultKosher");
+    return defaultKosher !== null ? JSON.parse(defaultKosher) : null;
+  });
+
+  const [selectedTags, setSelectedTags] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    return JSON.parse(localStorage.getItem("recipeSelectedTags") || "[]");
+  });
+
+  const [page, setPage] = useState(1);
+  const [paginatedRecipes, setPaginatedRecipes] = useState<Recipe[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const { t, i18n } = useTranslation();
+  const { user, authChecked } = useAuth();
 
   const recipeTypes = createListCollection({
     items: [
@@ -111,6 +156,69 @@ export default function RecipeList({
       { label: t("recipeList.visibilityPrivate"), value: "private" },
     ],
   });
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSearchQuery(rawSearchQuery);
+      localStorage.setItem("recipeSearchQuery", rawSearchQuery);
+    }, 400); // debounce delay in ms
+
+    return () => clearTimeout(timeout);
+  }, [rawSearchQuery]);
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const type = isPublic ? "public" : "private";
+      const params = new URLSearchParams({
+        pageSize: pageSize.toString(),
+        page: page.toString(),
+        type: type,
+        recipeType: typeFilter[0],
+        ...(searchQuery && { search: searchQuery }),
+        ...(isKosher !== null && { kosher: isKosher.toString() }),
+        ...(selectedTags.length > 0 && { tags: selectedTags.join(",") }),
+        ...(!isPublic &&
+          visibilityFilter[0] !== "all" && {
+            visibility: visibilityFilter[0],
+          }),
+      });
+
+      if (!user && !isPublic) {
+        console.error("User is not authenticated");
+        return;
+      }
+
+      // Get the token for authenticated users
+      const token = await user?.getIdToken();
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes?${params}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+        const data = await res.json();
+        setPaginatedRecipes(data.recipes || []);
+        setTotalCount(data.totalCount || 0);
+      } catch (err) {
+        console.error("Failed to fetch paginated recipes", err);
+      }
+    };
+
+    fetchRecipes();
+  }, [
+    page,
+    typeFilter,
+    visibilityFilter,
+    selectedTags,
+    searchQuery,
+    isKosher,
+    user,
+  ]);
+
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -193,49 +301,31 @@ export default function RecipeList({
 
   const handleTagSelect = (tag: string) => {
     if (!selectedTags.includes(tag)) {
-      setSelectedTags([...selectedTags, tag]);
+      const newTags = [...selectedTags, tag];
+      setSelectedTags(newTags);
+      localStorage.setItem("recipeSelectedTags", JSON.stringify(newTags));
     }
   };
 
   const handleTagRemove = (tag: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tag));
+    const newTags = selectedTags.filter((t) => t !== tag);
+    setSelectedTags(newTags);
+    localStorage.setItem("recipeSelectedTags", JSON.stringify(newTags));
   };
 
   const clearFilters = () => {
     setTypeFilter(["all"]);
     setSelectedTags([]);
     setSearchQuery("");
+    setVisibilityFilter(["all"]);
+    setIsKosher(null);
+
+    localStorage.removeItem("recipeSearchQuery");
+    localStorage.removeItem("recipeTypeFilter");
+    localStorage.removeItem("recipeVisibilityFilter");
+    localStorage.removeItem("recipeKosherFilter");
+    localStorage.removeItem("recipeSelectedTags");
   };
-
-  const filteredRecipes = recipes.filter((recipe) => {
-    // Filter by type
-    if (typeFilter[0] !== "all" && recipe.recipeType !== typeFilter[0]) {
-      return false;
-    }
-    if (visibilityFilter[0] !== "all") {
-      if (visibilityFilter[0] === "public" && !recipe.isPublic) {
-        return false;
-      } else if (visibilityFilter[0] === "private" && recipe.isPublic) {
-        return false;
-      }
-    }
-
-    // Filter by search query
-    if (
-      searchQuery &&
-      !recipe.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
-    }
-
-    // Filter by tags
-    if (selectedTags.length > 0) {
-      if (!recipe.tags) return false;
-      return selectedTags.every((tag) => recipe.tags?.includes(tag));
-    }
-
-    return true;
-  });
 
   const filteredTags = tagOptions.filter(
     (tag) =>
@@ -329,8 +419,8 @@ export default function RecipeList({
                 boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)",
               }}
               placeholder={t("recipeList.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={rawSearchQuery}
+              onChange={(e) => setRawSearchQuery(e.target.value)}
               borderRadius="md"
               fontSize="md"
               height="48px"
@@ -339,17 +429,22 @@ export default function RecipeList({
           </InputGroup>
 
           {/* Filters row with improved spacing and styling */}
-          <Flex gap={5} flexWrap="wrap" align="center">
+          <Flex gap={5} flexWrap="wrap" align="center" mb={4}>
             {/* Type filter */}
             <HStack gap={2} minW={{ base: "full", md: "220px" }}>
               <Icon as={LuFilter} color="teal.500" boxSize={5} />
               <Select.Root
                 collection={recipeTypes}
                 value={typeFilter}
-                onValueChange={(e) => setTypeFilter(e.value)}
+                onValueChange={(e) => {
+                  setTypeFilter(e.value);
+                  localStorage.setItem(
+                    "recipeTypeFilter",
+                    JSON.stringify(e.value)
+                  );
+                }}
                 variant="outline"
                 width="full"
-                size="md"
               >
                 <Select.HiddenSelect />
                 <Select.Label fontWeight="medium">
@@ -358,13 +453,15 @@ export default function RecipeList({
                 <Select.Control
                   borderWidth="2px"
                   borderColor="gray.300"
-                  _hover={{ borderColor: "teal.400" }}
+                  _hover={{ borderColor: "teal.500" }}
                   height="40px"
                   borderRadius="md"
                   _dark={{ borderColor: "gray.600" }}
                 >
                   <Select.Trigger px={3}>
-                    <Select.ValueText placeholder="Filter by type" />
+                    <Select.ValueText
+                      placeholder={t("recipeList.typePlaceholder")}
+                    />
                   </Select.Trigger>
                   <Select.IndicatorGroup>
                     <Select.Indicator color="teal.500" />
@@ -402,14 +499,46 @@ export default function RecipeList({
               </Select.Root>
             </HStack>
 
+            <HStack gap={2}>
+              <Icon as={LuShieldCheck} color="teal.500" boxSize={5} />
+              <Checkbox.Root
+                colorPalette="teal"
+                size="md"
+                checked={isKosher === true}
+                onCheckedChange={(e) => {
+                  const value = e.checked ? true : null;
+                  setIsKosher(value);
+                  localStorage.setItem(
+                    "recipeKosherFilter",
+                    JSON.stringify(value)
+                  );
+                }}
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control
+                  border="1.5px solid"
+                  borderColor="gray.400"
+                  _dark={{ borderColor: "gray.600" }}
+                  borderRadius="md"
+                />
+                <Checkbox.Label>{t("recipeList.kosherOnly")}</Checkbox.Label>
+              </Checkbox.Root>
+            </HStack>
+
             {/* Visibility filter */}
             {showPublicTag && (
-              <HStack gap={2} minW={{ md: "50px" }}>
+              <HStack gap={2} minW={{ md: "160px" }}>
                 <Icon as={LuGlobe} color="teal.500" boxSize={5} />
                 <Select.Root
                   collection={recipePublic}
                   value={visibilityFilter}
-                  onValueChange={(e) => setVisibilityFilter(e.value)}
+                  onValueChange={(e) => {
+                    setVisibilityFilter(e.value);
+                    localStorage.setItem(
+                      "recipeVisibilityFilter",
+                      JSON.stringify(e.value)
+                    );
+                  }}
                   width="160px"
                 >
                   <Select.Label fontWeight="medium">
@@ -419,18 +548,18 @@ export default function RecipeList({
                   <Select.Control
                     borderWidth="2px"
                     borderColor="gray.300"
-                    _hover={{ borderColor: "teal.400" }}
+                    _hover={{ borderColor: "teal.500" }}
                     height="40px"
                     borderRadius="md"
                     _dark={{ borderColor: "gray.600" }}
                   >
-                    <Select.Trigger>
+                    <Select.Trigger px={3}>
                       <Select.ValueText
-                        placeholder={t("recipeList.visibilityLabel")}
+                        placeholder={t("recipeList.visibilityPlaceholder")}
                       />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
-                      <Select.Indicator />
+                      <Select.Indicator color="teal.500" />
                     </Select.IndicatorGroup>
                   </Select.Control>
                   <Portal>
@@ -456,7 +585,7 @@ export default function RecipeList({
                             }}
                           >
                             {item.label}
-                            <Select.ItemIndicator />
+                            <Select.ItemIndicator color="teal.500" />
                           </Select.Item>
                         ))}
                       </Select.Content>
@@ -465,10 +594,11 @@ export default function RecipeList({
                 </Select.Root>
               </HStack>
             )}
+
             {/* Tag filter */}
             <HStack gap={2} flex="1">
               <Icon as={LuTag} color="teal.500" boxSize={5} />
-              <VStack gap={1}>
+              <VStack gap={1} align="flex-start" width="full">
                 <Text fontWeight="medium">{t("recipeList.tagsLabel")}</Text>
                 <Menu.Root closeOnSelect={false}>
                   <Menu.Trigger asChild>
@@ -478,13 +608,15 @@ export default function RecipeList({
                       variant="outline"
                       borderWidth="2px"
                       borderColor="gray.300"
-                      _hover={{ borderColor: "teal.400" }}
+                      _hover={{ borderColor: "teal.500" }}
                       _dark={{ borderColor: "gray.600" }}
                       px={4}
                       borderRadius="md"
+                      width="full"
+                      justifyContent="space-between"
                     >
-                      <LuChevronDown />
-                      {t("recipeList.selectTags")}
+                      <Text>{t("recipeList.selectTags")}</Text>
+                      <Icon as={LuChevronDown} ml={2} />
                     </Button>
                   </Menu.Trigger>
                   <Portal>
@@ -533,10 +665,19 @@ export default function RecipeList({
                               }}
                               px={4}
                               py={2}
+                              role="menuitem"
+                              display="flex"
+                              justifyContent="space-between"
+                              alignItems="center"
                             >
-                              {tag.translations[i18n.language] ??
-                                tag.translations.en ??
-                                tag.id}
+                              <Text>
+                                {tag.translations[i18n.language] ??
+                                  tag.translations.en ??
+                                  tag.id}
+                              </Text>
+                              {selectedTags.includes(tag.id) && (
+                                <Icon as={LuCheck} color="teal.500" />
+                              )}
                             </Menu.Item>
                           ))
                         ) : (
@@ -547,7 +688,7 @@ export default function RecipeList({
                             color="gray.500"
                             fontSize="sm"
                           >
-                            No tags found
+                            {t("recipeList.noTagsFound")}
                           </Box>
                         )}
                       </Menu.Content>
@@ -560,6 +701,8 @@ export default function RecipeList({
             {/* Clear filters button - only show when filters are applied */}
             {(typeFilter[0] !== "all" ||
               selectedTags.length > 0 ||
+              isKosher ||
+              visibilityFilter[0] !== "all" ||
               searchQuery) && (
               <Button
                 size="md"
@@ -614,12 +757,12 @@ export default function RecipeList({
       {/* Results header with count */}
       <HStack justify="space-between">
         <Text fontWeight="medium" color={textColor}>
-          {t("recipeList.recipesFound", { count: filteredRecipes.length })}
+          {t("recipeList.recipesFound", { count: totalCount })}
         </Text>
       </HStack>
 
       {/* Results */}
-      {filteredRecipes.length === 0 ? (
+      {paginatedRecipes.length === 0 ? (
         <Box
           textAlign="center"
           py={10}
@@ -640,7 +783,7 @@ export default function RecipeList({
         </Box>
       ) : (
         <VStack align="stretch" gap={4}>
-          {filteredRecipes.map((recipe) => (
+          {paginatedRecipes.map((recipe) => (
             <Link
               as={NextLink}
               href={`/recipes/${recipe.id}`}
@@ -666,6 +809,18 @@ export default function RecipeList({
                   </HStack>
 
                   <HStack gap={2}>
+                    {recipe.kosher && (
+                      <Badge
+                        colorPalette="purple"
+                        fontSize="xs"
+                        px={2}
+                        py={1}
+                        borderRadius="md"
+                      >
+                        {t("recipeList.kosherBadge")}
+                      </Badge>
+                    )}
+
                     {showPublicTag && (
                       <Badge
                         colorPalette={recipe.isPublic ? "green" : "gray"}
@@ -819,6 +974,37 @@ export default function RecipeList({
               </Box>
             </Link>
           ))}
+          <Pagination.Root
+            count={totalCount}
+            pageSize={pageSize}
+            page={page}
+            onPageChange={(e) => setPage(e.page)}
+          >
+            <ButtonGroup variant="ghost" size="sm" justifyContent="center">
+              <Pagination.PrevTrigger asChild>
+                <IconButton aria-label="Previous">
+                  <HiChevronLeft />
+                </IconButton>
+              </Pagination.PrevTrigger>
+
+              <Pagination.Items
+                render={(pageObj) => (
+                  <IconButton
+                    key={pageObj.value}
+                    variant={{ base: "ghost", _selected: "outline" }}
+                  >
+                    {pageObj.value}
+                  </IconButton>
+                )}
+              />
+
+              <Pagination.NextTrigger asChild>
+                <IconButton aria-label="Next">
+                  <HiChevronRight />
+                </IconButton>
+              </Pagination.NextTrigger>
+            </ButtonGroup>
+          </Pagination.Root>
         </VStack>
       )}
     </VStack>

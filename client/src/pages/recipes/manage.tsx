@@ -117,6 +117,7 @@ export default function RecipesManage() {
         <RecipeList
           title={t("titles.manageRecipes")}
           recipes={recipes}
+          isPublic={false}
           allowEdit={true}
           showAddButton={isAuthenticated}
           showPublicTag={true}

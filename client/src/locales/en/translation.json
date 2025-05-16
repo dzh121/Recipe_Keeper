@@ -207,7 +207,9 @@
     "private": "Private",
     "homemade": "Homemade",
     "link": "Link",
-    "editButton": "Edit"
+    "editButton": "Edit",
+    "kosherOnly": "Kosher",
+    "kosherBadge": "Kosher"
   },
 
   "settings": {
@@ -233,6 +235,9 @@
     "zoom": "Zoom",
     "memberSince": "Member since",
     "noDisplayName": "No display name set",
+    "defaultKosher": "Mark new recipes as kosher by default",
+    "defaultPublic": "Make new recipes public by default",
+    "preferences": "Recipe Preferences",
     "errors": {
       "update": "Update failed",
       "AuthError": "Authentication error",

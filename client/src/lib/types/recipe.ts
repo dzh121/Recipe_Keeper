@@ -12,6 +12,7 @@ export type RecipeFull = {
   ownerId: string;
   title: string | null;
   link?: string;
+  kosher: boolean;
   notes: string;
   review: string;
   tags: string[];

@@ -59,6 +59,7 @@ type Recipe = {
   createdAt: Timestamp | null;
   recipeType: "link" | "homemade";
   imageUrl?: string | null;
+  kosher?: boolean;
   // Homemade recipe fields
   ingredients?: string;
   instructions?: string;
@@ -460,7 +461,17 @@ export default function RecipePage() {
                       fill={isFavorite ? "currentcolor" : "none"}
                     />
                   </Button>
-
+                  {recipe.kosher && (
+                    <Badge
+                      colorPalette="purple"
+                      fontSize="xs"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                    >
+                      {t("recipeList.kosherBadge")}
+                    </Badge>
+                  )}
                   <Badge
                     colorPalette={
                       recipe.recipeType === "homemade" ? "orange" : "blue"

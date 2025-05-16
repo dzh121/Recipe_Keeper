@@ -27,6 +27,7 @@ router.post("/", authenticateToken, async (req, res) => {
     servings,
     prepTime,
     cookTime,
+    kosher,
   } = req.body;
   const user = (req as any).user;
 
@@ -49,6 +50,7 @@ router.post("/", authenticateToken, async (req, res) => {
       timeToFinish: timeToFinish || null,
       rating: rating || 0,
       isPublic: Boolean(isPublic),
+      kosher: Boolean(kosher), 
       createdAt: FieldValue.serverTimestamp(),
       recipeType: recipeType || "link",
     };
@@ -122,82 +124,104 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", async (req, res) => {
   let uid: string | null = null;
-  const { type } = req.query;
-  const ids = req.query.ids as string | undefined;
+  const {
+    type,                    
+    pageSize = "10",
+    page = "1",
+    tags,                     
+    recipeType,  
+    kosher,     
+    search           
+  } = req.query;
 
-  // Try to extract user from token if provided
-  const authHeader = req.headers.authorization;
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1];
+  const limit = Math.max(1, parseInt(pageSize as string));
+  const currentPage = Math.max(1, parseInt(page as string));
+  const neededToSkip = (currentPage - 1) * limit;
+  const tagList = (tags as string | undefined)?.split(",").filter(Boolean) ?? [];
+
+  const auth = req.headers.authorization;
+  if (auth?.startsWith("Bearer ")) {
     try {
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      uid = decodedToken.uid;
-    } catch (err) {
-      console.warn("Invalid or expired token, treating as guest");
-    }
+      uid = (await admin.auth().verifyIdToken(auth.split(" ")[1])).uid;
+    } catch { /* guest – ignore */ }
   }
-
-  if (ids) {
-    if (!uid) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const recipeIds = ids.split(",");
-    try {
-      const recipes = await Promise.all(
-        recipeIds.map(async (id) => {
-          const docRef = db.collection("recipes").doc(id);
-          const snapshot = await docRef.get();
-          if (!snapshot.exists) return null;
-          const recipe = snapshot.data();
-          if (!recipe) return null;
-
-          if (!recipe.isPublic && recipe.ownerId !== uid) return null;
-
-          return { id, ...recipe };
-        })
-      );
-
-      return res.status(200).json({ recipes: recipes.filter(Boolean) });
-    } catch (err) {
-      console.error("Error fetching recipes by IDs:", err);
-      return res.status(500).json({ error: "Failed to fetch recipes" });
-    }
-  }
-
-  if (!type) {
-    return res.status(400).json({ error: "Missing required query parameter: type" });
-  }
-
-  if (type !== "public" && type !== "private") {
-    return res.status(400).json({ error: "Invalid query parameter: type must be 'public' or 'private'" });
-  }
-
-  if (type === "private" && !uid) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
   try {
-    let query: admin.firestore.Query = db.collection("recipes");
+
+    let query: admin.firestore.Query = db.collection("recipes").orderBy("createdAt", "desc");
 
     if (type === "public") {
       query = query.where("isPublic", "==", true);
-    } else if (uid) {
+    } else if (type === "private") {
+      if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
       query = query.where("ownerId", "==", uid);
+      const visibility = req.query.visibility as string | undefined;
+      if (visibility === "public") {
+        query = query.where("isPublic", "==", true);
+      } else if (visibility === "private") {
+        query = query.where("isPublic", "==", false);
+      }
     }
 
-    const snapshot = await query.get();
-    const recipes = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
 
-    return res.status(200).json({ recipes });
+    if (recipeType && recipeType !== "all") {
+      query = query.where("recipeType", "==", recipeType);
+    }
+
+    if (kosher === "true") {
+      query = query.where("kosher", "==", true);
+    }
+
+    if (tagList.length > 0) {
+      query = query.where("tags", "array-contains", tagList[0]);
+    }
+
+    const rawSearch   = (search as string | undefined) ?? "";
+    const searchTerm  = rawSearch.trim() ? rawSearch.trim().toLowerCase() : null;
+
+    const BATCH       = 50;
+    const matches: any[] = [];
+    let lastDoc: admin.firestore.DocumentSnapshot | null = null;
+    let skipped = 0;
+    let totalMatched = 0;
+
+    while (true) {
+      let run = query;
+      if (lastDoc) run = run.startAfter(lastDoc);
+
+      const snap = await run.limit(BATCH).get();
+      if (snap.empty) break;
+
+      for (const d of snap.docs) {
+        lastDoc = d;
+        const data = d.data();
+
+        if (tagList.length && !tagList.every(t => data.tags?.includes(t))) continue;
+        if (searchTerm) {
+          const haystack = `${data.title ?? ""}`.toLowerCase();
+          if (!haystack.includes(searchTerm)) continue;
+        }
+
+        totalMatched++;
+
+        if (skipped < neededToSkip) { skipped++; continue; }
+        if (matches.length < limit)  matches.push({ id: d.id, ...data });
+      }
+
+      if (snap.size < BATCH) break;   
+      if (matches.length === limit    
+          && skipped + matches.length === totalMatched) {
+        break;  
+      }
+    }
+
+    return res.json({ recipes: matches, totalCount: totalMatched });
   } catch (err) {
-    console.error("Error fetching recipes:", err);
+    console.error("Error fetching paginated recipes:", err);
     return res.status(500).json({ error: "Failed to fetch recipes" });
   }
 });
+
 
 router.patch("/:id", authenticateToken, async (req, res) => {
   const {
@@ -215,6 +239,7 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     servings,
     prepTime,
     cookTime,
+    kosher,
   } = req.body;
   const user = (req as any).user;
 
@@ -253,6 +278,7 @@ router.patch("/:id", authenticateToken, async (req, res) => {
       timeToFinish: timeToFinish || null,
       rating: rating || 0,
       isPublic: Boolean(isPublic),
+      kosher: Boolean(kosher),
       updatedAt: FieldValue.serverTimestamp(),
       recipeType: recipeType || "link",
     };

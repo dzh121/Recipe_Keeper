@@ -52,7 +52,14 @@ export default function RecipeModify({
   const [link, setLink] = useState(initialData.link || "");
   const [title, setTitle] = useState(initialData.title || "");
   const [notes, setNotes] = useState(initialData.notes || "");
-  const [isPublic, setIsPublic] = useState(initialData.isPublic || false);
+  const [isPublic, setIsPublic] = useState(() => {
+    if (typeof window === "undefined") return initialData.isPublic || false;
+    if (mode === "add") {
+      const stored = localStorage.getItem("defaultPublic");
+      return stored ? JSON.parse(stored) : false;
+    }
+    return initialData.isPublic || false;
+  });
   const [selectedTags, setSelectedTags] = useState(initialData.tags || []);
   const [tagSearch, setTagSearch] = useState("");
   const [review, setReview] = useState(initialData.review || "");
@@ -77,6 +84,14 @@ export default function RecipeModify({
   const [isDragging, setIsDragging] = useState(false);
   const { t, i18n } = useTranslation();
   const hasMounted = useHasMounted();
+  const [isKosher, setIsKosher] = useState(() => {
+    if (typeof window === "undefined") return initialData.kosher || false;
+    if (mode === "add") {
+      const stored = localStorage.getItem("defaultKosher");
+      return stored ? JSON.parse(stored) : false;
+    }
+    return initialData.kosher || false;
+  });
 
   // Colors for theming
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -140,6 +155,7 @@ export default function RecipeModify({
       setPrepTime(initialData.prepTime?.toString() || "");
       setCookTime(initialData.cookTime?.toString() || "");
       setPhotoPreviewUrl(initialData.imageURL || null);
+      setIsKosher(initialData.kosher || false);
 
       if (
         initialData.recipeType === "homemade" ||
@@ -255,6 +271,7 @@ export default function RecipeModify({
         review,
         timeToFinish: Number(timeToFinish) || null,
         rating: Number(rating),
+        kosher: isKosher,
         recipeType,
         ...(recipeType === "link" ? { link } : {}),
         ...(recipeType === "homemade"
@@ -1027,6 +1044,25 @@ export default function RecipeModify({
               <Switch.Control
                 bg={isPublic ? "teal.500" : "gray.300"}
                 borderRadius="full"
+                flexDirection={i18n.language === "he" ? "row-reverse" : "row"}
+              >
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Root>
+          </HStack>
+          <HStack>
+            <Text fontWeight="medium">{t("recipeList.kosherBadge")}</Text>
+            <Switch.Root
+              direction="ltr"
+              colorPalette="teal"
+              checked={isKosher}
+              onCheckedChange={(e) => setIsKosher(e.checked)}
+            >
+              <Switch.HiddenInput />
+              <Switch.Control
+                bg={isKosher ? "teal.500" : "gray.300"}
+                borderRadius="full"
+                flexDirection={i18n.language === "he" ? "row-reverse" : "row"}
               >
                 <Switch.Thumb />
               </Switch.Control>
