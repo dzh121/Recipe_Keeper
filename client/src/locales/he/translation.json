@@ -237,6 +237,9 @@
     "defaultKosher": "הגדר מתכונים ככשרים כברירת מחדל",
     "defaultPublic": "הגדר מתכונים כציבוריים כברירת מחדל",
     "preferences": "העדפות",
+    "bio": "אודות",
+    "bioPlaceholder": "כתוב משהו על עצמך...",
+    "saveBio": "שמור אודות",
     "errors": {
       "update": "עדכון נכשל. אנא נסה שוב.",
       "authError": "שגיאת אימות.",
@@ -279,7 +282,9 @@
       "updateFailed": "העדכון נכשל",
       "updateFailedDesc": "אירעה שגיאה בעדכון הפרופיל. נסה שוב.",
       "signedOut": "התנתקת",
-      "signedOutDesc": "התנתקת מהחשבון בהצלחה."
+      "signedOutDesc": "התנתקת מהחשבון בהצלחה.",
+      "bioUpdated": "האודות עודכן",
+      "bioUpdatedDesc": "האודות שלך עודכן בהצלחה."
     }
   },
 
@@ -352,6 +357,7 @@
 
   "recipeView": {
     "errorTitle": "שגיאה",
+    "edit": "ערוך",
     "unknownDate": "תאריך לא ידוע",
     "goToRecipes": "חזרה לרשימת המתכונים",
     "noPermission": "אין לך הרשאה לצפות במתכון הזה.",
@@ -439,8 +445,21 @@
         "description": "לא ניתן היה לעדכן את הסטטוס של ההצעה"
       }
     }
+  },
+
+  "userPage": {
+    "loading": "טוען פרופיל",
+    "notFound": "פרופיל המשתמש לא נמצא.",
+    "recipes": "מתכונים",
+    "homemadeStats": "תוצרת בית",
+    "link": "קישור",
+    "homemade": "ביתי",
+    "links": "קישורים",
+    "publicRecipes": "מתכונים ציבוריים",
+    "noPublicRecipes": "אין מתכונים ציבוריים ששותפו.",
+    "kosher": "כשר",
+    "more": "נוספים",
+    "moreTags": "+{{count}} נוספים"
   }
-
-
 
 }

@@ -6,6 +6,7 @@ export type UserSettings = {
   email: string;
   photoURL: string | null;
   recipesPublished?: number;
+  slug: string;
   bio?: string;
   isPublic?: boolean;
   createdAt?: Timestamp;

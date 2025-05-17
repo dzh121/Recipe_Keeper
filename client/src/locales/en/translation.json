@@ -238,6 +238,9 @@
     "defaultKosher": "Mark new recipes as kosher by default",
     "defaultPublic": "Make new recipes public by default",
     "preferences": "Recipe Preferences",
+    "bio": "Bio",
+    "bioPlaceholder": "Write something about yourself...",
+    "saveBio": "Save Bio",
     "errors": {
       "update": "Update failed",
       "AuthError": "Authentication error",
@@ -280,7 +283,9 @@
       "updateFailed": "Update failed",
       "updateFailedDesc": "There was an error updating your profile. Please try again.",
       "signedOut": "Signed out",
-      "signedOutDesc": "You have been successfully logged out."
+      "signedOutDesc": "You have been successfully logged out.",
+      "bioUpdated": "Bio updated",
+      "bioUpdatedDesc": "Your bio was successfully updated."
     }
   },
 
@@ -352,6 +357,7 @@
 
   "recipeView": {
     "errorTitle": "Error",
+    "edit": "Edit",
     "unknownDate": "Unknown date",
     "goToRecipes": "Return to Recipes",
     "noPermission": "You don't have permission to view this recipe.",
@@ -440,7 +446,21 @@
       "approve": "Approve",
       "reject": "Reject"
     }
+  },
 
+  "userPage": {
+    "loading": "Loading Profile",
+    "notFound": "User profile not found.",
+    "recipes": "Recipes",
+    "link": "Link",
+    "homemadeStats": "Homemade",
+    "homemade": "Homemade",
+    "links": "Links",
+    "publicRecipes": "Public Recipes",
+    "noPublicRecipes": "No public recipes shared yet.",
+    "kosher": "Kosher",
+    "more": "more",
+    "moreTags": "+{{count}} more"
   }
 
 }

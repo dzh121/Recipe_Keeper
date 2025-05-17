@@ -237,6 +237,30 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/user/:uid", async (req, res) => {
+  const { uid } = req.params;
+
+  try {
+    const recipesRef = db.collection("recipes");
+    const q = recipesRef
+      .where("ownerId", "==", uid)
+      .where("isPublic", "==", true)
+      .orderBy("createdAt", "desc");
+
+    const snap = await q.get();
+    const recipes = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return res.json({ recipes });
+  } catch (err) {
+    console.error("Error fetching user recipes:", err);
+    return res.status(500).json({ error: "Failed to fetch user recipes" });
+  }
+});
+
+
 router.patch("/:id", authenticateToken, async (req, res) => {
   const {
     title,

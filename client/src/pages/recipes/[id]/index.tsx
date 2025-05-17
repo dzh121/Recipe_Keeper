@@ -46,6 +46,8 @@ import { useAuth } from "@/context/AuthContext";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
+import { getAuth } from "firebase/auth";
+
 type Recipe = {
   ownerId: string;
   title: string | null;
@@ -71,6 +73,7 @@ type Recipe = {
 type Author = {
   displayName: string;
   photoURL: string;
+  slug: string;
 };
 
 type ErrorState = string | null;
@@ -86,6 +89,7 @@ export default function RecipePage() {
   const [imageURL, setImageURL] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const [tagOptions, setTagOptions] = useState<TagType[]>([]);
+  const [viewerUid, setViewerUiId] = useState<string | null>(null);
 
   // Color mode values for consistent theming
   const hasMounted = useHasMounted();
@@ -104,6 +108,12 @@ export default function RecipePage() {
 
   const [formattedDate, setFormattedDate] = useState<string>("");
   const { user, authChecked } = useAuth();
+  useEffect(() => {
+    const user = getAuth().currentUser;
+    if (user) {
+      setViewerUiId(user.uid);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -407,7 +417,6 @@ export default function RecipePage() {
       display="flex"
       flexDirection="column"
     >
-      {" "}
       <Toaster />
       <Head>
         <title>{recipe.title} | RecipeKeeper</title>
@@ -426,6 +435,7 @@ export default function RecipePage() {
           }
         />
       </Head>
+
       <Header />
       <Container maxW="container.md" py={10} flex="1">
         <BackButton />
@@ -441,29 +451,22 @@ export default function RecipePage() {
           <VStack align="stretch" gap={6}>
             {/* Recipe Header */}
             <Box>
-              <Flex justify="space-between" align="center">
-                <Heading color={headingColor} size="xl" mb={1}>
-                  {recipe.title}
-                </Heading>
+              <Heading color={headingColor} size="xl" mb={1}>
+                {recipe.title}
+              </Heading>
 
-                <Flex gap={2}>
-                  <Button
-                    aria-label="Save as favorite"
-                    size="sm"
-                    variant="ghost"
-                    colorPalette="red"
-                    onClick={toggleFavorite}
-                  >
-                    <Icon
-                      as={LuHeart}
-                      boxSize={5}
-                      fill={isFavorite ? "currentcolor" : "none"}
-                    />
-                  </Button>
+              <Flex
+                justify="space-between"
+                align="center"
+                mt={2}
+                wrap="wrap"
+                gap={2}
+              >
+                <Flex gap={2} align="center" flexWrap="wrap">
                   {recipe.kosher && (
                     <Badge
                       colorPalette="purple"
-                      fontSize="xs"
+                      size="md"
                       px={2}
                       py={1}
                       borderRadius="md"
@@ -477,17 +480,16 @@ export default function RecipePage() {
                     }
                     px={2}
                     py={1}
-                    fontSize="md"
+                    size="md"
                     borderRadius="md"
                   >
                     {recipe.recipeType === "homemade"
                       ? t("recipeView.homemade")
                       : t("recipeView.link")}
                   </Badge>
-
                   <Badge
                     colorPalette={recipe.isPublic ? "green" : "gray"}
-                    fontSize="md"
+                    size="md"
                     px={2}
                     py={1}
                     borderRadius="md"
@@ -497,7 +499,35 @@ export default function RecipePage() {
                       : t("recipeView.private")}
                   </Badge>
                 </Flex>
+
+                <Flex gap={2} align="center">
+                  <Button
+                    aria-label="Save as favorite"
+                    size="sm"
+                    variant="ghost"
+                    colorPalette="red"
+                    onClick={toggleFavorite}
+                  >
+                    <Icon
+                      as={LuHeart}
+                      boxSize={5}
+                      fill={isFavorite ? "currentcolor" : "none"}
+                    />
+                  </Button>
+
+                  {viewerUid === recipe.ownerId && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorPalette="teal"
+                      onClick={() => router.push(`/recipes/${id}/edit`)}
+                    >
+                      {t("recipeView.edit")}
+                    </Button>
+                  )}
+                </Flex>
               </Flex>
+
               {imageURL && (
                 <Box
                   mt={6}
@@ -585,22 +615,31 @@ export default function RecipePage() {
             <StackSeparator />
 
             {/* Author Info */}
-            <HStack>
-              <Avatar.Root size="md" colorPalette="teal" variant={"solid"}>
-                <Avatar.Fallback name={author?.displayName || "Recipe User"} />
-                <Avatar.Image src={author?.photoURL || "d"} alt="User Avatar" />
-              </Avatar.Root>
-              <VStack align="start" gap={0}>
-                <Text fontWeight="medium" fontSize="md">
-                  {author?.displayName || "Recipe User"}
-                </Text>
-                <Text color={textColor} fontSize="sm">
-                  <Icon as={LuCalendar} mr={1} />
-                  {"   "}
-                  {t("recipeView.published", { date: formattedDate })}
-                </Text>
-              </VStack>
-            </HStack>
+            <Link
+              href={author?.slug ? `/user/${author?.slug}` : "#"}
+              _hover={{ textDecoration: "none" }}
+            >
+              <HStack _hover={{ opacity: 0.85 }} cursor="pointer">
+                <Avatar.Root size="md" colorPalette="teal" variant="solid">
+                  <Avatar.Fallback
+                    name={author?.displayName || "Recipe User"}
+                  />
+                  <Avatar.Image
+                    src={author?.photoURL || ""}
+                    alt="User Avatar"
+                  />
+                </Avatar.Root>
+                <VStack align="start" gap={0}>
+                  <Text fontWeight="medium" fontSize="md">
+                    {author?.displayName || "Recipe User"}
+                  </Text>
+                  <Text color={textColor} fontSize="sm">
+                    <Icon as={LuCalendar} mr={1} />
+                    {t("recipeView.published", { date: formattedDate })}
+                  </Text>
+                </VStack>
+              </HStack>
+            </Link>
 
             {/* Rating Stars */}
             {recipe.rating > 0 && (

@@ -26,7 +26,8 @@ import {
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import {
-  LuBookOpen,
+  LuChefHat,
+  LuLink,
   LuSearch,
   LuFilter,
   LuPlus,
@@ -61,6 +62,7 @@ export type Recipe = {
 
 type UserProfile = {
   displayName: string;
+  slug?: string;
   photoURL?: string;
 };
 
@@ -286,6 +288,7 @@ export default function RecipeList({
               profiles[uid] = {
                 displayName: userData.displayName || "Unknown User",
                 photoURL: userData.photoURL || undefined,
+                slug: userData.slug || undefined,
               };
             } else {
               console.warn(`User profile not found for UID: ${uid}`);
@@ -805,7 +808,11 @@ export default function RecipeList({
               >
                 <HStack justify="space-between" mb={2}>
                   <HStack>
-                    <Icon as={LuBookOpen} color="teal.500" />
+                    <Icon
+                      as={recipe.recipeType === "homemade" ? LuChefHat : LuLink}
+                      color="teal.500"
+                      fontSize={"xl"}
+                    />
                     <Text fontWeight="bold" fontSize="lg" color="teal.500">
                       {recipe.title || "Untitled Recipe"}
                     </Text>
@@ -815,7 +822,7 @@ export default function RecipeList({
                     {recipe.kosher && (
                       <Badge
                         colorPalette="purple"
-                        fontSize="xs"
+                        size="xs"
                         px={2}
                         py={1}
                         borderRadius="md"
@@ -827,7 +834,7 @@ export default function RecipeList({
                     {showPublicTag && (
                       <Badge
                         colorPalette={recipe.isPublic ? "green" : "gray"}
-                        fontSize="xs"
+                        size="xs"
                         px={2}
                         py={1}
                         borderRadius="md"
@@ -842,7 +849,7 @@ export default function RecipeList({
                       colorPalette={
                         recipe.recipeType === "homemade" ? "orange" : "blue"
                       }
-                      fontSize="xs"
+                      size="xs"
                       px={2}
                       py={1}
                       borderRadius="md"
@@ -923,22 +930,34 @@ export default function RecipeList({
                       color="gray.600"
                       _dark={{ color: "gray.400" }}
                     >
-                      <Avatar.Root
-                        size="xs"
-                        colorPalette="teal"
-                        variant="solid"
+                      <Link
+                        as={NextLink}
+                        href={
+                          userProfiles[recipe.ownerId]?.slug
+                            ? `/user/${userProfiles[recipe.ownerId]?.slug}`
+                            : "#"
+                        }
+                        _hover={{ textDecoration: "none" }}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Avatar.Fallback
-                          name={userProfiles[recipe.ownerId]?.displayName}
-                        />
-                        <Avatar.Image
-                          src={
-                            userProfiles[recipe.ownerId]?.photoURL || undefined
-                          }
-                          alt="User Avatar"
-                          borderRadius="full"
-                        />
-                      </Avatar.Root>
+                        <Avatar.Root
+                          size="xs"
+                          colorPalette="teal"
+                          variant="solid"
+                        >
+                          <Avatar.Fallback
+                            name={userProfiles[recipe.ownerId]?.displayName}
+                          />
+                          <Avatar.Image
+                            src={
+                              userProfiles[recipe.ownerId]?.photoURL ||
+                              undefined
+                            }
+                            alt="User Avatar"
+                            borderRadius="full"
+                          />
+                        </Avatar.Root>
+                      </Link>
 
                       <Text fontSize="sm">
                         {userProfiles[recipe.ownerId]?.displayName}

@@ -136,13 +136,14 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 
 #### Recipe Management
 
-| Method | Endpoint       | Description                                                             |
-| ------ | -------------- | ----------------------------------------------------------------------- |
-| GET    | `/recipes`     | Get paginated list of recipes (public or private based on `type` param) |
-| GET    | `/recipes/:id` | Get single recipe by ID (if public or owned by user)                    |
-| POST   | `/recipes`     | Create a new recipe (requires authentication)                           |
-| PATCH  | `/recipes/:id` | Update a recipe (requires authentication and ownership)                 |
-| DELETE | `/recipes/:id` | Delete a recipe (requires authentication and ownership)                 |
+| Method | Endpoint             | Description                                                             |
+| ------ | -------------------- | ----------------------------------------------------------------------- |
+| GET    | `/recipes`           | Get paginated list of recipes (public or private based on `type` param) |
+| GET    | `/recipes/:id`       | Get single recipe by ID (if public or owned by user)                    |
+| POST   | `/recipes`           | Create a new recipe (requires authentication)                           |
+| PATCH  | `/recipes/:id`       | Update a recipe (requires authentication and ownership)                 |
+| DELETE | `/recipes/:id`       | Delete a recipe (requires authentication and ownership)                 |
+| GET    | `/recipes/user/:uid` | Get all public recipes from a specific user                             |
 
 #### `/recipes` Query Parameters
 
@@ -196,6 +197,22 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 | GET    | `/tags/suggestions`               | Get all tag suggestions (admin only)  |
 | GET    | `/tags/suggestions/user`          | Get current user's tag suggestions    |
 | PATCH  | `/tags/suggestions/:docId/status` | Update suggestion status (admin only) |
+
+## 📱 App Pages
+
+| Page Name                  | Description                                                           | Access              | Key UI Features                                             |
+| -------------------------- | --------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------- |
+| **Home**                   | Displays public recipes with filtering and sorting options.           | Public              | Search bar, tag filters, recipe type filters, pagination    |
+| **My Recipes**             | Dashboard for managing user’s own recipes (add, edit, delete).        | Authenticated Users | Recipe list, visibility toggle, add new recipe button       |
+| **Favorites**              | Quick access to recipes the user has marked as favorite.              | Authenticated Users | Heart icons, favorite-only filtering, recipe quick view     |
+| **Recipe View**            | Full detail view of a specific recipe.                                | Public or Private   | Title, description, ingredients, instructions, rating, tags |
+| **Recipe Editor**          | Used to create or edit a recipe (homemade or link).                   | Authenticated Users | Form with image upload, ingredients, steps, rating, tags    |
+| **Tag Management**         | Admin panel for managing global tags and their translations.          | Admin Only          | Tag list, add/delete tag, multi-language support            |
+| **User Profile**           | View a specific user's public profile and their shared recipes.       | Public              | Avatar, display name, bio, public recipe list               |
+| **Settings**               | Manage personal preferences and app behavior (language, theme, etc.). | Authenticated Users | Avatar upload, bio edit, email/password update, switches    |
+| **Suggest Tag**            | Allows users to suggest new tags with translation support.            | Authenticated Users | Suggestion form, input validation, dual-language fields     |
+| **Tag Suggestions Review** | Admin view for reviewing and approving user tag suggestions.          | Admin Only          | Status filters, approve/reject actions, metadata view       |
+| **404 Page**               | Shown when navigating to a route that doesn't exist.                  | Public              | Custom error message, return to home link                   |
 
 ## 📦 Firestore Collections
 

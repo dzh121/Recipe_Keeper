@@ -20,6 +20,7 @@ import {
   IconButton,
   Slider,
   Switch,
+  Textarea,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { use, useEffect, useState } from "react";
@@ -33,7 +34,13 @@ import {
   EmailAuthProvider,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  deleteDoc,
+} from "firebase/firestore";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { LuChevronLeft, LuCheck } from "react-icons/lu";
@@ -53,6 +60,7 @@ import Head from "next/head";
 import { getCroppedImg } from "@/utils/cropImage";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
+import { createSlug } from "@/lib/utils/slug";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -130,7 +138,6 @@ export default function SettingsPage() {
             bio: "",
             updatedAt: serverTimestamp(),
             createdAt: serverTimestamp(),
-            recipesPublished: 0,
           });
         }
 
@@ -151,6 +158,7 @@ export default function SettingsPage() {
           bio: publicData.bio ?? "",
           createdAt: publicData.createdAt,
           updatedAt: publicData.updatedAt ?? privateData.updatedAt,
+          slug: publicData.slug ?? "",
         });
         setDisplayName(publicData.displayName ?? "");
         setEmail(privateData.email ?? "");
@@ -331,16 +339,33 @@ export default function SettingsPage() {
 
       // Update public profile
       const publicRef = doc(db, "users", user.uid, "public", "profile");
+      const slug = createSlug(displayName);
+
+      if (profile?.slug && profile?.slug !== slug) {
+        const oldSlugRef = doc(db, "slugs", profile?.slug);
+        await deleteDoc(oldSlugRef);
+      }
+
       await setDoc(
         publicRef,
         {
           displayName,
+          slug: slug,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
 
-      setProfile((prev) => (prev ? { ...prev, displayName } : null));
+      const newSlugRef = doc(db, "slugs", slug);
+      await setDoc(
+        newSlugRef,
+        {
+          uid: user.uid,
+        },
+        { merge: true }
+      );
+
+      setProfile((prev) => (prev ? { ...prev, displayName, slug } : null));
 
       setShowNameSuccess(true);
       setTimeout(() => setShowNameSuccess(false), 2000);
@@ -537,25 +562,34 @@ export default function SettingsPage() {
             borderRadius="md"
           >
             <Box position="relative" pt={2} pb={6}>
-              <Avatar.Root
-                colorPalette="teal"
-                variant="solid"
-                style={{ width: "150px", height: "150px" }}
-              >
-                <Avatar.Fallback
-                  name={profile?.displayName || user.email || "U"}
-                />
-                <Avatar.Image
-                  src={
-                    localPhotoURL ||
-                    profile?.photoURL ||
-                    user.photoURL ||
-                    undefined
+              <Box
+                cursor="pointer"
+                onClick={() => {
+                  if (profile?.slug) {
+                    router.push(`/user/${profile.slug}`);
                   }
-                  alt="User Avatar"
-                  borderRadius="full"
-                />
-              </Avatar.Root>
+                }}
+              >
+                <Avatar.Root
+                  colorPalette="teal"
+                  variant="solid"
+                  style={{ width: "150px", height: "150px" }}
+                >
+                  <Avatar.Fallback
+                    name={profile?.displayName || user.email || "U"}
+                  />
+                  <Avatar.Image
+                    src={
+                      localPhotoURL ||
+                      profile?.photoURL ||
+                      user.photoURL ||
+                      undefined
+                    }
+                    alt="User Avatar"
+                    borderRadius="full"
+                  />
+                </Avatar.Root>
+              </Box>
 
               <Input
                 type="file"
@@ -658,8 +692,8 @@ export default function SettingsPage() {
                 <Icon as={FiUser} color="teal.500" />
                 <Text fontWeight="medium">{t("settings.name")}</Text>
               </HStack>
-              <Flex>
-                <InputGroup flex="1" mr={3}>
+              <Flex gap={3} direction={{ base: "column", md: "row" }}>
+                <InputGroup>
                   <Input
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
@@ -688,10 +722,8 @@ export default function SettingsPage() {
                 <Icon as={FiMail} color="teal.500" />
                 <Text fontWeight="medium">{t("settings.email")}</Text>
               </HStack>
-              <Flex>
+              <Flex gap={3} direction={{ base: "column", md: "row" }}>
                 <Input
-                  flex="1"
-                  mr={3}
                   placeholder={t("settings.emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -767,6 +799,55 @@ export default function SettingsPage() {
                   </Button>
                 </Flex>
               </VStack>
+            </Box>
+            <Box w="full">
+              <HStack mb={2}>
+                <Icon as={FiUser} color="teal.500" />
+                <Text fontWeight="medium">{t("settings.bio")}</Text>
+              </HStack>
+              <Flex gap={3} direction={{ base: "column", md: "row" }}>
+                <InputGroup flex="1">
+                  <Textarea
+                    value={profile?.bio ?? ""}
+                    onChange={(e) =>
+                      setProfile((prev) =>
+                        prev ? { ...prev, bio: e.target.value } : null
+                      )
+                    }
+                    placeholder={t("settings.bioPlaceholder")}
+                    size="md"
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    _focus={{ borderColor: "teal.400" }}
+                    rows={4}
+                  />
+                </InputGroup>
+                <Button
+                  minW={"150px"}
+                  colorPalette="teal"
+                  onClick={async () => {
+                    if (!user || !profile?.bio) return;
+                    await setDoc(
+                      doc(db, "users", user.uid, "public", "profile"),
+                      {
+                        bio: profile.bio,
+                        updatedAt: serverTimestamp(),
+                      },
+                      { merge: true }
+                    );
+                    toaster.create({
+                      title: t("settings.toasts.bioUpdated"),
+                      description: t("settings.toasts.bioUpdatedDesc"),
+                      type: "success",
+                      duration: 3000,
+                      meta: { closable: true },
+                      position: "top",
+                    });
+                  }}
+                >
+                  {t("settings.saveBio")}
+                </Button>
+              </Flex>
             </Box>
 
             <Box w="full">

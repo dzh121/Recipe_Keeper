@@ -33,6 +33,8 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import Head from "next/head";
 import { FiHome } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import { createSlug } from "@/lib/utils/slug";
+
 type FormErrors = {
   email: string;
   password: string;
@@ -159,11 +161,12 @@ export default function StartPage() {
         );
         //split to public and private user data
         // public user data
+        const slug = createSlug(form.displayName);
         const publicUserData = {
           displayName: form.displayName,
           photoURL: null,
-          recipesPublished: 0,
           bio: null,
+          slug: slug,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -172,6 +175,7 @@ export default function StartPage() {
           email: form.email,
           updatedAt: serverTimestamp(),
           darkMode: false,
+          language: "en",
         };
         // set user data in firestore one in public and one in private
         const publicRef = doc(
@@ -188,8 +192,13 @@ export default function StartPage() {
           "private",
           "settings"
         );
-        await setDoc(publicRef, publicUserData);
-        await setDoc(privateRef, privateUserData);
+        const slugRef = doc(db, "slugs", slug);
+
+        await Promise.all([
+          setDoc(publicRef, publicUserData),
+          setDoc(privateRef, privateUserData),
+          setDoc(slugRef, { uid: userCred.user.uid }),
+        ]);
 
         router.replace("/");
       } catch (err: any) {
@@ -233,6 +242,7 @@ export default function StartPage() {
       }
     }
   };
+
   const handleGuestLogin = () => {
     router.replace("/");
   };
