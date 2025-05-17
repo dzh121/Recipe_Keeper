@@ -924,21 +924,21 @@ export default function RecipeList({
                 {showPublisher &&
                   recipe.ownerId &&
                   userProfiles[recipe.ownerId] && (
-                    <HStack
-                      mt={2}
-                      gap={2}
-                      color="gray.600"
-                      _dark={{ color: "gray.400" }}
+                    <Link
+                      as={NextLink}
+                      href={
+                        userProfiles[recipe.ownerId]?.slug
+                          ? `/user/${userProfiles[recipe.ownerId]?.slug}`
+                          : "#"
+                      }
+                      _hover={{ textDecoration: "none" }}
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <Link
-                        as={NextLink}
-                        href={
-                          userProfiles[recipe.ownerId]?.slug
-                            ? `/user/${userProfiles[recipe.ownerId]?.slug}`
-                            : "#"
-                        }
-                        _hover={{ textDecoration: "none" }}
-                        onClick={(e) => e.stopPropagation()}
+                      <HStack
+                        mt={2}
+                        gap={2}
+                        color="gray.600"
+                        _dark={{ color: "gray.400" }}
                       >
                         <Avatar.Root
                           size="xs"
@@ -957,12 +957,12 @@ export default function RecipeList({
                             borderRadius="full"
                           />
                         </Avatar.Root>
-                      </Link>
 
-                      <Text fontSize="sm">
-                        {userProfiles[recipe.ownerId]?.displayName}
-                      </Text>
-                    </HStack>
+                        <Text fontSize="sm">
+                          {userProfiles[recipe.ownerId]?.displayName}
+                        </Text>
+                      </HStack>
+                    </Link>
                   )}
 
                 {recipe.tags && recipe.tags.length > 0 && (
