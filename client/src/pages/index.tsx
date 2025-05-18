@@ -23,6 +23,7 @@ import { useTranslation } from "react-i18next";
 export default function Home() {
   const { user, authChecked } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [adminChecked, setAdminChecked] = useState(false);
   const features = useFeatureList();
   const { t } = useTranslation();
@@ -37,10 +38,16 @@ export default function Home() {
       const idTokenResult = await user.getIdTokenResult(true);
       const claims = idTokenResult.claims;
 
-      if (claims.role === "admin") {
+      if (claims.admin) {
         setIsAdmin(true);
       } else {
         setIsAdmin(false);
+      }
+
+      if (claims.owner) {
+        setIsOwner(true);
+      } else {
+        setIsOwner(false);
       }
       setAdminChecked(true);
     };
@@ -108,8 +115,19 @@ export default function Home() {
           gap={{ base: 4, md: 6 }}
         >
           {features.map(
-            ({ title, description, icon, href, requiresAuth, adminOnly }) => {
-              const shouldHide = adminOnly && authChecked && !isAdmin;
+            ({
+              title,
+              description,
+              icon,
+              href,
+              requiresAuth,
+              adminOnly,
+              ownerOnly,
+            }) => {
+              const shouldHide =
+                authChecked &&
+                ((adminOnly && !isAdmin) || (ownerOnly && !isOwner));
+
               const needsLogin = requiresAuth && authChecked && !user;
 
               if (shouldHide) return null;

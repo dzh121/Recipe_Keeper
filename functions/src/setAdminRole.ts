@@ -9,7 +9,7 @@ admin.initializeApp({
 async function setAdminRole(uid: string) {
   admin
   .auth()
-  .setCustomUserClaims(uid, { role: "admin", admin: true })
+  .setCustomUserClaims(uid, { admin: true })
   .then(() => {
     console.log(`✅ Admin role granted to user ${uid}`);
   })

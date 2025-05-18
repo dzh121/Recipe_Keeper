@@ -30,6 +30,7 @@ import Footer from "@/components/layout/Footer";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
+import Head from "next/head";
 
 interface UserProfile {
   uid: string;
@@ -189,6 +190,11 @@ export default function UserPage() {
 
   return (
     <Box minH="100vh" display="flex" flexDirection="column" bg={secondaryBg}>
+      <Head>
+        <title>{`${profile.displayName} - RecipeKeeper`}</title>
+        <meta name="description" content="View profile information" />
+        <meta name="robots" content="noindex" />
+      </Head>
       <Header />
 
       <Container maxW="container.lg" py={8}>

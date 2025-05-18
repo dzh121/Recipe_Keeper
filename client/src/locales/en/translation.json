@@ -34,6 +34,10 @@
     "settings": {
       "title": "Settings",
       "description": "Update your profile, preferences, and manage your account settings."
+    },
+    "adminRecipes": {
+      "title": "Admin Recipes",
+      "description": "View and manage all user recipes with the ability to delete if needed"
     }
   },
 
@@ -56,7 +60,8 @@
   "titles":{
     "manageRecipes": "Manage Your Recipes",
     "favorites": "Favorite Recipes",
-    "explore": "Explore Public Recipes"
+    "explore": "Explore Public Recipes",
+    "adminRecipes": "Admin Recipes"
   },
 
   "__language_menu": "Language selection and display names",

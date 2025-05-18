@@ -74,6 +74,7 @@ interface RecipeListProps {
   showPublicTag?: boolean;
   showPublisher?: boolean;
   showFavorite?: boolean;
+  owner?: boolean;
   onAddClick?: () => void;
   onEditClick?: (id: string) => void;
   onFavoriteClick?: (id: string) => void;
@@ -88,6 +89,7 @@ export default function RecipeList({
   showPublicTag = false,
   showPublisher = false,
   showFavorite = false,
+  owner = false,
   onAddClick,
   onEditClick,
   onFavoriteClick,
@@ -168,7 +170,10 @@ export default function RecipeList({
   }, [rawSearchQuery]);
   useEffect(() => {
     const fetchRecipes = async () => {
-      const type = isPublic ? "public" : "private";
+      let type = isPublic ? "public" : "private";
+      if (owner) {
+        type = "owner";
+      }
       const params = new URLSearchParams({
         pageSize: pageSize.toString(),
         page: page.toString(),
@@ -177,7 +182,7 @@ export default function RecipeList({
         ...(searchQuery && { search: searchQuery }),
         ...(isKosher !== null && { kosher: isKosher.toString() }),
         ...(selectedTags.length > 0 && { tags: selectedTags.join(",") }),
-        ...(!isPublic &&
+        ...((owner || !isPublic) &&
           visibilityFilter[0] !== "all" && {
             visibility: visibilityFilter[0],
           }),
@@ -304,6 +309,29 @@ export default function RecipeList({
       fetchUserProfiles();
     }
   }, [paginatedRecipes, showPublisher]);
+
+  const handleDeleteClick = async (id: string) => {
+    const confirmed = confirm("Are you sure you want to delete this recipe?");
+    if (!confirmed) return;
+
+    const token = await user?.getIdToken();
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/delete-recipe/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Refresh recipe list after deletion
+      setPaginatedRecipes((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error("Failed to delete recipe:", err);
+    }
+  };
 
   const handleTagSelect = (tag: string) => {
     if (!selectedTags.includes(tag)) {
@@ -858,6 +886,26 @@ export default function RecipeList({
                         ? t("recipeList.homemade")
                         : t("recipeList.link")}
                     </Badge>
+                    {owner && (
+                      <Tooltip
+                        content="Delete recipe"
+                        positioning={{ placement: "top" }}
+                      >
+                        <IconButton
+                          aria-label="Delete"
+                          variant="outline"
+                          size="sm"
+                          colorPalette="red"
+                          borderRadius="full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDeleteClick(recipe.id);
+                          }}
+                        >
+                          <FiX />
+                        </IconButton>
+                      </Tooltip>
+                    )}
 
                     {allowEdit && (
                       <Tooltip

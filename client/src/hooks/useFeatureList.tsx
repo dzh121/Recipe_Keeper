@@ -60,6 +60,18 @@ export const useFeatureList = () => {
       adminOnly: false,
     },
     {
+      title: t("features.adminRecipes.title", "Admin Recipes"),
+      description: t(
+        "features.adminRecipes.description",
+        "View and manage all user recipes with the ability to delete if needed"
+      ),
+      icon: LuListChecks,
+      href: "/admin/recipes",
+      requiresAuth: true,
+      adminOnly: false,
+      ownerOnly: true,
+    },
+    {
       title: t("features.settings.title"),
       description: t("features.settings.description"),
       icon: LuSettings,

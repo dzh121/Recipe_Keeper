@@ -7,6 +7,7 @@ import favoritesRoutes from "./routes/favorites";
 import tagsRoute from "./routes/tags";
 import profileRoutes from "./routes/profile";
 import settingsRoutes from "./routes/settings";
+import adminRoutes from "./routes/admin";
 import * as functions from "firebase-functions";
 import "dotenv/config";
 import { Request } from "express";
@@ -44,6 +45,8 @@ app.use("/tags", tagsRoute);
 app.use("/profile", profileRoutes); 
 
 app.use("/settings", settingsRoutes);
+
+app.use("/admin", authenticateToken, adminRoutes);
 
 if (process.env.LOCAL_DEV?.toLowerCase() === "true") {
   console.log("Running in local development mode.");

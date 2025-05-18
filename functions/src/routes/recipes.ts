@@ -124,6 +124,8 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", async (req, res) => {
   let uid: string | null = null;
+  let isOwner = false;
+
   const {
     type,
     pageSize = "10",
@@ -144,7 +146,9 @@ router.get("/", async (req, res) => {
   const auth = req.headers.authorization;
   if (auth?.startsWith("Bearer ")) {
     try {
-      uid = (await admin.auth().verifyIdToken(auth.split(" ")[1])).uid;
+      const decoded = await admin.auth().verifyIdToken(auth.split(" ")[1]);
+      uid = decoded.uid;
+      isOwner = decoded.owner === true;
     } catch {
       /* guest – ignore */
     }
@@ -163,7 +167,13 @@ router.get("/", async (req, res) => {
 
     let query: admin.firestore.Query = db.collection("recipes").orderBy("createdAt", "desc");
 
-    if (type === "public") {
+    if (type === "owner") {
+      if (!isOwner) return res.status(403).json({ error: "Owner access required" });
+      const visibility = req.query.visibility as string | undefined;
+      if (visibility === "public") query = query.where("isPublic", "==", true);
+      else if (visibility === "private") query = query.where("isPublic", "==", false);
+      // Skip filtering by visibility or owner
+    }else if (type === "public") {
       query = query.where("isPublic", "==", true);
     } else if (type === "private") {
       if (!uid) return res.status(401).json({ error: "Unauthorized" });
