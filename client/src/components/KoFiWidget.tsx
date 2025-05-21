@@ -48,7 +48,7 @@ const FloatingKofi = () => {
             marginRight: isMobile ? 0 : 8,
           }}
         />
-        {!isMobile && "Support me on Ko-fi"}
+        {!isMobile && "Support me"}
       </a>
     </div>
   );
