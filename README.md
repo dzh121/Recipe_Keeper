@@ -4,16 +4,46 @@
   <h1>Recipe Keeper</h1>
   <p><em>Your personal recipe management solution built with modern web technologies</em></p>
 
+<p align="center">
   <a href="https://recipekeeper-3a217.firebaseapp.com" target="_blank">
-    <img src="https://img.shields.io/badge/LIVE DEMO-Click to Try-28a745?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo Badge" />
+    <img src="https://img.shields.io/badge/🚀 LIVE DEMO-Click to Try-28a745?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo" />
   </a>
-  
-  <br /><br />
+</p>
 
-<a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" /></a>
-<a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black&style=flat-square" alt="Firebase" /></a>
-<a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" alt="Express" /></a>
-<a href="https://azure.microsoft.com/en-us/products/cognitive-services/translator/"><img src="https://img.shields.io/badge/Azure_Translator-0078D4?logo=microsoftazure&logoColor=white&style=flat-square" alt="Azure Translator" /></a>
+<br /><br />
+
+  <!-- Frontend -->
+  <a href="https://nextjs.org/">
+    <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" />
+  </a>
+  <a href="https://chakra-ui.com/">
+    <img src="https://img.shields.io/badge/Chakra_UI-319795?logo=chakraui&logoColor=white&style=flat-square" alt="Chakra UI" />
+  </a>
+  <a href="https://tailwindcss.com/">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white&style=flat-square" alt="Tailwind CSS" />
+  </a>
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=flat-square" alt="TypeScript" />
+  </a>
+
+  <!-- Backend -->
+  <a href="https://expressjs.com/">
+    <img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white&style=flat-square" alt="Express" />
+  </a>
+  <a href="https://nodejs.org/">
+    <img src="https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white&style=flat-square" alt="Node.js" />
+  </a>
+  <a href="https://firebase.google.com/">
+    <img src="https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black&style=flat-square" alt="Firebase" />
+  </a>
+
+  <!-- APIs & Services -->
+  <a href="https://azure.microsoft.com/en-us/products/cognitive-services/translator/">
+    <img src="https://img.shields.io/badge/Azure_Translator-0078D4?logo=microsoftazure&logoColor=white&style=flat-square" alt="Azure Translator" />
+  </a>
+  <a href="https://www.google.com/recaptcha/about/">
+    <img src="https://img.shields.io/badge/reCAPTCHA_v3-4285F4?logo=google&logoColor=white&style=flat-square" alt="Google reCAPTCHA" />
+  </a>
 
 </div>
 
@@ -25,7 +55,7 @@
   <tr>
     <td width="50%">
       <ul>
-        <li>🔐 <strong>Secure Authentication</strong> via Firebase Auth</li>
+        <li>🔐 <strong>Secure Authentication</strong> via Firebase Auth with <strong>reCAPTCHA v3 App Check</strong></li>
         <li>📝 <strong>Create & Manage Recipes</strong> (Homemade or External Links)</li>
         <li>🏷️ <strong>Custom Tag System</strong> for easy organization</li>
         <li>🌐 <strong>Internationalization</strong> with English & Hebrew support</li>
@@ -41,9 +71,9 @@
         <li>🧠 <strong>Smart Tag Translation</strong> using Azure Cognitive Services</li>
         <li>🌍 <strong>Dual-Language Tags</strong> with English & Hebrew fallback</li>
         <li>💡 <strong>Suggest Tags</strong> with admin approval workflow</li>
+        <li>🛡️ <strong>App Integrity</strong> protection with Firebase App Check (reCAPTCHA v3)</li>
       </ul>
     </td>
-
   </tr>
 </table>
 
