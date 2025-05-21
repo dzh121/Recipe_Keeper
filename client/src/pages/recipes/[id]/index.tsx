@@ -92,19 +92,19 @@ export default function RecipePage() {
   const [viewerUid, setViewerUiId] = useState<string | null>(null);
 
   // Color mode values for consistent theming
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.600", "gray.300");
+  const headingColor = useColorModeValue("gray.800", "white");
+  const bg = useColorModeValue("white", "gray.800");
   const hasMounted = useHasMounted();
-  const borderColorValue = useColorModeValue("gray.200", "gray.600");
-  const cardBgValue = useColorModeValue("white", "gray.800");
-  const textColorValue = useColorModeValue("gray.600", "gray.300");
-  const headingColorValue = useColorModeValue("gray.800", "white");
-  const bgValue = useColorModeValue("white", "gray.800");
 
   // Use the mounted state to set colors after hydration
-  const bg = hasMounted ? bgValue : undefined;
-  const borderColor = hasMounted ? borderColorValue : undefined;
-  const cardBg = hasMounted ? cardBgValue : undefined;
-  const textColor = hasMounted ? textColorValue : undefined;
-  const headingColor = hasMounted ? headingColorValue : undefined;
+  // const bg = hasMounted ? bgValue : undefined;
+  // const borderColor = hasMounted ? borderColorValue : undefined;
+  // const cardBg = hasMounted ? cardBgValue : undefined;
+  // const textColor = hasMounted ? textColorValue : undefined;
+  // const headingColor = hasMounted ? headingColorValue : undefined;
 
   const [formattedDate, setFormattedDate] = useState<string>("");
   const { user, authChecked } = useAuth();
@@ -310,8 +310,9 @@ export default function RecipePage() {
       });
     }
   };
+  if (!hasMounted) return null;
   // Loading state
-  if (!hasMounted || (loading && !recipe && !error)) {
+  if (loading && !recipe && !error) {
     return (
       <Box
         minH="100vh"
@@ -544,7 +545,7 @@ export default function RecipePage() {
                   alignItems="center"
                 >
                   <img
-                    src={imageURL}
+                    src={imageURL || undefined}
                     alt={`${recipe.title} photo`}
                     style={{
                       width: "100%",
@@ -625,7 +626,7 @@ export default function RecipePage() {
                     name={author?.displayName || "Recipe User"}
                   />
                   <Avatar.Image
-                    src={author?.photoURL || ""}
+                    src={author?.photoURL || undefined}
                     alt="User Avatar"
                   />
                 </Avatar.Root>

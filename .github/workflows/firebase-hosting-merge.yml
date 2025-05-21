@@ -36,6 +36,8 @@ jobs:
 
       - name: Install and build functions
         working-directory: functions
+        env:
+          STORAGE_BUCKET: ${{ secrets.STORAGE_BUCKET }}
         run: |
           npm ci
           npm run build
