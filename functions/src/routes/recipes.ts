@@ -456,8 +456,9 @@ router.post("/upload-photo", authenticateToken, async (req: Request, res: Respon
         res.status(403).json({ error: "Not authorized" });
         return;
       }
-
+      
       const fileName = `recipes/${recipeId}/photo.jpg`;
+      
       const fileUpload = bucket.file(fileName);
       const downloadToken = uuidv4();
 
@@ -510,7 +511,6 @@ router.get("/get-photo-url/:recipeId", async (req, res) => {
 
     let uid: string | null = null;
 
-    // Optional auth handling (like your example)
     const authHeader = req.headers.authorization;
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
