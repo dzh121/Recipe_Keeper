@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { auth } from "@/lib/firebase";
 import { useHasMounted } from "./useHasMounted";
+
 export function useSyncColorModeOnLogin() {
-  const { setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const hasMounted = useHasMounted();
+  const syncedOnce = useRef(false);
 
   useEffect(() => {
-    if (!hasMounted) return;
+    if (!hasMounted || syncedOnce.current) return;
 
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (!user) return;
+      if (!user || syncedOnce.current) return;
 
       try {
         const token = await user.getIdToken();
@@ -26,14 +28,16 @@ export function useSyncColorModeOnLogin() {
         if (!res.ok) throw new Error("Failed to fetch color mode");
 
         const data = await res.json();
-
         if (typeof data.darkMode === "boolean") {
-          setTheme(data.darkMode ? "dark" : "light");
+          const fetchedMode = data.darkMode ? "dark" : "light";
+          if (resolvedTheme !== fetchedMode) {
+            setTheme(fetchedMode);
+          }
+          syncedOnce.current = true;
         }
-      } catch (err) {
-      }
+      } catch {}
     });
 
     return () => unsubscribe();
-  }, [hasMounted, setTheme]);
+  }, [hasMounted, setTheme, resolvedTheme]);
 }

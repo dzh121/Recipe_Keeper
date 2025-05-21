@@ -36,12 +36,44 @@ export default function Header() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user && authChecked) {
+      if (!user || !authChecked) return;
+
+      const cached = localStorage.getItem("userProfileWithExpiry");
+
+      if (cached) {
+        try {
+          const { data, timestamp } = JSON.parse(cached);
+          const now = Date.now();
+
+          // Cache is valid for 12 hours (43_200_000 ms)
+          if (now - timestamp < 43_200_000) {
+            setProfile(data);
+            return;
+          } else {
+            localStorage.removeItem("userProfileWithExpiry"); // Expired
+          }
+        } catch {
+          localStorage.removeItem("userProfileWithExpiry"); // Corrupted
+        }
+      }
+
+      // Fetch fresh data from Firestore
+      try {
         const profileRef = doc(db, "users", user.uid, "public", "profile");
         const snap = await getDoc(profileRef);
         if (snap.exists()) {
-          setProfile(snap.data() as UserSettings);
+          const freshProfile = snap.data() as UserSettings;
+          setProfile(freshProfile);
+          localStorage.setItem(
+            "userProfileWithExpiry",
+            JSON.stringify({
+              data: freshProfile,
+              timestamp: Date.now(),
+            })
+          );
         }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
       }
     };
 

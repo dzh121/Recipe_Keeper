@@ -9,6 +9,7 @@ import "@/styles/globals.css";
 import LanguageSync from "@/components/LanguageSync";
 import "@/lib/init/fetchInterceptor";
 import { Toaster } from "@/components/ui/toaster";
+import KoFiWidget from "@/components/KoFiWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           <LanguageSync />
           <ColorModeSync />
           <Component {...pageProps} />
+          <KoFiWidget />
         </AuthProvider>
       </Provider>
     </div>

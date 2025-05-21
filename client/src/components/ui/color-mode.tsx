@@ -7,6 +7,7 @@ import type { ThemeProviderProps } from "next-themes";
 import * as React from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
 import { auth, db } from "@/lib/firebase";
+import { useRef, useEffect } from "react";
 
 export interface ColorModeProviderProps extends ThemeProviderProps {}
 
@@ -26,6 +27,8 @@ export interface UseColorModeReturn {
 
 export function useColorMode(): UseColorModeReturn {
   const { resolvedTheme, setTheme } = useTheme();
+  const currentModeRef = useRef<ColorMode | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const saveColorModeToServer = async (mode: "light" | "dark") => {
     const user = auth.currentUser;
@@ -33,38 +36,52 @@ export function useColorMode(): UseColorModeReturn {
 
     try {
       const token = await user.getIdToken();
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ darkMode: mode === "dark" }),
-        }
-      );
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ darkMode: mode === "dark" }),
+      });
     } catch (error) {
-      //get exact error message
-      const errorMessage = (error as Error).message;
-      console.error("Error saving color mode:", errorMessage);
-      console.error("Failed to save color mode:", error);
+      console.error("Error saving color mode:", (error as Error).message);
     }
+  };
+
+  const debouncedSave = (mode: ColorMode) => {
+    if (currentModeRef.current === mode) return; // Avoid duplicate save
+
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+    debounceTimerRef.current = setTimeout(() => {
+      saveColorModeToServer(mode);
+      currentModeRef.current = mode;
+    }, 400);
   };
 
   const toggleColorMode = () => {
     const nextMode = resolvedTheme === "dark" ? "light" : "dark";
     setTheme(nextMode);
-    saveColorModeToServer(nextMode);
+    debouncedSave(nextMode);
   };
+
+  const setColorMode = (mode: ColorMode) => {
+    setTheme(mode);
+    debouncedSave(mode);
+  };
+
+  useEffect(() => {
+    // Track initial mode so it doesn't get resent
+    if (!currentModeRef.current && resolvedTheme) {
+      currentModeRef.current = resolvedTheme as ColorMode;
+    }
+  }, [resolvedTheme]);
 
   return {
     colorMode: resolvedTheme as ColorMode,
-    setColorMode: (mode: ColorMode) => {
-      setTheme(mode);
-      saveColorModeToServer(mode);
-    },
     toggleColorMode,
+    setColorMode,
   };
 }
 

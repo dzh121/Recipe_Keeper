@@ -19,8 +19,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { useFeatureList } from "@/hooks/useFeatureList";
 import { useTranslation } from "react-i18next";
-import { getToken } from "firebase/app-check";
-import { appCheck } from "@/lib/firebase"; // Adjust the import based on your firebase setup
+
 export default function Home() {
   const { user, authChecked } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);

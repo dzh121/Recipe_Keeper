@@ -336,6 +336,7 @@ export default function SettingsPage() {
 
     try {
       setUpdatingUsername(true);
+      localStorage.removeItem("userProfileWithExpiry");
 
       // Update public profile
       const publicRef = doc(db, "users", user.uid, "public", "profile");
@@ -446,6 +447,7 @@ export default function SettingsPage() {
 
   const handleCropDone = async () => {
     if (!selectedImage || !croppedAreaPixels || !user) return;
+    localStorage.removeItem("userProfileWithExpiry");
 
     const croppedBlob = await getCroppedImg(
       URL.createObjectURL(selectedImage),
@@ -485,7 +487,8 @@ export default function SettingsPage() {
       xhr.onload = async () => {
         if (xhr.status === 200) {
           const data = JSON.parse(xhr.responseText);
-          const newPhotoURL = `${data.photoURL}?v=${Date.now()}`;
+          const newPhotoURL = `${data.photoURL}`;
+
           setLocalPhotoURL(newPhotoURL);
           setProfile((prev) =>
             prev ? { ...prev, photoURL: newPhotoURL } : null
@@ -905,6 +908,7 @@ export default function SettingsPage() {
               size="lg"
               onClick={async () => {
                 await signOut(auth);
+                localStorage.removeItem("userProfileWithExpiry");
                 toaster.create({
                   title: t("settings.toasts.signedOut"),
                   description: t("settings.toasts.signedOutDesc"),
