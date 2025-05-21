@@ -463,7 +463,10 @@ router.post("/upload-photo", authenticateToken, async (req: Request, res: Respon
 
       const compressed = await sharp(fileBuffer)
         .resize({ width: 800 })
-        .jpeg({ quality: 75 })
+        .jpeg({ quality: 70, 
+                chromaSubsampling: "4:4:4", 
+                mozjpeg: true   
+              })
         .toBuffer();
 
       await fileUpload.save(compressed, {

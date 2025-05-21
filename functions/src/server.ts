@@ -8,7 +8,7 @@ import tagsRoute from "./routes/tags";
 import profileRoutes from "./routes/profile";
 import settingsRoutes from "./routes/settings";
 import adminRoutes from "./routes/admin";
-import * as functions from "firebase-functions";
+import { onRequest } from "firebase-functions/v2/https";
 import "dotenv/config";
 import { Request } from "express";
 import bodyParser from "body-parser";
@@ -56,5 +56,4 @@ if (process.env.LOCAL_DEV?.toLowerCase() === "true") {
   });
 }
 
-export const api = functions.https.onRequest(app);
-
+export const api = onRequest({ region: "us-central1" }, app);

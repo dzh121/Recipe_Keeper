@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { db, bucket } from "../firebaseAdmin";
-import { authenticateToken } from "../middleware/authMiddleware";
-import admin from "firebase-admin";
 import { Request, Response, NextFunction } from "express";
 
 const router = Router();
