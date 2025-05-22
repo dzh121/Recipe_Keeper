@@ -44,7 +44,7 @@ export const useFeatureList = () => {
       title: t("features.tags.title"),
       description: t("features.tags.description"),
       icon: LuTag,
-      href: "/tags",
+      href: "/tags/manage",
       requiresAuth: true,
       adminOnly: true,
     },

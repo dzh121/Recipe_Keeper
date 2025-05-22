@@ -191,7 +191,7 @@ export default function UserPage() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column" bg={secondaryBg}>
       <Head>
-        <title>{`${profile.displayName} - RecipeKeeper`}</title>
+        <title>{`${profile.displayName} - Recipe Keeper`}</title>
         <meta name="description" content="View profile information" />
         <meta name="robots" content="noindex" />
       </Head>

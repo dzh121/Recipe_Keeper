@@ -420,7 +420,7 @@ export default function RecipePage() {
     >
       <Toaster />
       <Head>
-        <title>{recipe.title} | RecipeKeeper</title>
+        <title>{recipe.title} | Recipe Keeper</title>
         <meta
           name="description"
           content={`View ${recipe.title} recipe with notes and details.`}

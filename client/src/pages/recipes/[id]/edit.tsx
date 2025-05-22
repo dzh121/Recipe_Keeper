@@ -158,7 +158,7 @@ export default function EditRecipePage() {
     >
       {" "}
       <Head>
-        <title>Edit Recipe | RecipeKeeper</title>
+        <title>Edit Recipe | Recipe Keeper</title>
         <meta
           name="description"
           content="Add your favorite recipes with notes, tags, and links. Keep them private or share them with others."

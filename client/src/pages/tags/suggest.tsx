@@ -414,7 +414,7 @@ export default function TagSuggestionsPage() {
       flexDirection="column"
     >
       <Head>
-        <title>Tag Suggestions | RecipeKeeper</title>
+        <title>Tag Suggestions | Recipe Keeper</title>
         <meta
           name="description"
           content="Suggest new tags for the recipe collection"

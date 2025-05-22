@@ -22,7 +22,7 @@ export default function AddRecipePage() {
       flexDirection="column"
     >
       <Head>
-        <title>Add Recipe | RecipeKeeper</title>
+        <title>Add Recipe | Recipe Keeper</title>
         <meta
           name="description"
           content="Add your favorite recipes with notes, tags, and links. Keep them private or share them with others."

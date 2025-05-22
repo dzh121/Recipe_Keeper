@@ -46,7 +46,7 @@ export default function PrivacyPage() {
       _dark={{ bg: "gray.900", color: "white" }}
     >
       <Head>
-        <title>Privacy & Data Policy | RecipeKeeper</title>
+        <title>Privacy & Data Policy | Recipe Keeper</title>
         <meta
           name="description"
           content="Understand how RecipeKeeper handles your data and respects your privacy."

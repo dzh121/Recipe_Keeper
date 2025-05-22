@@ -28,12 +28,13 @@
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "!/__*",
         "destination": "/index.html"
       }
     ],
     "cleanUrls": true,
-    "trailingSlash": false
+    "trailingSlash": false,
+    "404": "/404.html"
   },
   "storage": {
     "rules": "firebase/storage.rules"

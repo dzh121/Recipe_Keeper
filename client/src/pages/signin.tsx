@@ -259,7 +259,7 @@ export default function StartPage() {
       flexDirection="column"
     >
       <Head>
-        <title>Sign In - RecipeKeeper</title>
+        <title>Sign In - Recipe Keeper</title>
         <meta
           name="description"
           content="Log in to your RecipeKeeper account."

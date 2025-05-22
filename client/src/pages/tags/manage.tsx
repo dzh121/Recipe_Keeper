@@ -47,6 +47,9 @@ export default function TagsManagementPage() {
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const tagBg = useColorModeValue("teal.100", "teal.700");
   const tagColor = useColorModeValue("teal.800", "teal.100");
+  const textColor = useColorModeValue("gray.600", "gray.400");
+  const bg = useColorModeValue("gray.50", "gray.900");
+  const colorMain = useColorModeValue("gray.800", "white");
 
   useEffect(() => {
     fetchTags();
@@ -245,13 +248,13 @@ export default function TagsManagementPage() {
   return (
     <Box
       minH="100vh"
-      bg={useColorModeValue("gray.50", "gray.900")}
-      color={useColorModeValue("gray.800", "white")}
+      bg={bg}
+      color={colorMain}
       display="flex"
       flexDirection="column"
     >
       <Head>
-        <title>Manage Tags | RecipeKeeper</title>
+        <title>Manage Tags | Recipe Keeper</title>
         <meta
           name="description"
           content="Manage your recipe tags to better organize and find your favorite recipes."
@@ -275,7 +278,7 @@ export default function TagsManagementPage() {
           <Heading size="xl" fontWeight="bold">
             {t("tagManagement.title")}
           </Heading>
-          <Text fontSize="lg" color={useColorModeValue("gray.600", "gray.400")}>
+          <Text fontSize="lg" color={textColor}>
             {t("tagManagement.description")}
           </Text>
         </VStack>
@@ -298,11 +301,7 @@ export default function TagsManagementPage() {
 
               <VStack gap={4} align="stretch">
                 <Box>
-                  <Text
-                    mb={1}
-                    fontSize="sm"
-                    color={useColorModeValue("gray.600", "gray.400")}
-                  >
+                  <Text mb={1} fontSize="sm" color={textColor}>
                     {t("tagManagement.hebrewLabel")}
                   </Text>
                   <Group>
@@ -341,11 +340,7 @@ export default function TagsManagementPage() {
 
                 {/* English → Hebrew */}
                 <Box>
-                  <Text
-                    mb={1}
-                    fontSize="sm"
-                    color={useColorModeValue("gray.600", "gray.400")}
-                  >
+                  <Text mb={1} fontSize="sm" color={textColor}>
                     {t("tagManagement.englishLabel")}
                   </Text>
                   <Group>

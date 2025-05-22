@@ -530,7 +530,7 @@ export default function SettingsPage() {
       flexDirection="column"
     >
       <Head>
-        <title>Settings - RecipeKeeper</title>
+        <title>Settings - Recipe Keeper</title>
         <meta
           name="description"
           content="Manage your account preferences, profile info, and privacy settings."
