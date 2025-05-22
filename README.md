@@ -5,7 +5,7 @@
   <p><em>Your personal recipe management solution built with modern web technologies</em></p>
 
 <p align="center">
-  <a href="https://recipekeeper-3a217.firebaseapp.com" target="_blank">
+  <a href="http://recipekeeper-3a217.web.app/" target="_blank">
     <img src="https://img.shields.io/badge/🚀 LIVE DEMO-Click to Try-28a745?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo" />
   </a>
 </p>
