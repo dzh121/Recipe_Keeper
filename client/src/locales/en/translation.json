@@ -201,6 +201,7 @@
     "noTagsFound": "No tags found",
     "clearFilters": "Clear Filters",
     "clearAllFilters": "Clear All Filters",
+    "filters": "Filters",
     "recipesFound_zero": "No recipes found",
     "recipesFound_one": "One recipe found",
     "recipesFound_other": "{{count}} recipes found",

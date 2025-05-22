@@ -200,6 +200,7 @@
     "noTagsFound": "לא נמצאו תגיות",
     "clearFilters": "נקה סינון",
     "clearAllFilters": "נקה את כל הסינונים",
+    "filters": "סינונים",
     "recipesFound_zero": "לא נמצאו מתכונים",
     "recipesFound_one": "מתכון אחד נמצא",
     "recipesFound_other": "{{count}} מתכונים נמצאו",
