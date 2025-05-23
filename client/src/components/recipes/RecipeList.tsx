@@ -25,6 +25,7 @@ import {
   Collapsible,
   Grid,
   GridItem,
+  Skeleton,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
@@ -63,6 +64,7 @@ export type Recipe = {
   kosher?: boolean;
   recipeType?: "link" | "homemade";
   ownerId?: string;
+  imageURL?: string;
 };
 
 type UserProfile = {
@@ -1091,34 +1093,64 @@ export default function RecipeList({
                     </Link>
                   )}
 
-                {recipe.tags && recipe.tags.length > 0 && (
-                  <Flex mt={3} wrap="wrap" gap={2}>
-                    {recipe.tags.map((tagId) => {
-                      const tagObj = tagOptions.find((t) => t.id === tagId);
-                      const label =
-                        tagObj?.translations[i18n.language] ??
-                        tagObj?.translations.en ??
-                        tagId;
+                <HStack align="start" gap={4} mt={3}>
+                  {recipe.imageURL && (
+                    <Box
+                      width="120px"
+                      height="80px"
+                      borderRadius="md"
+                      overflow="hidden"
+                      bg="gray.50"
+                      _dark={{ bg: "gray.800" }}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                    >
+                      <img
+                        src={recipe.imageURL}
+                        alt={recipe.title || "Recipe Image"}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          display: "block",
+                        }}
+                      />
+                    </Box>
+                  )}
+                  <VStack align="start" flex={1} gap={2}>
+                    {recipe.tags && recipe.tags.length > 0 && (
+                      <Flex wrap="wrap" gap={2}>
+                        {recipe.tags.map((tagId) => {
+                          const tagObj = tagOptions.find((t) => t.id === tagId);
+                          const label =
+                            tagObj?.translations[i18n.language] ??
+                            tagObj?.translations.en ??
+                            tagId;
 
-                      return (
-                        <Tag.Root
-                          key={tagId}
-                          size="md"
-                          borderRadius="full"
-                          variant="subtle"
-                          onClick={(e) => {
-                            e.preventDefault(); // prevent navigation
-                            !selectedTags.includes(tagId) &&
-                              handleTagSelect(tagId);
-                          }}
-                          cursor="pointer"
-                        >
-                          <Tag.Label>{label}</Tag.Label>
-                        </Tag.Root>
-                      );
-                    })}
-                  </Flex>
-                )}
+                          return (
+                            <Tag.Root
+                              key={tagId}
+                              size="md"
+                              borderRadius="full"
+                              variant="subtle"
+                              onClick={(e) => {
+                                e.preventDefault(); // prevent navigation
+                                !selectedTags.includes(tagId) &&
+                                  handleTagSelect(tagId);
+                              }}
+                              cursor="pointer"
+                            >
+                              <Tag.Label>{label}</Tag.Label>
+                            </Tag.Root>
+                          );
+                        })}
+                      </Flex>
+                    )}
+                  </VStack>
+                </HStack>
               </Box>
             </Link>
           ))}
