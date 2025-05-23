@@ -19,6 +19,7 @@ import { RecipeFull } from "@/lib/types/recipe";
 import { useAuth } from "@/context/AuthContext";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function EditRecipePage() {
   const router = useRouter();
@@ -42,13 +43,11 @@ export default function EditRecipePage() {
           authToken = await user.getIdToken();
         }
 
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/recipes/${id}`,
           {
             method: "GET",
-            headers: {
-              ...(authToken && { Authorization: `Bearer ${authToken}` }),
-            },
+            token: authToken ?? undefined,
           }
         );
 

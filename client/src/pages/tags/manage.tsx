@@ -30,6 +30,7 @@ import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
 import BackButton from "@/components/ui/back";
 import type { Tag } from "@/lib/types/tag";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function TagsManagementPage() {
   const hasMounted = useHasMounted();
@@ -60,12 +61,13 @@ export default function TagsManagementPage() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
-      });
+      const response = await fetchWithAuthAndAppCheck(
+        `${process.env.NEXT_PUBLIC_API_URL}/tags`,
+        {
+          method: "GET",
+          token: authToken,
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to fetch tags");
 
@@ -182,14 +184,11 @@ export default function TagsManagementPage() {
     const authToken = await auth.currentUser?.getIdToken();
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/tags/${tagId}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${authToken}`,
-          },
+          token: authToken,
         }
       );
 

@@ -3,10 +3,12 @@
 import { Box, Text, Center, VStack, Link } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import NextLink from "next/link";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 export default function Footer() {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+  const hasMounted = useHasMounted();
 
   return (
     <Box
@@ -20,7 +22,9 @@ export default function Footer() {
       <Center>
         <VStack gap={1}>
           <Text fontSize="sm" opacity={0.7}>
-            {t("footer.copyright", { year })}
+            {hasMounted
+              ? t("footer.copyright", { year })
+              : `© ${year} Recipe Keeper`}
           </Text>
           <Link
             as={NextLink}
@@ -29,7 +33,9 @@ export default function Footer() {
             color="teal.500"
             _hover={{ textDecoration: "underline" }}
           >
-            {t("footer.privacyLink", "Privacy Policy")}
+            {hasMounted
+              ? t("footer.privacyLink", "Privacy Policy")
+              : "Privacy Policy"}
           </Link>
         </VStack>
       </Center>

@@ -61,6 +61,7 @@ import { getCroppedImg } from "@/utils/cropImage";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { createSlug } from "@/lib/utils/slug";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -402,14 +403,11 @@ export default function SettingsPage() {
     const token = await user.getIdToken(true);
 
     try {
-      const res = await fetch(
+      const res = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/profile/remove-photo?uid=${user.uid}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
-          },
+          token,
         }
       );
 

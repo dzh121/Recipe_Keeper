@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { useTranslation } from "react-i18next";
 import { useHasMounted } from "./useHasMounted";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export function useSyncLanguageOnLogin() {
   const { i18n } = useTranslation();
@@ -15,12 +16,11 @@ export function useSyncLanguageOnLogin() {
 
       try {
         const token = await user.getIdToken();
-        const res = await fetch(
+        const res = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/settings/language`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            method: "GET",
+            token,
           }
         );
 

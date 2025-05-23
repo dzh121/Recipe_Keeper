@@ -25,7 +25,6 @@ import {
   Collapsible,
   Grid,
   GridItem,
-  Skeleton,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
@@ -39,7 +38,6 @@ import {
   LuChevronDown,
   LuGlobe,
   LuCheck,
-  LuShieldCheck,
   LuChevronUp,
   LuSettings,
 } from "react-icons/lu";
@@ -53,8 +51,9 @@ import { doc, getDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 import type { Tag as TagType } from "@/lib/types/tag";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { useRouter } from "next/navigation";
 
 export type Recipe = {
   id: string;
@@ -153,6 +152,7 @@ export default function RecipeList({
   const textColor = useColorModeValue("gray.600", "gray.300");
   const { t, i18n } = useTranslation();
   const { user, authChecked } = useAuth();
+  const router = useRouter();
 
   const recipeTypes = createListCollection({
     items: [
@@ -179,6 +179,8 @@ export default function RecipeList({
   }, [rawSearchQuery]);
 
   useEffect(() => {
+    if (!authChecked) return;
+
     const fetchRecipes = async () => {
       let type = isPublic ? "public" : "private";
       if (owner) {
@@ -199,7 +201,7 @@ export default function RecipeList({
         ...(onlyFavorites && { favorites: "true" }),
       });
 
-      if (!user && !isPublic) {
+      if (authChecked && !user && !isPublic) {
         console.error("User is not authenticated");
         return;
       }
@@ -208,14 +210,11 @@ export default function RecipeList({
       const token = await user?.getIdToken();
 
       try {
-        const res = await fetch(
+        const res = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/recipes?${params}`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            token,
           }
         );
         const data = await res.json();
@@ -235,18 +234,16 @@ export default function RecipeList({
     searchQuery,
     isKosher,
     user,
+    authChecked,
   ]);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
         if (!response.ok) {
@@ -326,13 +323,11 @@ export default function RecipeList({
 
     const token = await user?.getIdToken();
     try {
-      await fetch(
+      await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/delete-recipe/${id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          token,
         }
       );
 
@@ -1051,47 +1046,42 @@ export default function RecipeList({
                 {/* Publisher information */}
                 {showPublisher &&
                   recipe.ownerId &&
-                  userProfiles[recipe.ownerId] && (
-                    <Link
-                      as={NextLink}
-                      href={
-                        userProfiles[recipe.ownerId]?.slug
-                          ? `/user/${userProfiles[recipe.ownerId]?.slug}`
-                          : "#"
-                      }
-                      _hover={{ textDecoration: "none" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                  userProfiles[recipe.ownerId] &&
+                  (() => {
+                    const ownerId = recipe.ownerId as string;
+                    const profile = userProfiles[ownerId];
+
+                    return (
                       <HStack
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (profile.slug) {
+                            router.push(`/user/${profile.slug}`);
+                          }
+                        }}
                         mt={2}
                         gap={2}
                         color="gray.600"
                         _dark={{ color: "gray.400" }}
+                        _hover={{ textDecoration: "underline" }}
                       >
                         <Avatar.Root
                           size="xs"
                           colorPalette="teal"
                           variant="solid"
                         >
-                          <Avatar.Fallback
-                            name={userProfiles[recipe.ownerId]?.displayName}
-                          />
+                          <Avatar.Fallback name={profile.displayName} />
                           <Avatar.Image
-                            src={
-                              userProfiles[recipe.ownerId]?.photoURL ||
-                              undefined
-                            }
+                            src={profile.photoURL || undefined}
                             alt="User Avatar"
                             borderRadius="full"
                           />
                         </Avatar.Root>
-
-                        <Text fontSize="sm">
-                          {userProfiles[recipe.ownerId]?.displayName}
-                        </Text>
+                        <Text fontSize="sm">{profile.displayName}</Text>
                       </HStack>
-                    </Link>
-                  )}
+                    );
+                  })()}
 
                 <HStack align="start" gap={4} mt={3}>
                   {recipe.imageURL && (

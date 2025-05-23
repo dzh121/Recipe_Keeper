@@ -19,6 +19,7 @@ import Link from "next/link";
 import Head from "next/head";
 import { useFeatureList } from "@/hooks/useFeatureList";
 import { useTranslation } from "react-i18next";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 export default function Home() {
   const { user, authChecked } = useAuth();
@@ -27,6 +28,7 @@ export default function Home() {
   const [adminChecked, setAdminChecked] = useState(false);
   const features = useFeatureList();
   const { t } = useTranslation();
+  const hasMounted = useHasMounted();
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -104,17 +106,21 @@ export default function Home() {
             color="teal.500"
             mb={2}
           >
-            {t("app.title", { defaultValue: "Recipe Keeper" })}
+            {hasMounted
+              ? t("app.title", { defaultValue: "Recipe Keeper" })
+              : "Recipe Keeper"}
           </Heading>
           <Text
             fontSize={{ base: "md", md: "lg" }}
             color="gray.600"
             _dark={{ color: "gray.400" }}
           >
-            {t("app.description", {
-              defaultValue:
-                "Your personal dashboard for organizing, searching, and sharing recipes.",
-            })}
+            {hasMounted
+              ? t("app.description", {
+                  defaultValue:
+                    "Your personal dashboard for organizing, searching, and sharing recipes.",
+                })
+              : "Your personal dashboard for organizing, searching, and sharing recipes."}
           </Text>
         </VStack>
 

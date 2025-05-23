@@ -12,6 +12,7 @@ import { Recipe } from "@/lib/types/recipe";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { useTranslation } from "react-i18next";
 import BackButton from "@/components/ui/back";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function RecipesManage() {
   const hasMounted = useHasMounted();
@@ -29,14 +30,11 @@ export default function RecipesManage() {
   const removeFavorite = async (recipeId: string) => {
     try {
       const token = await user?.getIdToken();
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/favorites/${recipeId}`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          token,
         }
       );
 
@@ -80,7 +78,9 @@ export default function RecipesManage() {
           <BackButton />
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg">{t("common.loading")}</Text>
+            <Text fontSize="lg">
+              {hasMounted ? t("common.loading") : "Loading..."}
+            </Text>
           </VStack>
         </Container>
         <Footer />

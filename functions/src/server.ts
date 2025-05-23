@@ -13,7 +13,7 @@ import "dotenv/config";
 import { Request } from "express";
 import bodyParser from "body-parser";
 import rateLimit from "express-rate-limit";
-
+import { verifyAppCheck } from "./middleware/appCheckMiddleware";
 interface AuthedRequest extends Request {
   user?: any;
 }
@@ -36,17 +36,17 @@ app.get("/api/protected", authenticateToken, (req: AuthedRequest, res) => {
   res.json({ message: "You are authenticated!", user: req.user });
 });
 
-app.use("/recipes", recipeRoutes);
+app.use("/recipes", verifyAppCheck, recipeRoutes);
 
-app.use("/favorites", favoritesRoutes);
+app.use("/favorites", verifyAppCheck, favoritesRoutes);
 
-app.use("/tags", tagsRoute);
+app.use("/tags", verifyAppCheck, tagsRoute);
 
-app.use("/profile", profileRoutes); 
+app.use("/profile", verifyAppCheck, profileRoutes);
 
-app.use("/settings", settingsRoutes);
+app.use("/settings", verifyAppCheck, settingsRoutes);
 
-app.use("/admin", authenticateToken, adminRoutes);
+app.use("/admin", authenticateToken, verifyAppCheck, adminRoutes);
 
 if (process.env.LOCAL_DEV?.toLowerCase() === "true") {
   console.log("Running in local development mode.");

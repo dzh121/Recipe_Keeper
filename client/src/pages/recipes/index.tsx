@@ -38,7 +38,9 @@ export default function RecipesIndexPage() {
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg">{t("common.loading")}</Text>
+            <Text fontSize="lg">
+              {hasMounted ? t("common.loading") : "Loading..."}
+            </Text>
           </VStack>
         </Container>
         <Footer />
