@@ -24,6 +24,7 @@ import { LuEye, LuEyeOff } from "react-icons/lu";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/router";
@@ -34,6 +35,7 @@ import Head from "next/head";
 import { FiHome } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import { createSlug } from "@/lib/utils/slug";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 type FormErrors = {
   email: string;
@@ -61,9 +63,13 @@ export default function StartPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { user, authChecked } = useAuth();
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetEmailError, setResetEmailError] = useState("");
   const router = useRouter();
   const { t } = useTranslation();
 
+  const borderColor = useColorModeValue("gray.200", "gray.700");
   useEffect(() => {
     if (authChecked && user) {
       router.replace("/");
@@ -130,6 +136,49 @@ export default function StartPage() {
         return;
       }
     }
+  };
+  const handlePasswordResetRequest = () => {
+    if (!resetEmail) {
+      setResetEmailError(t("startPage.errors.requiredEmail"));
+      return;
+    }
+
+    sendPasswordResetEmail(auth, resetEmail)
+      .then(() => {
+        toaster.create({
+          title: t("startPage.authErrors.resetPassword"),
+          description: t("startPage.authErrors.resetPasswordSent"),
+          type: "success",
+          meta: { closable: true },
+        });
+        setIsResetModalOpen(false);
+        setResetEmail("");
+        setResetEmailError("");
+      })
+      .catch((err: any) => {
+        let message = t("startPage.authErrors.resetPasswordFailed");
+
+        if (err?.code?.startsWith("auth/")) {
+          switch (err.code) {
+            case "auth/user-not-found":
+              message = t("startPage.authErrors.userNotFound");
+              break;
+            case "auth/invalid-email":
+              message = t("startPage.authErrors.invalidEmail");
+              break;
+            case "auth/network-request-failed":
+              message = t("startPage.authErrors.internetError");
+              break;
+          }
+        }
+
+        toaster.create({
+          title: t("startPage.authErrors.resetPasswordError"),
+          description: message,
+          type: "error",
+          meta: { closable: true },
+        });
+      });
   };
 
   const handleRegister = async () => {
@@ -367,6 +416,16 @@ export default function StartPage() {
                 </InputGroup>
                 <Field.ErrorText>{formErrors.password}</Field.ErrorText>
               </Field.Root>
+              {isLogin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  colorPalette="teal"
+                  onClick={() => setIsResetModalOpen(true)}
+                >
+                  {t("startPage.forgotPassword")}
+                </Button>
+              )}
 
               {!isLogin && (
                 <Field.Root required invalid={!!formErrors.confirmPassword}>
@@ -426,6 +485,98 @@ export default function StartPage() {
           </CardBody>
         </Card.Root>
       </Box>
+      {isResetModalOpen && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          w="100vw"
+          h="100vh"
+          bg="blackAlpha.600"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={9999}
+          px={4}
+        >
+          <Card.Root
+            w="full"
+            maxW="md"
+            borderRadius="xl"
+            shadow="2xl"
+            bg="white"
+            _dark={{ bg: "gray.800", borderColor: "gray.700" }}
+            border="1px solid"
+            borderColor="gray.200"
+          >
+            <CardHeader pb={4}>
+              <VStack gap={2} textAlign="center">
+                <Heading size="lg" color="gray.800" _dark={{ color: "white" }}>
+                  {t("startPage.resetPassword")}
+                </Heading>
+                <Text
+                  color="gray.600"
+                  _dark={{ color: "gray.400" }}
+                  fontSize="sm"
+                  maxW="sm"
+                >
+                  {t("startPage.resetPasswordInstructions")}
+                </Text>
+              </VStack>
+            </CardHeader>
+
+            <CardBody pt={0}>
+              <VStack gap={4}>
+                <Field.Root required invalid={!!resetEmailError}>
+                  <Field.Label>
+                    {t("startPage.email")}
+                    <Field.RequiredIndicator />
+                  </Field.Label>
+                  <Input
+                    type="email"
+                    placeholder={t("startPage.placeholders.email")}
+                    value={resetEmail}
+                    onChange={(e) => {
+                      setResetEmail(e.target.value);
+                      setResetEmailError("");
+                    }}
+                    size="lg"
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    borderRadius="lg"
+                  />
+                  <Field.ErrorText>{resetEmailError}</Field.ErrorText>
+                </Field.Root>
+
+                <Stack direction="row" gap={3} w="full" mt={2}>
+                  <Button
+                    flex={1}
+                    colorPalette="teal"
+                    onClick={handlePasswordResetRequest}
+                    size="md"
+                  >
+                    {t("startPage.sendResetLink")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    flex={1}
+                    onClick={() => {
+                      setIsResetModalOpen(false);
+                      setResetEmail("");
+                      setResetEmailError("");
+                    }}
+                    size="md"
+                    colorPalette="gray"
+                    _dark={{ color: "gray.400", borderColor: "gray.700" }}
+                  >
+                    {t("startPage.cancel")}
+                  </Button>
+                </Stack>
+              </VStack>
+            </CardBody>
+          </Card.Root>
+        </Box>
+      )}
       <Footer />
     </Box>
   );

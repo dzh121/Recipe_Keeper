@@ -84,6 +84,11 @@
     "password": "סיסמה",
     "username": "שם משתמש",
     "confirmPassword": "אימות סיסמה",
+    "forgotPassword": "שכחת סיסמה?",
+    "resetPassword": "איפוס סיסמה",
+    "sendResetLink": "שלח מייל לאיפוס סיסמה",
+    "resetPasswordInstructions": "הזן את כתובת האימייל שלך ואנו נשלח לך הוראות לאיפוס הסיסמה.",
+    "cancel": "ביטול",
     "placeholders": {
       "email": "your@email.com",
       "password": "הזן סיסמה",
@@ -112,7 +117,13 @@
       "internalError": "שגיאה פנימית. נסה שוב מאוחר יותר.",
       "missingPassword": "יש להזין סיסמה.",
       "unknownErrorLogin": "לא ניתן להתחבר. נסה שוב.",
-      "unknownErrorRegister": "לא ניתן להירשם. נסה שוב."
+      "unknownErrorRegister": "לא ניתן להירשם. נסה שוב.",
+      "resetPassword": "איפוס סיסמה",
+      "resetPasswordSent": "קישור לאיפוס הסיסמה נשלח לאימייל שלך.",
+      "resetPasswordFailed": "איפוס הסיסמה נכשל",
+      "resetPasswordError": "שגיאת איפוס סיסמה",
+      "userNotFound": "לא נמצא משתמש עם כתובת אימייל זו.",
+      "internetError": "שגיאת רשת. בדוק את חיבור האינטרנט שלך."
     }
   },
 
