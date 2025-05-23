@@ -20,17 +20,23 @@ export async function fetchWithAuthAndAppCheck(
     console.warn("App Check token fetch failed:", err);
   }
 
+  const isFormData = options.body instanceof FormData;
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
     ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
   };
 
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const res = await fetch(url, {
     method: options.method || "GET",
     headers,
-    ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+    body: isFormData ? options.body : JSON.stringify(options.body),
   });
 
   return res;
 }
+

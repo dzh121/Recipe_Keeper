@@ -40,6 +40,8 @@ import { RecipeFull } from "@/lib/types/recipe";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { getToken } from "firebase/app-check";
+import { appCheck } from "@/lib/firebase";
 
 export default function RecipeModify({
   mode = "add",
@@ -303,7 +305,8 @@ export default function RecipeModify({
 
       const response = await fetchWithAuthAndAppCheck(url, {
         method,
-        body: JSON.stringify(payload),
+        body: payload,
+        token: authToken,
       });
 
       if (!response.ok) {

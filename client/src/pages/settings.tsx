@@ -33,7 +33,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from "firebase/auth";
-import { auth, db } from "@/lib/firebase";
+import { app, appCheck, auth, db } from "@/lib/firebase";
 import {
   doc,
   getDoc,
@@ -62,6 +62,7 @@ import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { createSlug } from "@/lib/utils/slug";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { getToken } from "firebase/app-check";
 
 export default function SettingsPage() {
   const { user, authChecked } = useAuth();
@@ -474,6 +475,9 @@ export default function SettingsPage() {
         true
       );
       xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      if (!appCheck) return;
+      const result = await getToken(appCheck, false);
+      xhr.setRequestHeader("X-Firebase-AppCheck", result.token);
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {

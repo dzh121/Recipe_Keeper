@@ -8,13 +8,6 @@ const router = express.Router();
 
 
 router.post("/upload-photo", authenticateToken, (req, res) => {
-  const rawBody = (req as any).rawBody;
-  
-  if (!rawBody) {
-    res.status(400).json({ error: "Missing raw body for file upload" });
-    return;
-  }
-
   const busboy = Busboy({ headers: req.headers });
   const user = (req as any).user;
 
@@ -81,9 +74,16 @@ router.post("/upload-photo", authenticateToken, (req, res) => {
     }
   });
 
-  busboy.end(rawBody);
-});
+  const isFirebase = !!(req as any).rawBody;
 
+  if (isFirebase) {
+    // Firebase Functions
+    busboy.end((req as any).rawBody);
+  } else {
+    // Express
+    req.pipe(busboy);
+  }
+});
 
 router.delete("/remove-photo", authenticateToken, async (req, res) => {
   try {

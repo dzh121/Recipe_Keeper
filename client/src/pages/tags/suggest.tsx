@@ -183,7 +183,7 @@ export default function TagSuggestionsPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/tags/suggestions/${id}/status`,
         {
           method: "PATCH",
-          body: JSON.stringify({ status: newStatus }),
+          body: { status: newStatus },
           token: authToken,
         }
       );
@@ -276,10 +276,10 @@ export default function TagSuggestionsPage() {
         {
           method: "POST",
           token: authToken,
-          body: JSON.stringify({
+          body: {
             en: newTagEn.trim() || null,
             he: newTagHe.trim() || null,
-          }),
+          },
         }
       );
 
