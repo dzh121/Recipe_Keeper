@@ -55,7 +55,8 @@
   <tr>
     <td width="50%">
       <ul>
-        <li>🔐 <strong>Secure Authentication</strong> via Firebase Auth with <strong>reCAPTCHA v3 App Check</strong></li>
+        <li>🔐 <strong>Secure Authentication</strong> via Firebase Auth with</li>
+        <li>📊 <strong>Google Analytics v4</strong> integration for user behavior insights</li>
         <li>📝 <strong>Create & Manage Recipes</strong> (Homemade or External Links)</li>
         <li>🏷️ <strong>Custom Tag System</strong> for easy organization</li>
         <li>🌐 <strong>Internationalization</strong> with English & Hebrew support</li>
@@ -72,6 +73,7 @@
         <li>🌍 <strong>Dual-Language Tags</strong> with English & Hebrew fallback</li>
         <li>💡 <strong>Suggest Tags</strong> with admin approval workflow</li>
         <li>🛡️ <strong>App Integrity</strong> protection with Firebase App Check (reCAPTCHA v3)</li>
+        <li>💾 <strong>Persistent User Preferences</strong> stored via localStorage </li>
       </ul>
     </td>
   </tr>
@@ -155,6 +157,9 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
         <li>Firebase Hosting</li>
         <li>Firebase Functions</li>
         <li>Azure Cognitive Services (Translator API)</li>
+        <li>Google Analytics v4</li>
+        <li>Firebase App Check (reCAPTCHA v3)</li> 
+        <li>localStorage (for storing filter and UI preferences)</li>
       </ul>
     </td>
   </tr>
