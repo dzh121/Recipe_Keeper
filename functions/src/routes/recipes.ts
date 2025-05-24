@@ -409,7 +409,6 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
 router.post("/upload-photo", authenticateToken, async (req: Request, res: Response) => {
   const user = (req as any).user;
-
   let recipeId = "";
   let fileBuffer: Buffer | null = null;
 
@@ -417,7 +416,7 @@ router.post("/upload-photo", authenticateToken, async (req: Request, res: Respon
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
-
+  
   const busboy = Busboy({ headers: req.headers });
 
   busboy.on("field", (name, val) => {
@@ -495,13 +494,15 @@ router.post("/upload-photo", authenticateToken, async (req: Request, res: Respon
     }
   });
 
-  const rawBody = (req as any).rawBody;
-  if (!rawBody) {
-    res.status(400).json({ error: "Missing rawBody, are you using body parser verify?" });
-    return;
-  }
+  const isFirebase = !!(req as any).rawBody;
 
-  busboy.end(rawBody);
+  if (isFirebase) {
+    // Firebase Functions
+    busboy.end((req as any).rawBody);
+  } else {
+    // Express
+    req.pipe(busboy);
+  }
 });
 
 router.get("/get-photo-url/:recipeId", async (req, res) => {

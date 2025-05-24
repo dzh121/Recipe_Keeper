@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next export"
+    "export": "next export",
+    "sitemap": "next-sitemap"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.16.0",
@@ -15,6 +16,7 @@
     "canvas": "^3.1.0",
     "country-flag-icons": "^1.5.19",
     "firebase": "^11.6.0",
+    "firebase-admin": "^13.4.0",
     "i18next": "^25.1.2",
     "i18next-browser-languagedetector": "^8.1.0",
     "i18next-http-backend": "^3.0.2",
@@ -43,6 +45,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9.25.1",
     "eslint-config-next": "15.3.1",
+    "next-sitemap": "^4.2.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

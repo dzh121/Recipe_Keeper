@@ -39,6 +39,9 @@ import { useRouter } from "next/router";
 import { RecipeFull } from "@/lib/types/recipe";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { getToken } from "firebase/app-check";
+import { appCheck } from "@/lib/firebase";
 
 export default function RecipeModify({
   mode = "add",
@@ -104,13 +107,10 @@ export default function RecipeModify({
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
         if (!response.ok) throw new Error("Failed to fetch tags");
@@ -297,21 +297,16 @@ export default function RecipeModify({
         !photoPreviewUrl
       ) {
         const deletePhotoUrl = `${process.env.NEXT_PUBLIC_API_URL}/recipes/delete-photo/${initialData.id}`;
-        await fetch(deletePhotoUrl, {
+        await fetchWithAuthAndAppCheck(deletePhotoUrl, {
           method: "DELETE",
-          headers: {
-            authorization: `Bearer ${authToken}`,
-          },
+          token: authToken,
         });
       }
 
-      const response = await fetch(url, {
+      const response = await fetchWithAuthAndAppCheck(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(payload),
+        body: payload,
+        token: authToken,
       });
 
       if (!response.ok) {
@@ -325,13 +320,14 @@ export default function RecipeModify({
         formData.append("file", photoFile);
         formData.append("recipeId", recipeId);
 
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipes/upload-photo`, {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${authToken}`,
-          },
-          body: formData,
-        });
+        await fetchWithAuthAndAppCheck(
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes/upload-photo`,
+          {
+            method: "POST",
+            token: authToken,
+            body: formData,
+          }
+        );
       }
 
       toaster.create({
@@ -393,12 +389,9 @@ export default function RecipeModify({
     const method = "DELETE";
 
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithAuthAndAppCheck(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${authToken}`,
-        },
+        token: authToken,
       });
 
       if (!response.ok) throw new Error("Delete failed");

@@ -19,6 +19,7 @@ import { RecipeFull } from "@/lib/types/recipe";
 import { useAuth } from "@/context/AuthContext";
 import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function EditRecipePage() {
   const router = useRouter();
@@ -42,13 +43,11 @@ export default function EditRecipePage() {
           authToken = await user.getIdToken();
         }
 
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/recipes/${id}`,
           {
             method: "GET",
-            headers: {
-              ...(authToken && { Authorization: `Bearer ${authToken}` }),
-            },
+            token: authToken ?? undefined,
           }
         );
 
@@ -140,7 +139,7 @@ export default function EditRecipePage() {
         <Container maxW="container.md" py={10} flex="1">
           <VStack gap={4} alignItems="center">
             <Spinner size="xl" colorPalette="teal" />
-            <Text fontSize="lg"> {t("common.loading")}</Text>
+            <Text fontSize="lg"> {hasMounted ? t("common.loading") : ""}</Text>
           </VStack>
         </Container>
         <Footer />
@@ -158,7 +157,7 @@ export default function EditRecipePage() {
     >
       {" "}
       <Head>
-        <title>Edit Recipe | RecipeKeeper</title>
+        <title>Edit Recipe | Recipe Keeper</title>
         <meta
           name="description"
           content="Add your favorite recipes with notes, tags, and links. Keep them private or share them with others."

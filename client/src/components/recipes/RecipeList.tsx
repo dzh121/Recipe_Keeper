@@ -22,6 +22,9 @@ import {
   Avatar,
   IconButton,
   ButtonGroup,
+  Collapsible,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
@@ -35,7 +38,8 @@ import {
   LuChevronDown,
   LuGlobe,
   LuCheck,
-  LuShieldCheck,
+  LuChevronUp,
+  LuSettings,
 } from "react-icons/lu";
 import { MdOutlineEdit, MdOutlineFavorite } from "react-icons/md";
 import { FiX } from "react-icons/fi";
@@ -47,8 +51,9 @@ import { doc, getDoc } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 import type { Tag as TagType } from "@/lib/types/tag";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { useRouter } from "next/navigation";
 
 export type Recipe = {
   id: string;
@@ -58,6 +63,7 @@ export type Recipe = {
   kosher?: boolean;
   recipeType?: "link" | "homemade";
   ownerId?: string;
+  imageURL?: string;
 };
 
 type UserProfile = {
@@ -100,6 +106,7 @@ export default function RecipeList({
     {}
   );
   const [tagOptions, setTagOptions] = useState<TagType[]>([]);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState(() => {
     if (typeof window === "undefined") return "";
@@ -145,6 +152,7 @@ export default function RecipeList({
   const textColor = useColorModeValue("gray.600", "gray.300");
   const { t, i18n } = useTranslation();
   const { user, authChecked } = useAuth();
+  const router = useRouter();
 
   const recipeTypes = createListCollection({
     items: [
@@ -160,6 +168,7 @@ export default function RecipeList({
       { label: t("recipeList.visibilityPrivate"), value: "private" },
     ],
   });
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setSearchQuery(rawSearchQuery);
@@ -168,7 +177,10 @@ export default function RecipeList({
 
     return () => clearTimeout(timeout);
   }, [rawSearchQuery]);
+
   useEffect(() => {
+    if (!authChecked) return;
+
     const fetchRecipes = async () => {
       let type = isPublic ? "public" : "private";
       if (owner) {
@@ -189,7 +201,7 @@ export default function RecipeList({
         ...(onlyFavorites && { favorites: "true" }),
       });
 
-      if (!user && !isPublic) {
+      if (authChecked && !user && !isPublic) {
         console.error("User is not authenticated");
         return;
       }
@@ -198,14 +210,11 @@ export default function RecipeList({
       const token = await user?.getIdToken();
 
       try {
-        const res = await fetch(
+        const res = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/recipes?${params}`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            token,
           }
         );
         const data = await res.json();
@@ -225,18 +234,16 @@ export default function RecipeList({
     searchQuery,
     isKosher,
     user,
+    authChecked,
   ]);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
         if (!response.ok) {
@@ -316,13 +323,11 @@ export default function RecipeList({
 
     const token = await user?.getIdToken();
     try {
-      await fetch(
+      await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/delete-recipe/${id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          token,
         }
       );
 
@@ -351,6 +356,7 @@ export default function RecipeList({
     setTypeFilter(["all"]);
     setSelectedTags([]);
     setSearchQuery("");
+    setRawSearchQuery("");
     setVisibilityFilter(["all"]);
     setIsKosher(null);
 
@@ -369,8 +375,16 @@ export default function RecipeList({
         .includes(tagSearch.toLowerCase())
   );
 
+  // Check if any filters are active
+  const hasActiveFilters =
+    typeFilter[0] !== "all" ||
+    selectedTags.length > 0 ||
+    isKosher ||
+    visibilityFilter[0] !== "all" ||
+    searchQuery;
+
   return (
-    <VStack align="stretch" gap={8}>
+    <VStack align="stretch" gap={6}>
       <Box
         pb={4}
         borderBottom="2px solid"
@@ -428,9 +442,9 @@ export default function RecipeList({
         </Flex>
       </Box>
 
-      {/* Search and filter section */}
+      {/* Compact Search and Filter Section */}
       <Box
-        p={6}
+        p={4}
         borderWidth="1px"
         borderRadius="lg"
         bg={cardBg}
@@ -438,359 +452,420 @@ export default function RecipeList({
         boxShadow="sm"
         _dark={{ borderColor: "gray.700" }}
       >
-        <VStack gap={6} align="stretch">
-          {/* Search bar with improved styling */}
-          <InputGroup
-            startElement={<Icon as={LuSearch} color="teal.500" boxSize={5} />}
-          >
-            <Input
-              size="md"
-              borderWidth="2px"
-              borderColor="gray.300"
-              _hover={{ borderColor: "teal.400" }}
-              _focus={{
-                borderColor: "teal.500",
-                boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)",
-              }}
-              placeholder={t("recipeList.searchPlaceholder")}
-              value={rawSearchQuery}
-              onChange={(e) => setRawSearchQuery(e.target.value)}
-              borderRadius="md"
-              fontSize="md"
-              height="48px"
-              _dark={{ borderColor: "gray.600" }}
-            />
-          </InputGroup>
-
-          {/* Filters row with improved spacing and styling */}
-          <Flex gap={5} flexWrap="wrap" align="center" mb={4}>
-            {/* Type filter */}
-            <HStack gap={2} minW={{ base: "full", md: "220px" }}>
-              <Icon as={LuFilter} color="teal.500" boxSize={5} />
-              <Select.Root
-                collection={recipeTypes}
-                value={typeFilter}
-                onValueChange={(e) => {
-                  setTypeFilter(e.value);
-                  localStorage.setItem(
-                    "recipeTypeFilter",
-                    JSON.stringify(e.value)
-                  );
-                }}
-                variant="outline"
-                width="full"
+        <VStack gap={4} align="stretch">
+          {/* Main search bar with inline quick filters */}
+          <Flex gap={3} align="center" flexWrap="wrap">
+            {/* Search input - takes up most space */}
+            <Box flex="1" minW="250px">
+              <InputGroup
+                startElement={
+                  <Icon as={LuSearch} color="teal.500" boxSize={4} />
+                }
               >
-                <Select.HiddenSelect />
-                <Select.Label fontWeight="medium">
-                  {t("recipeList.typeLabel")}
-                </Select.Label>
-                <Select.Control
-                  borderWidth="2px"
+                <Input
+                  size="sm"
+                  borderWidth="1px"
                   borderColor="gray.300"
-                  _hover={{ borderColor: "teal.500" }}
-                  height="40px"
-                  borderRadius="md"
-                  _dark={{ borderColor: "gray.600" }}
-                >
-                  <Select.Trigger px={3}>
-                    <Select.ValueText
-                      placeholder={t("recipeList.typePlaceholder")}
-                    />
-                  </Select.Trigger>
-                  <Select.IndicatorGroup>
-                    <Select.Indicator color="teal.500" />
-                  </Select.IndicatorGroup>
-                </Select.Control>
-                <Portal>
-                  <Select.Positioner>
-                    <Select.Content
-                      bg={cardBg}
-                      borderColor="gray.200"
-                      _dark={{ borderColor: "gray.700" }}
-                      borderRadius="md"
-                      boxShadow="lg"
-                    >
-                      {recipeTypes.items.map((item) => (
-                        <Select.Item
-                          item={item}
-                          key={item.value}
-                          _hover={{
-                            bg: "teal.50",
-                            _dark: { bg: "teal.900" },
-                          }}
-                          _selected={{
-                            bg: "teal.100",
-                            _dark: { bg: "teal.800" },
-                          }}
-                        >
-                          {item.label}
-                          <Select.ItemIndicator color="teal.500" />
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Positioner>
-                </Portal>
-              </Select.Root>
-            </HStack>
-
-            <HStack gap={2}>
-              <Icon as={LuShieldCheck} color="teal.500" boxSize={5} />
-              <Checkbox.Root
-                colorPalette="teal"
-                size="md"
-                checked={isKosher === true}
-                onCheckedChange={(e) => {
-                  const value = e.checked ? true : null;
-                  setIsKosher(value);
-                  localStorage.setItem(
-                    "recipeKosherFilter",
-                    JSON.stringify(value)
-                  );
-                }}
-              >
-                <Checkbox.HiddenInput />
-                <Checkbox.Control
-                  border="1.5px solid"
-                  borderColor="gray.400"
-                  _dark={{ borderColor: "gray.600" }}
-                  borderRadius="md"
-                />
-                <Checkbox.Label>{t("recipeList.kosherOnly")}</Checkbox.Label>
-              </Checkbox.Root>
-            </HStack>
-
-            {/* Visibility filter */}
-            {showPublicTag && (
-              <HStack gap={2} minW={{ md: "160px" }}>
-                <Icon as={LuGlobe} color="teal.500" boxSize={5} />
-                <Select.Root
-                  collection={recipePublic}
-                  value={visibilityFilter}
-                  onValueChange={(e) => {
-                    setVisibilityFilter(e.value);
-                    localStorage.setItem(
-                      "recipeVisibilityFilter",
-                      JSON.stringify(e.value)
-                    );
+                  _hover={{ borderColor: "teal.400" }}
+                  _focus={{
+                    borderColor: "teal.500",
+                    boxShadow: "0 0 0 1px var(--chakra-colors-teal-500)",
                   }}
-                  width="160px"
+                  placeholder={t("recipeList.searchPlaceholder")}
+                  value={rawSearchQuery}
+                  onChange={(e) => setRawSearchQuery(e.target.value)}
+                  borderRadius="md"
+                  height="36px"
+                  _dark={{ borderColor: "gray.600" }}
+                />
+              </InputGroup>
+            </Box>
+
+            {/* Quick filters */}
+            <Checkbox.Root
+              colorPalette="teal"
+              size="sm"
+              checked={isKosher === true}
+              onCheckedChange={(e) => {
+                const value = e.checked ? true : null;
+                setIsKosher(value);
+                localStorage.setItem(
+                  "recipeKosherFilter",
+                  JSON.stringify(value)
+                );
+              }}
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control
+                border="1px solid"
+                borderColor="gray.400"
+                _dark={{ borderColor: "gray.600" }}
+                borderRadius="sm"
+              />
+              <Checkbox.Label fontSize="sm">
+                {t("recipeList.kosherOnly")}
+              </Checkbox.Label>
+            </Checkbox.Root>
+
+            {/* Advanced filters toggle */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setFiltersExpanded(!filtersExpanded)}
+              borderColor="gray.300"
+              _hover={{ borderColor: "teal.500", bg: "teal.50" }}
+              _dark={{ borderColor: "gray.600", _hover: { bg: "teal.900" } }}
+            >
+              <Icon as={LuSettings} mr={1} />
+              {t("recipeList.filters")}
+              {hasActiveFilters && (
+                <Badge
+                  ml={1}
+                  colorPalette="teal"
+                  size="xs"
+                  borderRadius="full"
+                  px={1.5}
                 >
-                  <Select.Label fontWeight="medium">
-                    {t("recipeList.visibilityLabel")}
-                  </Select.Label>
-                  <Select.HiddenSelect />
-                  <Select.Control
-                    borderWidth="2px"
-                    borderColor="gray.300"
-                    _hover={{ borderColor: "teal.500" }}
-                    height="40px"
-                    borderRadius="md"
-                    _dark={{ borderColor: "gray.600" }}
-                  >
-                    <Select.Trigger px={3}>
-                      <Select.ValueText
-                        placeholder={t("recipeList.visibilityPlaceholder")}
-                      />
-                    </Select.Trigger>
-                    <Select.IndicatorGroup>
-                      <Select.Indicator color="teal.500" />
-                    </Select.IndicatorGroup>
-                  </Select.Control>
-                  <Portal>
-                    <Select.Positioner>
-                      <Select.Content
-                        bg={cardBg}
-                        borderColor="gray.200"
-                        _dark={{ borderColor: "gray.700" }}
-                        borderRadius="md"
-                        boxShadow="lg"
-                      >
-                        {recipePublic.items.map((item) => (
-                          <Select.Item
-                            item={item}
-                            key={item.value}
-                            _hover={{
-                              bg: "teal.50",
-                              _dark: { bg: "teal.900" },
-                            }}
-                            _selected={{
-                              bg: "teal.100",
-                              _dark: { bg: "teal.800" },
-                            }}
-                          >
-                            {item.label}
-                            <Select.ItemIndicator color="teal.500" />
-                          </Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Positioner>
-                  </Portal>
-                </Select.Root>
-              </HStack>
-            )}
+                  {(typeFilter[0] !== "all" ? 1 : 0) +
+                    selectedTags.length +
+                    (visibilityFilter[0] !== "all" ? 1 : 0) +
+                    (isKosher ? 1 : 0) +
+                    (searchQuery ? 1 : 0)}
+                </Badge>
+              )}
+              {filtersExpanded ? <LuChevronUp /> : <LuChevronDown />}
+            </Button>
 
-            {/* Tag filter */}
-            <HStack gap={2} flex="1">
-              <Icon as={LuTag} color="teal.500" boxSize={5} />
-              <VStack gap={1} align="flex-start" width="full">
-                <Text fontWeight="medium">{t("recipeList.tagsLabel")}</Text>
-                <Menu.Root closeOnSelect={false}>
-                  <Menu.Trigger asChild>
-                    <Button
-                      size="md"
-                      height="40px"
-                      variant="outline"
-                      borderWidth="2px"
-                      borderColor="gray.300"
-                      _hover={{ borderColor: "teal.500" }}
-                      _dark={{ borderColor: "gray.600" }}
-                      px={4}
-                      borderRadius="md"
-                      width="full"
-                      justifyContent="space-between"
-                    >
-                      <Text>{t("recipeList.selectTags")}</Text>
-                      <Icon as={LuChevronDown} ml={2} />
-                    </Button>
-                  </Menu.Trigger>
-                  <Portal>
-                    <Menu.Positioner>
-                      <Menu.Content
-                        maxH="350px"
-                        overflowY="auto"
-                        minW="240px"
-                        bg={cardBg}
-                        borderColor="gray.200"
-                        _dark={{ borderColor: "gray.700" }}
-                        borderRadius="md"
-                        boxShadow="lg"
-                      >
-                        <Box px={4} py={3}>
-                          <InputGroup
-                            startElement={
-                              <Icon
-                                as={LuSearch}
-                                color="gray.400"
-                                boxSize={4}
-                              />
-                            }
-                          >
-                            <Input
-                              placeholder={t("recipeList.tagSearchPlaceholder")}
-                              size="md"
-                              value={tagSearch}
-                              onChange={(e) => setTagSearch(e.target.value)}
-                              borderColor="gray.300"
-                              _focus={{ borderColor: "teal.500" }}
-                              _dark={{ borderColor: "gray.600" }}
-                            />
-                          </InputGroup>
-                        </Box>
-
-                        {filteredTags.length > 0 ? (
-                          filteredTags.map((tag) => (
-                            <Menu.Item
-                              key={tag.id}
-                              value={tag.id}
-                              onClick={() => handleTagSelect(tag.id)}
-                              _hover={{
-                                bg: "teal.50",
-                                _dark: { bg: "teal.900" },
-                              }}
-                              px={4}
-                              py={2}
-                              role="menuitem"
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <Text>
-                                {tag.translations[i18n.language] ??
-                                  tag.translations.en ??
-                                  tag.id}
-                              </Text>
-                              {selectedTags.includes(tag.id) && (
-                                <Icon as={LuCheck} color="teal.500" />
-                              )}
-                            </Menu.Item>
-                          ))
-                        ) : (
-                          <Box
-                            px={4}
-                            py={3}
-                            textAlign="center"
-                            color="gray.500"
-                            fontSize="sm"
-                          >
-                            {t("recipeList.noTagsFound")}
-                          </Box>
-                        )}
-                      </Menu.Content>
-                    </Menu.Positioner>
-                  </Portal>
-                </Menu.Root>
-              </VStack>
-            </HStack>
-
-            {/* Clear filters button - only show when filters are applied */}
-            {(typeFilter[0] !== "all" ||
-              selectedTags.length > 0 ||
-              isKosher ||
-              visibilityFilter[0] !== "all" ||
-              searchQuery) && (
+            {/* Clear filters - only show when filters are active */}
+            {hasActiveFilters && (
               <Button
-                size="md"
+                size="sm"
                 variant="ghost"
                 onClick={clearFilters}
-                color="teal.600"
-                _hover={{ bg: "teal.50", _dark: { bg: "teal.900" } }}
-                _dark={{ color: "teal.200" }}
-                height="40px"
+                color="red.500"
+                _hover={{ bg: "red.50", _dark: { bg: "red.900" } }}
+                _dark={{ color: "red.300" }}
               >
-                <Icon as={LuX} />
+                <Icon as={LuX} mr={1} />
                 {t("recipeList.clearFilters")}
               </Button>
             )}
           </Flex>
 
-          {/* Selected tags with improved styling */}
+          {/* Selected tags - always visible when present */}
           {selectedTags.length > 0 && (
-            <Flex wrap="wrap" gap={3} mt={2}>
+            <Flex wrap="wrap" gap={2}>
               {selectedTags.map((tag) => (
                 <Tag.Root
                   asChild
                   key={tag}
-                  size="md"
+                  size="sm"
                   variant="solid"
                   colorPalette="teal"
                   borderRadius="full"
-                  py={1.5}
-                  px={3.5}
                 >
                   <button
                     style={{ cursor: "pointer" }}
                     onClick={() => handleTagRemove(tag)}
                   >
-                    <Tag.Label fontWeight="medium" mr={1}>
+                    <Tag.Label fontSize="xs" mr={1}>
                       {tagOptions.find((t) => t.id === tag)?.translations[
                         i18n.language
                       ] ??
                         tagOptions.find((t) => t.id === tag)?.translations.en ??
                         tag}
                     </Tag.Label>
-
-                    <Icon as={FiX} boxSize={3.5} />
+                    <Icon as={FiX} boxSize={3} />
                   </button>
                 </Tag.Root>
               ))}
             </Flex>
           )}
+
+          {/* Expandable advanced filters */}
+          <Collapsible.Root open={filtersExpanded}>
+            <Collapsible.Content>
+              <Box
+                pt={2}
+                borderTop="1px solid"
+                borderColor="gray.200"
+                _dark={{ borderColor: "gray.700" }}
+              >
+                <Grid
+                  templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+                  gap={4}
+                >
+                  {/* Type filter */}
+                  <GridItem>
+                    <VStack align="stretch" gap={2}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        color="gray.600"
+                        _dark={{ color: "gray.400" }}
+                      >
+                        <Icon as={LuFilter} mr={1} />
+                        {t("recipeList.typeLabel")}
+                      </Text>
+                      <Select.Root
+                        collection={recipeTypes}
+                        value={typeFilter}
+                        onValueChange={(e) => {
+                          setTypeFilter(e.value);
+                          localStorage.setItem(
+                            "recipeTypeFilter",
+                            JSON.stringify(e.value)
+                          );
+                        }}
+                        size="sm"
+                      >
+                        <Select.HiddenSelect />
+                        <Select.Control
+                          borderWidth="1px"
+                          borderColor="gray.300"
+                          _hover={{ borderColor: "teal.500" }}
+                          borderRadius="md"
+                          _dark={{ borderColor: "gray.600" }}
+                        >
+                          <Select.Trigger px={3}>
+                            <Select.ValueText />
+                          </Select.Trigger>
+                          <Select.IndicatorGroup>
+                            <Select.Indicator color="teal.500" />
+                          </Select.IndicatorGroup>
+                        </Select.Control>
+                        <Portal>
+                          <Select.Positioner>
+                            <Select.Content
+                              bg={cardBg}
+                              borderColor="gray.200"
+                              _dark={{ borderColor: "gray.700" }}
+                              borderRadius="md"
+                              boxShadow="lg"
+                            >
+                              {recipeTypes.items.map((item) => (
+                                <Select.Item
+                                  item={item}
+                                  key={item.value}
+                                  _hover={{
+                                    bg: "teal.50",
+                                    _dark: { bg: "teal.900" },
+                                  }}
+                                  _selected={{
+                                    bg: "teal.100",
+                                    _dark: { bg: "teal.800" },
+                                  }}
+                                >
+                                  {item.label}
+                                  <Select.ItemIndicator color="teal.500" />
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Positioner>
+                        </Portal>
+                      </Select.Root>
+                    </VStack>
+                  </GridItem>
+
+                  {/* Visibility filter */}
+                  {showPublicTag && (
+                    <GridItem>
+                      <VStack align="stretch" gap={2}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="medium"
+                          color="gray.600"
+                          _dark={{ color: "gray.400" }}
+                        >
+                          <Icon as={LuGlobe} mr={1} />
+                          {t("recipeList.visibilityLabel")}
+                        </Text>
+                        <Select.Root
+                          collection={recipePublic}
+                          value={visibilityFilter}
+                          onValueChange={(e) => {
+                            setVisibilityFilter(e.value);
+                            localStorage.setItem(
+                              "recipeVisibilityFilter",
+                              JSON.stringify(e.value)
+                            );
+                          }}
+                          size="sm"
+                        >
+                          <Select.HiddenSelect />
+                          <Select.Control
+                            borderWidth="1px"
+                            borderColor="gray.300"
+                            _hover={{ borderColor: "teal.500" }}
+                            borderRadius="md"
+                            _dark={{ borderColor: "gray.600" }}
+                          >
+                            <Select.Trigger px={3}>
+                              <Select.ValueText />
+                            </Select.Trigger>
+                            <Select.IndicatorGroup>
+                              <Select.Indicator color="teal.500" />
+                            </Select.IndicatorGroup>
+                          </Select.Control>
+                          <Portal>
+                            <Select.Positioner>
+                              <Select.Content
+                                bg={cardBg}
+                                borderColor="gray.200"
+                                _dark={{ borderColor: "gray.700" }}
+                                borderRadius="md"
+                                boxShadow="lg"
+                              >
+                                {recipePublic.items.map((item) => (
+                                  <Select.Item
+                                    item={item}
+                                    key={item.value}
+                                    _hover={{
+                                      bg: "teal.50",
+                                      _dark: { bg: "teal.900" },
+                                    }}
+                                    _selected={{
+                                      bg: "teal.100",
+                                      _dark: { bg: "teal.800" },
+                                    }}
+                                  >
+                                    {item.label}
+                                    <Select.ItemIndicator color="teal.500" />
+                                  </Select.Item>
+                                ))}
+                              </Select.Content>
+                            </Select.Positioner>
+                          </Portal>
+                        </Select.Root>
+                      </VStack>
+                    </GridItem>
+                  )}
+
+                  {/* Tag filter */}
+                  <GridItem colSpan={{ base: 1, md: showPublicTag ? 1 : 2 }}>
+                    <VStack align="stretch" gap={2}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        color="gray.600"
+                        _dark={{ color: "gray.400" }}
+                      >
+                        <Icon as={LuTag} mr={1} />
+                        {t("recipeList.tagsLabel")}
+                      </Text>
+                      <Menu.Root closeOnSelect={false}>
+                        <Menu.Trigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            borderWidth="1px"
+                            borderColor="gray.300"
+                            _hover={{ borderColor: "teal.500" }}
+                            _dark={{ borderColor: "gray.600" }}
+                            px={3}
+                            borderRadius="md"
+                            width="full"
+                            justifyContent="space-between"
+                          >
+                            <Text fontSize="sm">
+                              {t("recipeList.selectTags")}
+                            </Text>
+                            <Icon as={LuChevronDown} color="teal.500" />
+                          </Button>
+                        </Menu.Trigger>
+                        <Portal>
+                          <Menu.Positioner>
+                            <Menu.Content
+                              maxH="300px"
+                              overflowY="auto"
+                              minW="240px"
+                              bg={cardBg}
+                              borderColor="gray.200"
+                              _dark={{ borderColor: "gray.700" }}
+                              borderRadius="md"
+                              boxShadow="lg"
+                            >
+                              <Box px={3} py={2}>
+                                <InputGroup
+                                  startElement={
+                                    <Icon
+                                      as={LuSearch}
+                                      color="gray.400"
+                                      boxSize={3}
+                                    />
+                                  }
+                                >
+                                  <Input
+                                    placeholder={t(
+                                      "recipeList.tagSearchPlaceholder"
+                                    )}
+                                    size="sm"
+                                    value={tagSearch}
+                                    onChange={(e) =>
+                                      setTagSearch(e.target.value)
+                                    }
+                                    borderColor="gray.300"
+                                    _focus={{ borderColor: "teal.500" }}
+                                    _dark={{ borderColor: "gray.600" }}
+                                  />
+                                </InputGroup>
+                              </Box>
+
+                              {filteredTags.length > 0 ? (
+                                filteredTags.map((tag) => (
+                                  <Menu.Item
+                                    key={tag.id}
+                                    value={tag.id}
+                                    onClick={() => handleTagSelect(tag.id)}
+                                    _hover={{
+                                      bg: "teal.50",
+                                      _dark: { bg: "teal.900" },
+                                    }}
+                                    px={3}
+                                    py={2}
+                                    role="menuitem"
+                                    display="flex"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                    fontSize="sm"
+                                  >
+                                    <Text>
+                                      {tag.translations[i18n.language] ??
+                                        tag.translations.en ??
+                                        tag.id}
+                                    </Text>
+                                    {selectedTags.includes(tag.id) && (
+                                      <Icon as={LuCheck} color="teal.500" />
+                                    )}
+                                  </Menu.Item>
+                                ))
+                              ) : (
+                                <Box
+                                  px={3}
+                                  py={2}
+                                  textAlign="center"
+                                  color="gray.500"
+                                  fontSize="sm"
+                                >
+                                  {t("recipeList.noTagsFound")}
+                                </Box>
+                              )}
+                            </Menu.Content>
+                          </Menu.Positioner>
+                        </Portal>
+                      </Menu.Root>
+                    </VStack>
+                  </GridItem>
+                </Grid>
+              </Box>
+            </Collapsible.Content>
+          </Collapsible.Root>
         </VStack>
       </Box>
 
       {/* Results header with count */}
       <HStack justify="space-between">
-        <Text fontWeight="medium" color={textColor}>
+        <Text fontWeight="medium" color={textColor} fontSize="sm">
           {t("recipeList.recipesFound", { count: totalCount })}
         </Text>
       </HStack>
@@ -971,76 +1046,101 @@ export default function RecipeList({
                 {/* Publisher information */}
                 {showPublisher &&
                   recipe.ownerId &&
-                  userProfiles[recipe.ownerId] && (
-                    <Link
-                      as={NextLink}
-                      href={
-                        userProfiles[recipe.ownerId]?.slug
-                          ? `/user/${userProfiles[recipe.ownerId]?.slug}`
-                          : "#"
-                      }
-                      _hover={{ textDecoration: "none" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                  userProfiles[recipe.ownerId] &&
+                  (() => {
+                    const ownerId = recipe.ownerId as string;
+                    const profile = userProfiles[ownerId];
+
+                    return (
                       <HStack
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (profile.slug) {
+                            router.push(`/user/${profile.slug}`);
+                          }
+                        }}
                         mt={2}
                         gap={2}
                         color="gray.600"
                         _dark={{ color: "gray.400" }}
+                        _hover={{ textDecoration: "underline" }}
                       >
                         <Avatar.Root
                           size="xs"
                           colorPalette="teal"
                           variant="solid"
                         >
-                          <Avatar.Fallback
-                            name={userProfiles[recipe.ownerId]?.displayName}
-                          />
+                          <Avatar.Fallback name={profile.displayName} />
                           <Avatar.Image
-                            src={
-                              userProfiles[recipe.ownerId]?.photoURL ||
-                              undefined
-                            }
+                            src={profile.photoURL || undefined}
                             alt="User Avatar"
                             borderRadius="full"
                           />
                         </Avatar.Root>
-
-                        <Text fontSize="sm">
-                          {userProfiles[recipe.ownerId]?.displayName}
-                        </Text>
+                        <Text fontSize="sm">{profile.displayName}</Text>
                       </HStack>
-                    </Link>
+                    );
+                  })()}
+
+                <HStack align="start" gap={4} mt={3}>
+                  {recipe.imageURL && (
+                    <Box
+                      width="120px"
+                      height="80px"
+                      borderRadius="md"
+                      overflow="hidden"
+                      bg="gray.50"
+                      _dark={{ bg: "gray.800" }}
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                    >
+                      <img
+                        src={recipe.imageURL}
+                        alt={recipe.title || "Recipe Image"}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          display: "block",
+                        }}
+                      />
+                    </Box>
                   )}
+                  <VStack align="start" flex={1} gap={2}>
+                    {recipe.tags && recipe.tags.length > 0 && (
+                      <Flex wrap="wrap" gap={2}>
+                        {recipe.tags.map((tagId) => {
+                          const tagObj = tagOptions.find((t) => t.id === tagId);
+                          const label =
+                            tagObj?.translations[i18n.language] ??
+                            tagObj?.translations.en ??
+                            tagId;
 
-                {recipe.tags && recipe.tags.length > 0 && (
-                  <Flex mt={3} wrap="wrap" gap={2}>
-                    {recipe.tags.map((tagId) => {
-                      const tagObj = tagOptions.find((t) => t.id === tagId);
-                      const label =
-                        tagObj?.translations[i18n.language] ??
-                        tagObj?.translations.en ??
-                        tagId;
-
-                      return (
-                        <Tag.Root
-                          key={tagId}
-                          size="md"
-                          borderRadius="full"
-                          variant="subtle"
-                          onClick={(e) => {
-                            e.preventDefault(); // prevent navigation
-                            !selectedTags.includes(tagId) &&
-                              handleTagSelect(tagId);
-                          }}
-                          cursor="pointer"
-                        >
-                          <Tag.Label>{label}</Tag.Label>
-                        </Tag.Root>
-                      );
-                    })}
-                  </Flex>
-                )}
+                          return (
+                            <Tag.Root
+                              key={tagId}
+                              size="md"
+                              borderRadius="full"
+                              variant="subtle"
+                              onClick={(e) => {
+                                e.preventDefault(); // prevent navigation
+                                !selectedTags.includes(tagId) &&
+                                  handleTagSelect(tagId);
+                              }}
+                              cursor="pointer"
+                            >
+                              <Tag.Label>{label}</Tag.Label>
+                            </Tag.Root>
+                          );
+                        })}
+                      </Flex>
+                    )}
+                  </VStack>
+                </HStack>
               </Box>
             </Link>
           ))}

@@ -31,6 +31,8 @@ import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
 import Head from "next/head";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 interface UserProfile {
   uid: string;
@@ -55,6 +57,7 @@ export default function UserPage() {
   const [loading, setLoading] = useState(true);
   const { t, i18n } = useTranslation();
   const [tagOptions, setTagOptions] = useState<TagType[]>([]);
+  const hasMounted = useHasMounted();
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -65,13 +68,10 @@ export default function UserPage() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
         if (!response.ok) {
@@ -136,8 +136,11 @@ export default function UserPage() {
 
     const fetchRecipes = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/recipes/user/${profile.uid}`
+        const res = await fetchWithAuthAndAppCheck(
+          `${process.env.NEXT_PUBLIC_API_URL}/recipes/user/${profile.uid}`,
+          {
+            method: "GET",
+          }
         );
         const data = await res.json();
         setRecipes(data.recipes ?? []);
@@ -149,7 +152,7 @@ export default function UserPage() {
     fetchRecipes();
   }, [profile?.uid]);
 
-  if (loading) {
+  if (loading || !hasMounted) {
     return (
       <Box
         minH="100vh"
@@ -162,7 +165,9 @@ export default function UserPage() {
       >
         <VStack colorPalette="teal">
           <Spinner size="xl" color="colorPalette.600" />
-          <Text color="colorPalette.600">{t("userPage.loading")}</Text>
+          <Text color="colorPalette.600">
+            {hasMounted ? t("userPage.loading") : "Loading..."}
+          </Text>
         </VStack>
       </Box>
     );
@@ -191,7 +196,7 @@ export default function UserPage() {
   return (
     <Box minH="100vh" display="flex" flexDirection="column" bg={secondaryBg}>
       <Head>
-        <title>{`${profile.displayName} - RecipeKeeper`}</title>
+        <title>{`${profile.displayName} - Recipe Keeper`}</title>
         <meta name="description" content="View profile information" />
         <meta name="robots" content="noindex" />
       </Head>

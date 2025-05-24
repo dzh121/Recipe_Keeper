@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { auth } from "@/lib/firebase";
 import { useHasMounted } from "./useHasMounted";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export function useSyncColorModeOnLogin() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -16,12 +17,11 @@ export function useSyncColorModeOnLogin() {
 
       try {
         const token = await user.getIdToken();
-        const res = await fetch(
+        const res = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            method: "GET",
+            token,
           }
         );
 

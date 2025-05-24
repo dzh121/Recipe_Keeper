@@ -8,6 +8,7 @@ import * as React from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
 import { auth, db } from "@/lib/firebase";
 import { useRef, useEffect } from "react";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export interface ColorModeProviderProps extends ThemeProviderProps {}
 
@@ -36,14 +37,13 @@ export function useColorMode(): UseColorModeReturn {
 
     try {
       const token = await user.getIdToken();
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ darkMode: mode === "dark" }),
-      });
+      await fetchWithAuthAndAppCheck(
+        `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
+        {
+          method: "POST",
+          body: JSON.stringify({ darkMode: mode === "dark" }),
+        }
+      );
     } catch (error) {
       console.error("Error saving color mode:", (error as Error).message);
     }

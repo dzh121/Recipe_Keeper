@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { config } from "firebase-functions";
 import "dotenv/config"; // Loads .env (locally only)
+import { getAppCheck } from "firebase-admin/app-check";
 
 let storageBucket: string | undefined;
 
@@ -37,3 +38,4 @@ if (!getApps().length) {
 export const adminAuth = getAuth();
 export const db = getFirestore();
 export const bucket = getStorage().bucket();
+export const adminAppCheck = getAppCheck();

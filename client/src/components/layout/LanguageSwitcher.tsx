@@ -6,6 +6,7 @@ import { LuChevronDown } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { US, IL } from "country-flag-icons/react/3x2";
 import { getAuth } from "firebase/auth";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 // Flag components
 const EnglishFlag = () => <US style={{ width: "24px", marginRight: "8px" }} />;
@@ -25,14 +26,15 @@ export const LanguageSwitcher = () => {
 
     try {
       const token = await user.getIdToken();
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/language`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ language: lng }),
-      });
+      //fetch with app check
+      fetchWithAuthAndAppCheck(
+        `${process.env.NEXT_PUBLIC_API_URL}/settings/language`,
+        {
+          method: "POST",
+          token,
+          body: { language: lng },
+        }
+      );
     } catch (err) {
       console.error("Failed to update language preference", err);
     }

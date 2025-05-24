@@ -11,42 +11,48 @@ import adminRoutes from "./routes/admin";
 import { onRequest } from "firebase-functions/v2/https";
 import "dotenv/config";
 import { Request } from "express";
-import bodyParser from "body-parser";
 import rateLimit from "express-rate-limit";
-
+import { verifyAppCheck } from "./middleware/appCheckMiddleware";
 interface AuthedRequest extends Request {
   user?: any;
 }
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 400, // Limit each IP to 100 requests per window
+  max: 400, // Limit each IP to 400 requests per window
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://recipekeeper-3a217.web.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use(bodyParser. text({type: "/"}));
 app.use(limiter);
 
 app.get("/api/protected", authenticateToken, (req: AuthedRequest, res) => {
   res.json({ message: "You are authenticated!", user: req.user });
 });
 
-app.use("/recipes", recipeRoutes);
+app.use("/recipes", verifyAppCheck, recipeRoutes);
 
-app.use("/favorites", favoritesRoutes);
+app.use("/favorites", verifyAppCheck, favoritesRoutes);
 
-app.use("/tags", tagsRoute);
+app.use("/tags", verifyAppCheck, tagsRoute);
 
-app.use("/profile", profileRoutes); 
+app.use("/profile", verifyAppCheck, profileRoutes);
 
-app.use("/settings", settingsRoutes);
+app.use("/settings", verifyAppCheck, settingsRoutes);
 
-app.use("/admin", authenticateToken, adminRoutes);
+app.use("/admin", authenticateToken, verifyAppCheck, adminRoutes);
 
 if (process.env.LOCAL_DEV?.toLowerCase() === "true") {
   console.log("Running in local development mode.");
@@ -56,4 +62,11 @@ if (process.env.LOCAL_DEV?.toLowerCase() === "true") {
   });
 }
 
-export const api = onRequest({ region: "us-central1" }, app);
+export const api = onRequest(
+  {
+    region: "us-central1",
+    memory: "512MiB",
+    timeoutSeconds: 60,
+  },
+  app
+);

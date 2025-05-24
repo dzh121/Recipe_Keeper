@@ -47,6 +47,7 @@ import BackButton from "@/components/ui/back";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
 import { getAuth } from "firebase/auth";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 type Recipe = {
   ownerId: string;
@@ -118,13 +119,10 @@ export default function RecipePage() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/tags`,
           {
             method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
           }
         );
         if (!response.ok) {
@@ -190,13 +188,11 @@ export default function RecipePage() {
           authToken = await user.getIdToken();
         }
 
-        const response = await fetch(
+        const response = await fetchWithAuthAndAppCheck(
           `${process.env.NEXT_PUBLIC_API_URL}/recipes/${id}`,
           {
             method: "GET",
-            headers: {
-              ...(authToken && { Authorization: `Bearer ${authToken}` }),
-            },
+            token: authToken ?? undefined,
           }
         );
 
@@ -214,13 +210,11 @@ export default function RecipePage() {
         const data = await response.json();
         setRecipe(data.recipe);
         if (id) {
-          const imageRes = await fetch(
+          const imageRes = await fetchWithAuthAndAppCheck(
             `${process.env.NEXT_PUBLIC_API_URL}/recipes/get-photo-url/${id}`,
             {
               method: "GET",
-              headers: {
-                ...(authToken && { Authorization: `Bearer ${authToken}` }),
-              },
+              token: authToken ?? undefined,
             }
           );
           if (imageRes.ok) {
@@ -244,13 +238,11 @@ export default function RecipePage() {
           }
         }
         if (user) {
-          const response = await fetch(
+          const response = await fetchWithAuthAndAppCheck(
             `${process.env.NEXT_PUBLIC_API_URL}/favorites/${id}`,
             {
               method: "GET",
-              headers: {
-                ...(authToken && { Authorization: `Bearer ${authToken}` }),
-              },
+              token: authToken ?? undefined,
             }
           );
           if (response.ok) {
@@ -286,13 +278,11 @@ export default function RecipePage() {
       return;
     }
     try {
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/favorites/${id}`,
         {
           method: isFavorite ? "DELETE" : "POST",
-          headers: {
-            Authorization: `Bearer ${await user.getIdToken()}`,
-          },
+          token: await user.getIdToken(),
         }
       );
       if (!response.ok) {
@@ -420,7 +410,7 @@ export default function RecipePage() {
     >
       <Toaster />
       <Head>
-        <title>{recipe.title} | RecipeKeeper</title>
+        <title>{recipe.title} | Recipe Keeper</title>
         <meta
           name="description"
           content={`View ${recipe.title} recipe with notes and details.`}

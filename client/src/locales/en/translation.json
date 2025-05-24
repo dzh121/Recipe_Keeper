@@ -84,6 +84,11 @@
     "password": "Password",
     "username": "Username",
     "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset Password",
+    "sendResetLink": "Send Password Reset Email",
+    "resetPasswordInstructions": "Enter your email address and we'll send you a link to reset your password.",
+    "cancel": "Cancel",
     "placeholders": {
       "email": "you@example.com",
       "password": "Enter password",
@@ -112,7 +117,13 @@
       "internalError": "Internal error. Please try again shortly.",
       "missingPassword": "Password is required.",
       "unknownErrorLogin": "Unable to sign in. Please try again.",
-      "unknownErrorRegister": "Unable to register. Please try again."
+      "unknownErrorRegister": "Unable to register. Please try again.",
+      "resetPassword": "Reset Password",
+      "resetPasswordSent": "A password reset link has been sent to your email.",
+      "resetPasswordFailed": "Failed to send reset email. Please try again.",
+      "resetPasswordError": "Reset Password Error",
+      "userNotFound": "No user found with this email address.",
+      "internetError": "Network error. Please check your internet connection."
     }
   },
 
@@ -201,6 +212,7 @@
     "noTagsFound": "No tags found",
     "clearFilters": "Clear Filters",
     "clearAllFilters": "Clear All Filters",
+    "filters": "Filters",
     "recipesFound_zero": "No recipes found",
     "recipesFound_one": "One recipe found",
     "recipesFound_other": "{{count}} recipes found",

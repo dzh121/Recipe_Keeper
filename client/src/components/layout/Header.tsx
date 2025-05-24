@@ -98,7 +98,7 @@ export default function Header() {
             fontWeight="semibold"
             display={{ base: "none", md: "inline" }}
           >
-            {t("app.title")}
+            {hasMounted ? t("app.title") : "Recipe Keeper"}
           </Heading>
         </Button>
 
@@ -129,7 +129,7 @@ export default function Header() {
               variant="solid"
               onClick={() => Router.push("/signin")}
             >
-              {t("header.signin")}
+              {hasMounted ? t("header.signin") : "Sign In"}
             </Button>
           )}
         </HStack>

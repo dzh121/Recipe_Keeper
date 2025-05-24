@@ -46,6 +46,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "react-i18next";
 import BackButton from "@/components/ui/back";
 import { Timestamp } from "firebase/firestore";
+import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 // Define types
 type TagSuggestion = {
@@ -135,13 +136,11 @@ export default function TagSuggestionsPage() {
         ? "/tags/suggestions"
         : "/tags/suggestions/user";
 
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
+          method: "GET",
+          token: authToken ?? undefined,
         }
       );
 
@@ -180,15 +179,12 @@ export default function TagSuggestionsPage() {
     const authToken = await user.getIdToken();
 
     try {
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/tags/suggestions/${id}/status`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
+          body: { status: newStatus },
+          token: authToken,
         }
       );
 
@@ -275,18 +271,15 @@ export default function TagSuggestionsPage() {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch(
+      const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/tags/suggest`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
+          token: authToken,
+          body: {
             en: newTagEn.trim() || null,
             he: newTagHe.trim() || null,
-          }),
+          },
         }
       );
 
@@ -414,7 +407,7 @@ export default function TagSuggestionsPage() {
       flexDirection="column"
     >
       <Head>
-        <title>Tag Suggestions | RecipeKeeper</title>
+        <title>Tag Suggestions | Recipe Keeper</title>
         <meta
           name="description"
           content="Suggest new tags for the recipe collection"
