@@ -249,13 +249,22 @@ npm run deploy           # Deploy to Firebase (hosting + functions)
 | **Tag Suggestions Review** | Admin view for reviewing and approving user tag suggestions.          | Admin Only          | Status filters, approve/reject actions, metadata view       |
 | **404 Page**               | Shown when navigating to a route that doesn't exist.                  | Public              | Custom error message, return to home link                   |
 
-## 📦 Firestore Collections
+## 📦 Firestore & Storage Collections
 
 ```
-users/{uid}/public/profile
-users/{uid}/private/settings
-recipes/{recipeId}
-global/tags
+users/{uid}/public/profile          # Public user info (displayName, bio, photoURL, etc.)
+users/{uid}/private/settings        # Private user preferences (language, dark mode, notifications, etc.)
+recipes/{recipeId}                  # All recipe metadata, including title, type, visibility, tags, rating, etc.
+global/tags                         # List of all approved tags with translations
+tagSuggestions/{docId}       # User-submitted tag suggestions with translation fields and status
+slugs/{slug}                 # Public user slugs mapping to user UID (used for profile URLs)
+```
+
+### 📂 Firebase Storage Buckets (Structured Uploads)
+
+```
+/recipes/{recipeId}/photo.jpg   # Recipe photo uploads
+/users/{uid}/profile.jpg        # User profile images
 ```
 
 ## 🔒 Privacy & Data Policy
