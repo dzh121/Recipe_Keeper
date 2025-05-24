@@ -256,8 +256,8 @@ users/{uid}/public/profile          # Public user info (displayName, bio, photoU
 users/{uid}/private/settings        # Private user preferences (language, dark mode, notifications, etc.)
 recipes/{recipeId}                  # All recipe metadata, including title, type, visibility, tags, rating, etc.
 global/tags                         # List of all approved tags with translations
-tagSuggestions/{docId}       # User-submitted tag suggestions with translation fields and status
-slugs/{slug}                 # Public user slugs mapping to user UID (used for profile URLs)
+tagSuggestions/{docId}              # User-submitted tag suggestions with translation fields and status
+slugs/{slug}                        # Public user slugs mapping to user UID (used for profile URLs)
 ```
 
 ### 📂 Firebase Storage Buckets (Structured Uploads)
