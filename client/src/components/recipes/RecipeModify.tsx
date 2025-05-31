@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import {
   FiLink,
   FiSave,
@@ -103,6 +103,12 @@ export default function RecipeModify({
   const hoverBorderColor = "teal.400";
   const textColor = useColorModeValue("gray.600", "gray.300");
   const placeholderColor = useColorModeValue("gray.400", "gray.500");
+
+  useEffect(() => {
+    const prep = parseInt(prepTime as string, 10) || 0;
+    const cook = parseInt(cookTime as string, 10) || 0;
+    setTimeToFinish(String(prep + cook));
+  }, [prepTime, cookTime]);
 
   useEffect(() => {
     const fetchTags = async () => {

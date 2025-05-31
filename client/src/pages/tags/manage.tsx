@@ -125,6 +125,7 @@ export default function TagsManagementPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/tags`,
         {
           method: "POST",
+          token: authToken,
           body: {
             id: newId,
             translations: {
