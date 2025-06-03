@@ -6,7 +6,6 @@ Disallow: /signin
 Disallow: /settings
 Disallow: /tags/manage
 Disallow: /recipes/favorites
-Disallow: /tags/suggest
 
 # Host
 Host: https://recipekeeper-3a217.web.app

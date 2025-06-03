@@ -35,7 +35,6 @@ module.exports = {
           "/settings",
           "/tags/manage",
           "/recipes/favorites",
-          "/tags/suggest",
         ],
       },
     ],

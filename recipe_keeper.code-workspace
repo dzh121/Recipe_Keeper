@@ -1,0 +1,42 @@
+{
+  // ─── Folders ────────────────────────────────────────────────────────────────
+  "folders": [
+    { "path": "." }
+  ],
+
+  // ─── Settings ───────────────────────────────────────────────────────────────
+  "settings": {
+    /* Pick a starting directory in the terminal dropdown */
+    "terminal.integrated.profiles.windows": {
+      "Root":      { "source": "Git Bash", "cwd": "${workspaceFolder}" },
+      "Client":    { "source": "Git Bash", "cwd": "${workspaceFolder}/client" },
+      "Functions": { "source": "Git Bash", "cwd": "${workspaceFolder}/functions" }
+    },
+    "terminal.integrated.defaultProfile.windows": "Root"
+  },
+
+  // ─── Tasks: one-click wrappers for your npm scripts ─────────────────────────
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      /* Dev & hot-reload */
+      { "label": "dev", "type": "npm", "script": "dev", "group": "build" },
+
+      /* Individual servers (still handy) */
+      { "label": "server:dev", "type": "npm", "script": "dev", "path": "functions" },
+      { "label": "client:dev", "type": "npm", "script": "dev", "path": "client" },
+
+      /* Builds */
+      { "label": "build:client", "type": "npm", "script": "build:client" },
+      { "label": "build:server", "type": "npm", "script": "build:server" },
+      { "label": "sitemap", "type": "npm", "script": "sitemap" },
+      { "label": "build", "type": "npm", "script": "build", "group": "build" },
+
+      /* Deploys */
+      { "label": "deploy", "type": "npm", "script": "deploy" },
+      { "label": "build:deploy", "type": "npm", "script": "build:deploy" },
+      { "label": "deploy:client", "type": "npm", "script": "deploy:client" },
+      { "label": "deploy:server", "type": "npm", "script": "deploy:server" }, 
+    ]
+  }
+}
