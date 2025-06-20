@@ -8,7 +8,7 @@
     "deploy": "npm run build && firebase deploy --only functions"
   },
   "engines": {
-    "node": "20"
+    "node": ">=20"
   },
   "dependencies": {
     "busboy": "^1.6.0",
