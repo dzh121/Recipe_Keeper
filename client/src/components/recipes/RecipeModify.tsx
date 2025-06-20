@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FiLink,
   FiSave,
@@ -40,8 +40,7 @@ import { RecipeFull } from "@/lib/types/recipe";
 import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
-import { getToken } from "firebase/app-check";
-import { appCheck } from "@/lib/firebase";
+import Image from "next/image";
 
 export default function RecipeModify({
   mode = "add",
@@ -110,6 +109,29 @@ export default function RecipeModify({
     setTimeToFinish(String(prep + cook));
   }, [prepTime, cookTime]);
 
+  const sortAndSetTags = useCallback(
+    (tags: TagType[]) => {
+      const lang = i18n.language || "en";
+      const sorted = [...tags].sort((a, b) =>
+        a.translations[lang]?.localeCompare(
+          b.translations[lang],
+          lang === "he" ? "he" : "en",
+          { sensitivity: "base" }
+        )
+      );
+      setTagOptions((prev) => {
+        const prevJSON = JSON.stringify(prev);
+        const nextJSON = JSON.stringify(sorted);
+        return prevJSON === nextJSON ? prev : sorted;
+      });
+    },
+    [i18n.language]
+  );
+
+  useEffect(() => {
+    sortAndSetTags(tagOptions);
+  }, [i18n.language, sortAndSetTags, tagOptions]);
+
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -121,29 +143,13 @@ export default function RecipeModify({
         );
         if (!response.ok) throw new Error("Failed to fetch tags");
         const data = await response.json();
-        sortAndSetTags(data.tags || []);
+        setTagOptions(data.tags || []);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
     fetchTags();
   }, []);
-
-  useEffect(() => {
-    sortAndSetTags(tagOptions);
-  }, [i18n.language]);
-
-  function sortAndSetTags(tags: TagType[]) {
-    const lang = i18n.language || "en";
-    const sorted = [...tags].sort((a, b) =>
-      a.translations[lang]?.localeCompare(
-        b.translations[lang],
-        lang === "he" ? "he" : "en",
-        { sensitivity: "base" }
-      )
-    );
-    setTagOptions(sorted);
-  }
 
   useEffect(() => {
     if (mode === "edit" && initialData && Object.keys(initialData).length > 0) {
@@ -170,26 +176,26 @@ export default function RecipeModify({
         setRecipeType(initialData.recipeType);
       }
     }
-  }, [initialData?.id, mode]);
+  }, [initialData, initialData?.id, mode]);
 
-  const handleDragEnter = (e: any) => {
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: any) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
   };
 
-  const handleDragOver = (e: any) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleDrop = (e: any) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -210,7 +216,7 @@ export default function RecipeModify({
     }
   };
 
-  const handleFileChange = (e: any) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setPhotoFile(file);
@@ -366,6 +372,7 @@ export default function RecipeModify({
         setPhotoPreviewUrl(null);
       }
     } catch (err) {
+      console.error("Error saving recipe:", err);
       toaster.create({
         title: t("recipeModify.saveFailed"),
         description: t("recipeModify.saveFailedDescription"),
@@ -411,6 +418,7 @@ export default function RecipeModify({
       });
       router.push("/recipes/manage");
     } catch (err) {
+      console.error("Error deleting recipe:", err);
       toaster.create({
         title: t("recipeModify.deleteFailed"),
         description: t("recipeModify.deleteFailedDescription"),
@@ -462,13 +470,16 @@ export default function RecipeModify({
               overflow="hidden"
               boxShadow="md"
             >
-              <img
-                src={photoPreviewUrl}
+              <Image
+                src={photoPreviewUrl || ""}
                 alt="Recipe Preview"
+                priority
+                width={400}
+                height={280}
                 style={{
-                  width: "100%",
-                  maxHeight: "280px",
+                  display: "block",
                   objectFit: "cover",
+                  borderRadius: 8,
                 }}
               />
               <Button

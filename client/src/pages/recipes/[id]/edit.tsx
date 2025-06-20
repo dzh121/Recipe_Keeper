@@ -78,7 +78,7 @@ export default function EditRecipePage() {
     };
 
     fetchRecipe();
-  }, [id, authChecked, user]);
+  }, [id, authChecked, user, t]);
 
   if (errorMessage) {
     return (

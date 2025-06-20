@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import Image from "next/image";
 const FloatingKofi = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -40,11 +40,13 @@ const FloatingKofi = () => {
           boxShadow: "0 4px 12px rgba(0,0,0,.25)",
         }}
       >
-        <img
+        <Image
           src="https://storage.ko-fi.com/cdn/cup-border.png"
           alt="Ko-fi cup"
+          width={isMobile ? 22 : 24}
+          height={isMobile ? 22 : 24}
+          priority
           style={{
-            width: isMobile ? 22 : 24,
             marginRight: isMobile ? 0 : 8,
           }}
         />

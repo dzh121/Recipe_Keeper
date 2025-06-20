@@ -22,7 +22,7 @@ export default function RecipesManage() {
     if (hasMounted && !isAuthenticated && authChecked) {
       router.push("/recipes");
     }
-  }, [hasMounted, isAuthenticated, authChecked]);
+  }, [hasMounted, isAuthenticated, authChecked, router]);
 
   if (!hasMounted) {
     return (

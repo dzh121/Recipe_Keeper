@@ -6,7 +6,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import {
-  LuChevronLeft,
   LuClock,
   LuLink,
   LuCalendar,
@@ -48,6 +47,7 @@ import { useTranslation } from "react-i18next";
 import { Tag as TagType } from "@/lib/types/tag";
 import { getAuth } from "firebase/auth";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
+import Image from "next/image";
 
 type Recipe = {
   ownerId: string;
@@ -145,14 +145,27 @@ export default function RecipePage() {
   }, []);
 
   useEffect(() => {
-    const getFormattedDate = (timestamp: any) => {
+    const getFormattedDate = (
+      timestamp:
+        | Timestamp
+        | { _seconds: number; _nanoseconds: number }
+        | null
+        | undefined
+    ): string => {
       if (!timestamp) return "";
 
       try {
         const normalized =
-          typeof timestamp.toDate === "function"
-            ? timestamp
-            : new Timestamp(timestamp._seconds, timestamp._nanoseconds);
+          typeof (timestamp as Timestamp).toDate === "function"
+            ? (timestamp as Timestamp)
+            : new Timestamp(
+                (
+                  timestamp as { _seconds: number; _nanoseconds: number }
+                )._seconds,
+                (
+                  timestamp as { _seconds: number; _nanoseconds: number }
+                )._nanoseconds
+              );
 
         const date = normalized.toDate();
 
@@ -171,6 +184,7 @@ export default function RecipePage() {
         return "";
       }
     };
+
     setFormattedDate(getFormattedDate(recipe?.createdAt));
   }, [recipe?.createdAt, i18n.language]);
 
@@ -261,7 +275,7 @@ export default function RecipePage() {
     };
 
     fetchRecipe();
-  }, [id, authChecked, user]);
+  }, [id, authChecked, user, t]);
 
   // Helper function to format ingredients as list items
   const formatIngredients = (ingredients: string) => {
@@ -534,9 +548,13 @@ export default function RecipePage() {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  <img
-                    src={imageURL || undefined}
-                    alt={`${recipe.title} photo`}
+                  <Image
+                    src={imageURL || ""}
+                    alt={
+                      recipe?.title ? `${recipe.title} photo` : "Recipe image"
+                    }
+                    width={800}
+                    height={600}
                     style={{
                       width: "100%",
                       height: "auto",
@@ -545,12 +563,12 @@ export default function RecipePage() {
                       display: "block",
                       transition: "transform 0.3s ease-in-out",
                     }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.1)")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.transform = "scale(1)")
-                    }
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = "scale(1.1)";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
                   />
                 </Box>
               )}

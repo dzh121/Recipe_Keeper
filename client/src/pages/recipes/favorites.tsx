@@ -8,7 +8,6 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/router";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { Recipe } from "@/lib/types/recipe";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { useTranslation } from "react-i18next";
 import BackButton from "@/components/ui/back";
@@ -19,14 +18,13 @@ export default function RecipesManage() {
   const router = useRouter();
   const { user, authChecked } = useAuth();
   const isAuthenticated = !!user;
-  const [recipes, setRecipes] = React.useState<Recipe[]>([]);
   const { t } = useTranslation();
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated && authChecked) {
       router.push("/recipes");
     }
-  }, [hasMounted, isAuthenticated, authChecked]);
+  }, [hasMounted, isAuthenticated, authChecked, router]);
   const removeFavorite = async (recipeId: string) => {
     try {
       const token = await user?.getIdToken();
@@ -41,11 +39,6 @@ export default function RecipesManage() {
       if (!response.ok) {
         throw new Error("Failed to remove favorite");
       }
-
-      const data = await response.json();
-      setRecipes((prevRecipes) =>
-        prevRecipes.filter((recipe) => recipe.id !== recipeId)
-      );
     } catch (err) {
       console.error("Error removing favorite:", err);
       toaster.create({

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Button, Flex, Text, Box, Portal } from "@chakra-ui/react";
+import { Menu, Button, Flex, Text, Portal } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { LuChevronDown } from "react-icons/lu";
 import { useTranslation } from "react-i18next";

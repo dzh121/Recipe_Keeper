@@ -27,7 +27,7 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { Tooltip } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   LuChefHat,
   LuLink,
@@ -54,6 +54,7 @@ import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { useAuth } from "@/context/AuthContext";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export type Recipe = {
   id: string;
@@ -235,7 +236,33 @@ export default function RecipeList({
     isKosher,
     user,
     authChecked,
+    isPublic,
+    owner,
+    onlyFavorites,
   ]);
+
+  const sortAndSetTags = useCallback(
+    (tags: TagType[]) => {
+      const lang = i18n.language || "en";
+      const sorted = [...tags].sort((a, b) =>
+        a.translations[lang]?.localeCompare(
+          b.translations[lang],
+          lang === "he" ? "he" : "en",
+          { sensitivity: "base" }
+        )
+      );
+      setTagOptions((prev) => {
+        const prevJSON = JSON.stringify(prev);
+        const nextJSON = JSON.stringify(sorted);
+        return prevJSON === nextJSON ? prev : sorted;
+      });
+    },
+    [i18n.language]
+  );
+
+  useEffect(() => {
+    sortAndSetTags(tagOptions);
+  }, [sortAndSetTags, tagOptions]);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -253,30 +280,13 @@ export default function RecipeList({
           throw new Error("Failed to fetch tags");
         }
         const data = await response.json();
-        sortAndSetTags(data.tags || []);
+        setTagOptions(data.tags || []);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
     };
     fetchTags();
   }, []);
-
-  useEffect(() => {
-    sortAndSetTags(tagOptions);
-  }, [i18n.language]);
-
-  function sortAndSetTags(tags: TagType[]) {
-    const lang = i18n.language || "en";
-    const sorted = [...tags].sort((a, b) =>
-      a.translations[lang]?.localeCompare(
-        b.translations[lang],
-        lang === "he" ? "he" : "en",
-        { sensitivity: "base" }
-      )
-    );
-    setTagOptions(sorted);
-  }
-
   // Fetch user profiles for recipes if showPublisher is true
   useEffect(() => {
     if (showPublisher) {
@@ -1097,15 +1107,16 @@ export default function RecipeList({
                       justifyContent="center"
                       flexShrink={0}
                     >
-                      <img
+                      <Image
                         src={recipe.imageURL}
                         alt={recipe.title || "Recipe Image"}
+                        width={120}
+                        height={80}
                         style={{
+                          borderRadius: "8px",
+                          objectFit: "cover",
                           width: "100%",
                           height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "8px",
-                          display: "block",
                         }}
                       />
                     </Box>

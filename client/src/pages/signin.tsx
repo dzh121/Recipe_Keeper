@@ -76,7 +76,7 @@ export default function StartPage() {
     }
   }, [authChecked, user, router]);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
@@ -93,11 +93,12 @@ export default function StartPage() {
       try {
         await signInWithEmailAndPassword(auth, form.email, form.password);
         router.replace("/");
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as { code?: string; message?: string };
         let message = t("startPage.authErrors.loginFailed");
 
-        if (err?.code?.startsWith("auth/")) {
-          switch (err.code) {
+        if (error?.code?.startsWith("auth/")) {
+          switch (error.code) {
             case "auth/user-not-found":
             case "auth/wrong-password":
             case "auth/invalid-credential":
@@ -123,7 +124,7 @@ export default function StartPage() {
               break;
             default:
               message =
-                err.message || t("startPage.authErrors.unknownErrorLogin");
+                error.message || t("startPage.authErrors.unknownErrorLogin");
           }
         }
 
@@ -155,11 +156,12 @@ export default function StartPage() {
         setResetEmail("");
         setResetEmailError("");
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
+        const error = err as { code?: string; message?: string };
         let message = t("startPage.authErrors.resetPasswordFailed");
 
-        if (err?.code?.startsWith("auth/")) {
-          switch (err.code) {
+        if (error?.code?.startsWith("auth/")) {
+          switch (error.code) {
             case "auth/user-not-found":
               message = t("startPage.authErrors.userNotFound");
               break;
@@ -250,12 +252,14 @@ export default function StartPage() {
         ]);
 
         router.replace("/");
-      } catch (err: any) {
-        console.error("Registration failed:", err);
+      } catch (err: unknown) {
+        const error = err as { code?: string; message?: string };
+
+        console.error("Registration failed:", error);
 
         let message = "Registration failed";
-        if (err?.code?.startsWith("auth/")) {
-          switch (err.code) {
+        if (error?.code?.startsWith("auth/")) {
+          switch (error.code) {
             case "auth/email-already-in-use":
               message = t("startPage.authErrors.emailInUse");
               break;
@@ -276,7 +280,7 @@ export default function StartPage() {
               break;
             default:
               message =
-                err.message || t("startPage.authErrors.unknownErrorRegister");
+                error.message || t("startPage.authErrors.unknownErrorRegister");
           }
         }
 

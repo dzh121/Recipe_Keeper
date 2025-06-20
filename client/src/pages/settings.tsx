@@ -23,7 +23,7 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -33,7 +33,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from "firebase/auth";
-import { app, appCheck, auth, db } from "@/lib/firebase";
+import { appCheck, auth, db } from "@/lib/firebase";
 import {
   doc,
   getDoc,
@@ -43,7 +43,7 @@ import {
 } from "firebase/firestore";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { LuChevronLeft, LuCheck } from "react-icons/lu";
+import { LuCheck } from "react-icons/lu";
 import {
   FiMail,
   FiLock,
@@ -211,15 +211,19 @@ export default function SettingsPage() {
         meta: { closable: true },
         position: "top",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to update email:", err);
       let message = t("settings.errors.emailError");
-      if (err.code === "auth/invalid-email") {
-        message = t("settings.errors.invalidEmail");
-      } else if (err.code === "auth/email-already-in-use") {
-        message = t("settings.errors.emailInUse");
-      } else if (err.code === "auth/network-request-failed") {
-        message = t("settings.errors.network");
+
+      if (typeof err === "object" && err !== null && "code" in err) {
+        const errorCode = (err as { code: string }).code;
+        if (errorCode === "auth/invalid-email") {
+          message = t("settings.errors.invalidEmail");
+        } else if (errorCode === "auth/email-already-in-use") {
+          message = t("settings.errors.emailInUse");
+        } else if (errorCode === "auth/network-request-failed") {
+          message = t("settings.errors.network");
+        }
       }
 
       toaster.create({
@@ -306,17 +310,19 @@ export default function SettingsPage() {
         meta: { closable: true },
         position: "top",
       });
-    } catch (err: any) {
-      console.error("Failed to update password:", err);
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string };
+
+      console.error("Failed to update password:", error);
 
       let message = t("settings.errors.password");
 
       // Provide detailed feedback based on Firebase error code
-      if (err.code === "auth/weak-password") {
+      if (error.code === "auth/weak-password") {
         message = t("settings.errors.weakPassword");
-      } else if (err.code === "auth/invalid-credential") {
+      } else if (error.code === "auth/invalid-credential") {
         message = t("settings.errors.invalidCredential");
-      } else if (err.code === "auth/network-request-failed") {
+      } else if (error.code === "auth/network-request-failed") {
         message = t("settings.errors.network");
       }
 

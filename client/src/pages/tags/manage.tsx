@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Container,
@@ -52,25 +52,15 @@ export default function TagsManagementPage() {
   const bg = useColorModeValue("gray.50", "gray.900");
   const colorMain = useColorModeValue("gray.800", "white");
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     const authToken = await auth.currentUser?.getIdToken();
-
     try {
       setIsLoading(true);
       const response = await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/tags`,
-        {
-          method: "GET",
-          token: authToken,
-        }
+        { method: "GET", token: authToken }
       );
-
       if (!response.ok) throw new Error("Failed to fetch tags");
-
       const data = await response.json();
       setTags(data.tags || []);
     } catch (error) {
@@ -87,8 +77,11 @@ export default function TagsManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]); // ✅ Now safe and stable
   const handleAddTag = async () => {
     if (!newTagEn.trim()) {
       toaster.create({

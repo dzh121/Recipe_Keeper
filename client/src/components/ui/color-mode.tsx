@@ -6,11 +6,13 @@ import { ThemeProvider, useTheme } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
 import * as React from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useRef, useEffect } from "react";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
-export interface ColorModeProviderProps extends ThemeProviderProps {}
+export interface ColorModeProviderProps extends ThemeProviderProps {
+  children?: React.ReactNode;
+}
 
 export function ColorModeProvider(props: ColorModeProviderProps) {
   return (
@@ -36,7 +38,6 @@ export function useColorMode(): UseColorModeReturn {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
       await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
         {
@@ -95,7 +96,10 @@ export function ColorModeIcon() {
   return colorMode === "dark" ? <LuMoon /> : <LuSun />;
 }
 
-interface ColorModeButtonProps extends Omit<IconButtonProps, "aria-label"> {}
+interface ColorModeButtonProps extends Omit<IconButtonProps, "aria-label"> {
+  "aria-label"?: string;
+  ref?: React.Ref<HTMLButtonElement>;
+}
 
 export const ColorModeButton = React.forwardRef<
   HTMLButtonElement,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Container,
@@ -57,7 +57,7 @@ type TagSuggestion = {
     he: string;
   };
   suggestedBy: string;
-  createdAt: any; // Timestamp
+  createdAt: Timestamp | { _seconds: number; _nanoseconds: number };
   status: "pending" | "approved" | "rejected";
 };
 
@@ -105,8 +105,9 @@ export default function TagSuggestionsPage() {
     rejected: { bg: redBg, color: redText, icon: <LuCircleX /> },
   };
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     if (!authChecked) return;
+
     if (!user) {
       setTimeout(() => {
         toaster.create({
@@ -164,12 +165,12 @@ export default function TagSuggestionsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [authChecked, user, t]);
 
   // then use it inside useEffect
   useEffect(() => {
     fetchSuggestions();
-  }, [authChecked, user]);
+  }, [authChecked, user, fetchSuggestions]);
 
   const handleChangeStatus = async (
     id: string,
@@ -315,21 +316,26 @@ export default function TagSuggestionsPage() {
     }
   };
 
-  const getFormattedDate = (timestamp: any) => {
+  const getFormattedDate = (
+    timestamp: Timestamp | { _seconds: number; _nanoseconds: number }
+  ): string => {
     if (!timestamp) return "";
 
     try {
-      // 🔧 Fix: rehydrate into a proper Timestamp if needed
-      const normalized =
-        typeof timestamp.toDate === "function"
-          ? timestamp
-          : new Timestamp(timestamp._seconds, timestamp._nanoseconds);
+      let date: Date;
 
-      const date = normalized.toDate();
-
-      if (isNaN(date.getTime())) {
-        console.warn("Invalid date in tag suggestion:", timestamp);
-        return "";
+      if (timestamp instanceof Timestamp) {
+        date = timestamp.toDate();
+      } else if (
+        typeof timestamp._seconds === "number" &&
+        typeof timestamp._nanoseconds === "number"
+      ) {
+        date = new Timestamp(
+          timestamp._seconds,
+          timestamp._nanoseconds
+        ).toDate();
+      } else {
+        throw new Error("Invalid timestamp format");
       }
 
       return new Intl.DateTimeFormat(i18n.language, {
@@ -362,9 +368,17 @@ export default function TagSuggestionsPage() {
       return true;
     })
     .sort((a, b) => {
-      // Sort by newest first
-      const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt);
-      const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt);
+      const normalize = (
+        ts: Timestamp | { _seconds: number; _nanoseconds: number }
+      ): Date => {
+        if (ts instanceof Timestamp) {
+          return ts.toDate();
+        }
+        return new Timestamp(ts._seconds, ts._nanoseconds).toDate();
+      };
+
+      const dateA = normalize(a.createdAt);
+      const dateB = normalize(b.createdAt);
       return dateB.getTime() - dateA.getTime();
     });
 

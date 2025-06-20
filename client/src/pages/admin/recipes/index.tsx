@@ -37,7 +37,7 @@ export default function AdminRecipesPage() {
     };
 
     checkAdmin();
-  }, [user, authChecked]);
+  }, [user, authChecked, router]);
 
   if (!hasMounted || !authChecked) {
     return (

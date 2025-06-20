@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Container } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { useRouter } from "next/router";
 import { useColorModeValue } from "@/components/ui/color-mode";

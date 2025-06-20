@@ -1,23 +1,23 @@
 import { getToken } from "firebase/app-check";
 import { appCheck } from "@/lib/firebase";
 
-export async function fetchWithAuthAndAppCheck(
+type FetchMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+
+interface FetchOptions<TBody = unknown> {
+  method?: FetchMethod;
+  token?: string;
+  body?: TBody;
+}
+
+export async function fetchWithAuthAndAppCheck<TBody = unknown>(
   url: string,
-  options: {
-    method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-    token?: string;
-    body?: any;
-  }
-) {
-  async function getAppCheckToken(forceRefresh: boolean = false) {
-    console.log("Fetching App Check token", forceRefresh);
+  options: FetchOptions<TBody>
+): Promise<Response> {
+  async function getAppCheckToken(forceRefresh: boolean = false): Promise<string> {
     try {
       if (appCheck) {
         const result = await getToken(appCheck, forceRefresh);
-        console.log("App Check token:", result.token);
-        console.log("Expires at:", result);
         return result.token;
-        
       }
     } catch (err) {
       console.warn(`App Check token fetch ${forceRefresh ? "refresh" : "initial"} failed:`, err);
@@ -25,27 +25,25 @@ export async function fetchWithAuthAndAppCheck(
     return "";
   }
 
-  const isFormData = options.body instanceof FormData;
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
-  let appCheckToken = await getAppCheckToken(false);
-  console.log("App Check token:", appCheckToken);
+  const appCheckToken = await getAppCheckToken(false);
+
   const buildHeaders = (token: string): Record<string, string> => ({
     ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
     ...(token ? { "X-Firebase-AppCheck": token } : {}),
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
   });
 
-  const fetchOnce = async (token: string) =>
+  const fetchOnce = async (token: string): Promise<Response> =>
     await fetch(url, {
       method: options.method || "GET",
       headers: buildHeaders(token),
-      body: isFormData ? options.body : JSON.stringify(options.body),
+      body: isFormData ? (options.body as BodyInit) : JSON.stringify(options.body),
     });
 
-  // First attempt
   let res = await fetchOnce(appCheckToken);
 
-  // Retry if unauthorized and appCheck is available
   if ((res.status === 401 || res.status === 403) && appCheck) {
     const refreshedToken = await getAppCheckToken(true);
     if (refreshedToken) {

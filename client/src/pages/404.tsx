@@ -11,7 +11,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { FiArrowLeft, FiSearch, FiHome } from "react-icons/fi";
+import { FiArrowLeft, FiHome } from "react-icons/fi";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useHasMounted } from "@/hooks/useHasMounted";
@@ -152,8 +152,9 @@ export default function NotFoundPage() {
                 Page Not Found
               </Heading>
               <Text fontSize="lg" color="gray.500" maxW="450px">
-                We can't seem to find the page you're looking for. It might have
-                been removed, renamed, or didn't exist in the first place.
+                We can&apos;t seem to find the page you&apos;re looking for. It
+                might have been removed, renamed, or didn&apos;t exist in the
+                first place.
               </Text>
             </VStack>
 
