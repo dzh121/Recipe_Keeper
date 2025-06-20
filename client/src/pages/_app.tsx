@@ -12,6 +12,12 @@ import { Toaster } from "@/components/ui/toaster";
 import KoFiWidget from "@/components/KoFiWidget";
 import Script from "next/script";
 import { useRouter } from "next/router";
+import { appCheck } from "@/lib/firebase";
+import {
+  onTokenChanged,
+  getToken,
+  type AppCheckTokenResult,
+} from "firebase/app-check";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +54,28 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       router.events.off("routeChangeComplete", handleRouteChange);
     };
   }, [router.events]);
+
+  useEffect(() => {
+    // Assign the imported appCheck to a local constant for TS narrowing
+    const localAppCheck = appCheck;
+
+    if (!localAppCheck) return;
+
+    const unsubscribe = onTokenChanged(
+      localAppCheck,
+      async (token: AppCheckTokenResult | null) => {
+        if (!token?.token) {
+          try {
+            await getToken(localAppCheck, true);
+          } catch (err) {
+            console.error("App Check token refresh failed:", err);
+          }
+        }
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

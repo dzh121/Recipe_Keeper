@@ -238,7 +238,6 @@ export default function Home() {
               )}
         </SimpleGrid>
       </Box>
-
       <Footer />
     </Box>
   );

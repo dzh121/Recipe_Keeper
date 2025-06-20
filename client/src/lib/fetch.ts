@@ -9,34 +9,49 @@ export async function fetchWithAuthAndAppCheck(
     body?: any;
   }
 ) {
-  let appCheckToken = "";
-
-  try {
-    if (appCheck) {
-      const result = await getToken(appCheck, false);
-      appCheckToken = result.token;
+  async function getAppCheckToken(forceRefresh: boolean = false) {
+    console.log("Fetching App Check token", forceRefresh);
+    try {
+      if (appCheck) {
+        const result = await getToken(appCheck, forceRefresh);
+        console.log("App Check token:", result.token);
+        console.log("Expires at:", result);
+        return result.token;
+        
+      }
+    } catch (err) {
+      console.warn(`App Check token fetch ${forceRefresh ? "refresh" : "initial"} failed:`, err);
     }
-  } catch (err) {
-    console.warn("App Check token fetch failed:", err);
+    return "";
   }
 
   const isFormData = options.body instanceof FormData;
 
-  const headers: Record<string, string> = {
+  let appCheckToken = await getAppCheckToken(false);
+  console.log("App Check token:", appCheckToken);
+  const buildHeaders = (token: string): Record<string, string> => ({
     ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-    ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
-  };
-
-  if (!isFormData) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  const res = await fetch(url, {
-    method: options.method || "GET",
-    headers,
-    body: isFormData ? options.body : JSON.stringify(options.body),
+    ...(token ? { "X-Firebase-AppCheck": token } : {}),
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
   });
+
+  const fetchOnce = async (token: string) =>
+    await fetch(url, {
+      method: options.method || "GET",
+      headers: buildHeaders(token),
+      body: isFormData ? options.body : JSON.stringify(options.body),
+    });
+
+  // First attempt
+  let res = await fetchOnce(appCheckToken);
+
+  // Retry if unauthorized and appCheck is available
+  if ((res.status === 401 || res.status === 403) && appCheck) {
+    const refreshedToken = await getAppCheckToken(true);
+    if (refreshedToken) {
+      res = await fetchOnce(refreshedToken);
+    }
+  }
 
   return res;
 }
-
