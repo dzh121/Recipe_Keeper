@@ -20,6 +20,7 @@ import {
   Tag,
   VStack,
 } from "@chakra-ui/react";
+import Image from "next/image";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { LuBookOpen, LuChefHat, LuLink } from "react-icons/lu";
@@ -45,6 +46,7 @@ interface Recipe {
   id: string;
   title: string;
   isPublic: boolean;
+  imageURL?: string;
   recipeType?: "link" | "homemade";
   kosher?: boolean;
   tags?: string[];
@@ -330,7 +332,7 @@ export default function UserPage() {
                   _hover={{ textDecoration: "none" }}
                 >
                   <Box
-                    p={5}
+                    p={0}
                     w="100%"
                     borderWidth="1px"
                     borderRadius="md"
@@ -345,80 +347,94 @@ export default function UserPage() {
                     height="100%"
                     display="flex"
                     flexDirection="column"
-                    justifyContent="space-between"
+                    overflow="hidden"
                   >
-                    <HStack justify="space-between" mb={2}>
-                      <HStack gap={3}>
-                        <Icon
-                          as={
-                            recipe.recipeType === "homemade"
-                              ? LuChefHat
-                              : LuLink
-                          }
-                          color={accentColor}
-                          size="xl"
+                    {/* Image Section */}
+                    {recipe.imageURL && (
+                      <Box
+                        width="100%"
+                        height="160px"
+                        overflow="hidden"
+                        bg="gray.50"
+                        _dark={{ bg: "gray.800" }}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Image
+                          src={recipe.imageURL}
+                          alt={recipe.title || "Recipe Image"}
+                          width={300}
+                          height={160}
+                          style={{
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                          }}
                         />
-                        <Text
-                          fontWeight="bold"
-                          fontSize="lg"
-                          color={accentColor}
-                        >
-                          {recipe.title || "Untitled Recipe"}
-                        </Text>
-                      </HStack>
-                      <HStack gap={1}>
-                        {recipe.kosher && (
-                          <Badge
-                            colorPalette="purple"
-                            size="xs"
-                            px={2}
-                            py={0.5}
-                            borderRadius="full"
-                          >
-                            {t("userPage.kosher")}
-                          </Badge>
-                        )}
-                        <Badge
-                          colorPalette={
-                            recipe.recipeType === "homemade" ? "orange" : "blue"
-                          }
-                          size="xs"
-                          px={2}
-                          py={0.5}
-                          borderRadius="full"
-                        >
-                          {recipe.recipeType === "homemade"
-                            ? t("userPage.homemade")
-                            : t("userPage.link")}
-                        </Badge>
-                      </HStack>
-                    </HStack>
-
-                    {recipe.tags && recipe.tags.length > 0 && (
-                      <HStack mt={3} flexWrap="wrap" gap={2}>
-                        {recipe.tags.slice(0, 4).map((tagId, idx) => {
-                          const translated =
-                            tagOptions.find((t) => t.id === tagId)
-                              ?.translations[i18n.language] ?? tagId;
-
-                          return (
-                            <Tag.Root size="sm" key={idx} colorPalette="gray">
-                              <Tag.Label>{translated}</Tag.Label>
-                            </Tag.Root>
-                          );
-                        })}
-
-                        {recipe.tags.length > 4 && (
-                          <Tag.Root size="sm" colorPalette="gray">
-                            <Tag.Label>
-                              {t("recipeList.moreTags", {
-                                count: recipe.tags.length - 4,
-                              })}
-                            </Tag.Label>
-                          </Tag.Root>
-                        )}
-                      </HStack>
+                      </Box>
                     )}
+
+                    {/* Content Section */}
+                    <VStack align="start" p={5} flex={1} gap={3}>
+                      {/* Header with Icon and Title */}
+                      <HStack justify="space-between" w="100%">
+                        <HStack gap={3}>
+                          <Icon
+                            as={
+                              recipe.recipeType === "homemade"
+                                ? LuChefHat
+                                : LuLink
+                            }
+                            color={accentColor}
+                            size="lg"
+                          />
+                          <Text
+                            fontWeight="bold"
+                            fontSize="lg"
+                            color={accentColor}
+                            lineHeight="short"
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              wordBreak: "break-word",
+                              whiteSpace: "normal",
+                            }}
+                          >
+                            {recipe.title || "Untitled Recipe"}
+                          </Text>
+                        </HStack>
+                      </HStack>
+
+                      {/* Tags Section */}
+                      {recipe.tags && recipe.tags.length > 0 && (
+                        <Flex wrap="wrap" gap={2} w="100%">
+                          {recipe.tags.map((tagId) => {
+                            const tagObj = tagOptions.find(
+                              (t) => t.id === tagId
+                            );
+                            const label =
+                              tagObj?.translations[i18n.language] ??
+                              tagObj?.translations.en ??
+                              tagId;
+
+                            return (
+                              <Tag.Root
+                                key={tagId}
+                                size="sm"
+                                borderRadius="full"
+                                variant="subtle"
+                                cursor="pointer"
+                              >
+                                <Tag.Label>{label}</Tag.Label>
+                              </Tag.Root>
+                            );
+                          })}
+                        </Flex>
+                      )}
+                    </VStack>
                   </Box>
                 </Link>
               ))}

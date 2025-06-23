@@ -916,22 +916,129 @@ export default function RecipeList({
                 borderRadius="md"
                 bg={cardBg}
                 borderColor={borderColor}
-                _hover={{ shadow: "md", transition: "all 0.2s" }}
+                _hover={{
+                  shadow: "lg",
+                  transform: "translateY(-1px)",
+                  transition: "all 0.2s",
+                }}
                 cursor="pointer"
               >
-                <HStack justify="space-between" mb={2}>
-                  <HStack>
-                    <Icon
-                      as={recipe.recipeType === "homemade" ? LuChefHat : LuLink}
-                      color="teal.500"
-                      fontSize={"xl"}
-                    />
-                    <Text fontWeight="bold" fontSize="lg" color="teal.500">
-                      {recipe.title || "Untitled Recipe"}
-                    </Text>
+                {/* Main Content Container */}
+                <VStack align="stretch" gap={4}>
+                  {/* Header with Title and Action Buttons */}
+                  <HStack justify="space-between" align="start">
+                    <HStack align="center" flex="1">
+                      <Icon
+                        as={
+                          recipe.recipeType === "homemade" ? LuChefHat : LuLink
+                        }
+                        color="teal.500"
+                        fontSize={"xl"}
+                        flexShrink={0}
+                      />
+                      <Text
+                        fontWeight="bold"
+                        fontSize="lg"
+                        color="teal.500"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          wordBreak: "break-word",
+                          whiteSpace: "normal",
+                        }}
+                      >
+                        {recipe.title || "Untitled Recipe"}
+                      </Text>
+                    </HStack>
+
+                    <HStack gap={2} flexShrink={0}>
+                      {owner && (
+                        <Tooltip
+                          content="Delete recipe"
+                          positioning={{ placement: "top" }}
+                        >
+                          <IconButton
+                            aria-label="Delete"
+                            variant="outline"
+                            size="sm"
+                            colorPalette="red"
+                            borderRadius="full"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteClick(recipe.id);
+                            }}
+                          >
+                            <FiX />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+
+                      {allowEdit && (
+                        <Tooltip
+                          content={t("recipeList.editTooltip")}
+                          positioning={{ placement: "top" }}
+                        >
+                          <Flex gap={2} align="center">
+                            {/* IconButton for larger screens */}
+                            <IconButton
+                              aria-label="Edit"
+                              display={{ base: "none", sm: "inline-flex" }}
+                              variant="outline"
+                              size="sm"
+                              colorPalette="teal"
+                              borderRadius="full"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                onEditClick?.(recipe.id);
+                              }}
+                            >
+                              <MdOutlineEdit />
+                            </IconButton>
+
+                            {/* Full button on small screens */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorPalette="teal"
+                              display={{ base: "inline-flex", sm: "none" }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                onEditClick?.(recipe.id);
+                              }}
+                            >
+                              <MdOutlineEdit />
+                              {t("recipeList.editButton")}
+                            </Button>
+                          </Flex>
+                        </Tooltip>
+                      )}
+
+                      {showFavorite && (
+                        <Tooltip
+                          content={t("recipeList.removeFavoriteTooltip")}
+                          positioning={{ placement: "top" }}
+                        >
+                          <IconButton
+                            aria-label={t("recipeList.removeFavoriteTooltip")}
+                            variant="ghost"
+                            size="sm"
+                            colorPalette="red"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onFavoriteClick?.(recipe.id);
+                            }}
+                          >
+                            <MdOutlineFavorite />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </HStack>
                   </HStack>
 
-                  <HStack gap={2}>
+                  {/* Badges Row */}
+                  <Flex wrap="wrap" gap={2}>
                     {recipe.kosher && (
                       <Badge
                         colorPalette="purple"
@@ -971,187 +1078,120 @@ export default function RecipeList({
                         ? t("recipeList.homemade")
                         : t("recipeList.link")}
                     </Badge>
-                    {owner && (
-                      <Tooltip
-                        content="Delete recipe"
-                        positioning={{ placement: "top" }}
-                      >
-                        <IconButton
-                          aria-label="Delete"
-                          variant="outline"
-                          size="sm"
-                          colorPalette="red"
-                          borderRadius="full"
+                  </Flex>
+
+                  {/* Publisher information */}
+                  {showPublisher &&
+                    recipe.ownerId &&
+                    userProfiles[recipe.ownerId] &&
+                    (() => {
+                      const ownerId = recipe.ownerId as string;
+                      const profile = userProfiles[ownerId];
+
+                      return (
+                        <HStack
                           onClick={(e) => {
+                            e.stopPropagation();
                             e.preventDefault();
-                            handleDeleteClick(recipe.id);
+                            if (profile.slug) {
+                              router.push(`/user/${profile.slug}`);
+                            }
                           }}
+                          gap={2}
+                          color="gray.600"
+                          _dark={{ color: "gray.400" }}
+                          _hover={{ textDecoration: "underline" }}
+                          cursor="pointer"
                         >
-                          <FiX />
-                        </IconButton>
-                      </Tooltip>
+                          <Avatar.Root
+                            size="xs"
+                            colorPalette="teal"
+                            variant="solid"
+                          >
+                            <Avatar.Fallback name={profile.displayName} />
+                            <Avatar.Image
+                              src={profile.photoURL || undefined}
+                              alt="User Avatar"
+                              borderRadius="full"
+                            />
+                          </Avatar.Root>
+                          <Text fontSize="sm">{profile.displayName}</Text>
+                        </HStack>
+                      );
+                    })()}
+
+                  {/* Main Content Area with Image and Tags */}
+                  <HStack align="start" gap={4}>
+                    {/* Image Section - Fixed size on the left */}
+                    {recipe.imageURL && (
+                      <Box
+                        width="140px"
+                        height="100px"
+                        borderRadius="md"
+                        overflow="hidden"
+                        bg="gray.50"
+                        _dark={{ bg: "gray.800", borderColor: "gray.600" }}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        flexShrink={0}
+                        border="1px solid"
+                        borderColor="gray.200"
+                      >
+                        <Image
+                          src={recipe.imageURL}
+                          alt={recipe.title || "Recipe Image"}
+                          width={140}
+                          height={100}
+                          style={{
+                            borderRadius: "6px",
+                            objectFit: "cover",
+                            width: "100%",
+                            height: "100%",
+                          }}
+                        />
+                      </Box>
                     )}
 
-                    {allowEdit && (
-                      <Tooltip
-                        content={t("recipeList.editTooltip")}
-                        positioning={{ placement: "top" }}
-                      >
-                        <Flex gap={2} align="center">
-                          {/* IconButton for larger screens */}
-                          <IconButton
-                            aria-label="Edit"
-                            display={{ base: "none", sm: "inline-flex" }}
-                            variant="outline"
-                            size="sm"
-                            colorPalette="teal"
-                            borderRadius="full"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              onEditClick?.(recipe.id);
-                            }}
-                          >
-                            <MdOutlineEdit />
-                          </IconButton>
+                    {/* Tags Section - Takes remaining space */}
+                    {recipe.tags && recipe.tags.length > 0 && (
+                      <VStack align="start" flex="1" gap={2}>
+                        <Flex wrap="wrap" gap={2}>
+                          {recipe.tags.map((tagId) => {
+                            const tagObj = tagOptions.find(
+                              (t) => t.id === tagId
+                            );
+                            const label =
+                              tagObj?.translations[i18n.language] ??
+                              tagObj?.translations.en ??
+                              tagId;
 
-                          {/* Full button on small screens */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            colorPalette="teal"
-                            display={{ base: "inline-flex", sm: "none" }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              onEditClick?.(recipe.id);
-                            }}
-                          >
-                            <MdOutlineEdit />
-                            {t("recipeList.editButton")}
-                          </Button>
+                            return (
+                              <Tag.Root
+                                key={tagId}
+                                size="sm"
+                                borderRadius="full"
+                                variant="subtle"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  !selectedTags.includes(tagId) &&
+                                    handleTagSelect(tagId);
+                                }}
+                                cursor="pointer"
+                                _hover={{
+                                  transform: "scale(1.05)",
+                                  transition: "transform 0.1s",
+                                }}
+                              >
+                                <Tag.Label>{label}</Tag.Label>
+                              </Tag.Root>
+                            );
+                          })}
                         </Flex>
-                      </Tooltip>
-                    )}
-                    {showFavorite && (
-                      <Tooltip
-                        content={t("recipeList.removeFavoriteTooltip")}
-                        positioning={{ placement: "top" }}
-                      >
-                        <IconButton
-                          aria-label={t("recipeList.removeFavoriteTooltip")}
-                          variant="ghost"
-                          size="sm"
-                          colorPalette="red"
-                          onClick={(e) => {
-                            e.preventDefault(); // prevent navigation
-                            onFavoriteClick?.(recipe.id);
-                          }}
-                        >
-                          <MdOutlineFavorite />
-                        </IconButton>
-                      </Tooltip>
+                      </VStack>
                     )}
                   </HStack>
-                </HStack>
-
-                {/* Publisher information */}
-                {showPublisher &&
-                  recipe.ownerId &&
-                  userProfiles[recipe.ownerId] &&
-                  (() => {
-                    const ownerId = recipe.ownerId as string;
-                    const profile = userProfiles[ownerId];
-
-                    return (
-                      <HStack
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          if (profile.slug) {
-                            router.push(`/user/${profile.slug}`);
-                          }
-                        }}
-                        mt={2}
-                        gap={2}
-                        color="gray.600"
-                        _dark={{ color: "gray.400" }}
-                        _hover={{ textDecoration: "underline" }}
-                      >
-                        <Avatar.Root
-                          size="xs"
-                          colorPalette="teal"
-                          variant="solid"
-                        >
-                          <Avatar.Fallback name={profile.displayName} />
-                          <Avatar.Image
-                            src={profile.photoURL || undefined}
-                            alt="User Avatar"
-                            borderRadius="full"
-                          />
-                        </Avatar.Root>
-                        <Text fontSize="sm">{profile.displayName}</Text>
-                      </HStack>
-                    );
-                  })()}
-
-                <HStack align="start" gap={4} mt={3}>
-                  {recipe.imageURL && (
-                    <Box
-                      width="120px"
-                      height="80px"
-                      borderRadius="md"
-                      overflow="hidden"
-                      bg="gray.50"
-                      _dark={{ bg: "gray.800" }}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      flexShrink={0}
-                    >
-                      <Image
-                        src={recipe.imageURL}
-                        alt={recipe.title || "Recipe Image"}
-                        width={120}
-                        height={80}
-                        style={{
-                          borderRadius: "8px",
-                          objectFit: "cover",
-                          width: "100%",
-                          height: "100%",
-                        }}
-                      />
-                    </Box>
-                  )}
-                  <VStack align="start" flex={1} gap={2}>
-                    {recipe.tags && recipe.tags.length > 0 && (
-                      <Flex wrap="wrap" gap={2}>
-                        {recipe.tags.map((tagId) => {
-                          const tagObj = tagOptions.find((t) => t.id === tagId);
-                          const label =
-                            tagObj?.translations[i18n.language] ??
-                            tagObj?.translations.en ??
-                            tagId;
-
-                          return (
-                            <Tag.Root
-                              key={tagId}
-                              size="md"
-                              borderRadius="full"
-                              variant="subtle"
-                              onClick={(e) => {
-                                e.preventDefault(); // prevent navigation
-                                !selectedTags.includes(tagId) &&
-                                  handleTagSelect(tagId);
-                              }}
-                              cursor="pointer"
-                            >
-                              <Tag.Label>{label}</Tag.Label>
-                            </Tag.Root>
-                          );
-                        })}
-                      </Flex>
-                    )}
-                  </VStack>
-                </HStack>
+                </VStack>
               </Box>
             </Link>
           ))}
