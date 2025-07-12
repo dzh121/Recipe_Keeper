@@ -68,6 +68,7 @@ export default function StartPage() {
   const [resetEmailError, setResetEmailError] = useState("");
   const router = useRouter();
   const { t } = useTranslation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
   useEffect(() => {
@@ -184,6 +185,8 @@ export default function StartPage() {
   };
 
   const handleRegister = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const errors = {
       email: !form.email ? t("startPage.errors.requiredEmail") : "",
       password: !form.password ? t("startPage.errors.requiredPassword") : "",
@@ -292,6 +295,8 @@ export default function StartPage() {
         });
 
         return;
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -473,6 +478,7 @@ export default function StartPage() {
                 onClick={() =>
                   void (isLogin ? handleLogin() : handleRegister())
                 }
+                disabled={isSubmitting}
                 mt={2}
               >
                 {isLogin ? t("startPage.login") : t("startPage.register")}
