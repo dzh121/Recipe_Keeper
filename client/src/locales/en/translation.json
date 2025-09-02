@@ -54,7 +54,8 @@
     "add": "Add",
     "back": "Back",
     "next": "Next",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "success": "Success"
   },
 
   "titles":{
@@ -226,7 +227,8 @@
     "link": "Link",
     "editButton": "Edit",
     "kosherOnly": "Kosher",
-    "kosherBadge": "Kosher"
+    "kosherBadge": "Kosher",
+    "removedFromFavorites": "Recipe removed from favorites"
   },
 
   "settings": {

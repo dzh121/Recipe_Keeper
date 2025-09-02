@@ -54,7 +54,8 @@
     "confirm": "אישור",
     "back": "חזרה",
     "next": "הבא",
-    "loading": "טוען..."
+    "loading": "טוען...",
+    "success": "הצלחה"
   },
 
   "titles":{
@@ -225,7 +226,8 @@
     "link": "קישור",
     "editButton": "ערוך",
     "kosherOnly": "כשר",
-    "kosherBadge": "כשר"
+    "kosherBadge": "כשר",
+    "removedFromFavorites": "המתכון הוסר מהמועדפים"
   },
 
   "settings": {

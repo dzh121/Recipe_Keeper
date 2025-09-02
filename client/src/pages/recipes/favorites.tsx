@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useAuth } from "@/context/AuthContext";
 import RecipeList from "@/components/recipes/RecipeList";
@@ -14,6 +14,7 @@ import BackButton from "@/components/ui/back";
 import { fetchWithAuthAndAppCheck } from "@/lib/fetch";
 
 export default function RecipesManage() {
+  const [refreshKey, setRefreshKey] = useState(0);
   const hasMounted = useHasMounted();
   const router = useRouter();
   const { user, authChecked } = useAuth();
@@ -39,6 +40,15 @@ export default function RecipesManage() {
       if (!response.ok) {
         throw new Error("Failed to remove favorite");
       }
+
+      toaster.create({
+        title: t("common.success"),
+        description: t("recipeList.removedFromFavorites"),
+        type: "success",
+        duration: 3000,
+        meta: { closable: true },
+      });
+      setRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error("Error removing favorite:", err);
       toaster.create({
@@ -109,6 +119,7 @@ export default function RecipesManage() {
           onFavoriteClick={(recipeId: string) => {
             removeFavorite(recipeId);
           }}
+          refreshKey={refreshKey}
         />
       </Container>
 

@@ -86,6 +86,7 @@ interface RecipeListProps {
   onEditClick?: (id: string) => void;
   onFavoriteClick?: (id: string) => void;
   onlyFavorites?: boolean;
+  refreshKey?: number;
 }
 
 export default function RecipeList({
@@ -101,6 +102,7 @@ export default function RecipeList({
   onEditClick,
   onFavoriteClick,
   onlyFavorites = false,
+  refreshKey,
 }: RecipeListProps) {
   const [tagSearch, setTagSearch] = useState("");
   const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>(
@@ -239,6 +241,7 @@ export default function RecipeList({
     isPublic,
     owner,
     onlyFavorites,
+    refreshKey,
   ]);
 
   const sortAndSetTags = useCallback(
@@ -891,14 +894,17 @@ export default function RecipeList({
           borderColor={borderColor}
         >
           <Text fontSize="lg">{t("recipeList.noRecipes")}</Text>
-          <Button
-            mt={4}
-            colorPalette="teal"
-            variant="outline"
-            onClick={clearFilters}
-          >
-            {t("recipeList.clearFilters")}
-          </Button>
+          {/* if there are active filters show a button to clear them */}
+          {hasActiveFilters && (
+            <Button
+              mt={4}
+              colorPalette="teal"
+              variant="outline"
+              onClick={clearFilters}
+            >
+              {t("recipeList.clearFilters")}
+            </Button>
+          )}
         </Box>
       ) : (
         <VStack align="stretch" gap={4}>
