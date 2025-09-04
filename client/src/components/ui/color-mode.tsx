@@ -36,13 +36,15 @@ export function useColorMode(): UseColorModeReturn {
   const saveColorModeToServer = async (mode: "light" | "dark") => {
     const user = auth.currentUser;
     if (!user) return;
+    const authToken = await user.getIdToken();
 
     try {
       await fetchWithAuthAndAppCheck(
         `${process.env.NEXT_PUBLIC_API_URL}/settings/color-mode`,
         {
           method: "POST",
-          body: JSON.stringify({ darkMode: mode === "dark" }),
+          token: authToken,
+          body: { darkMode: mode === "dark" },
         }
       );
     } catch (error) {
